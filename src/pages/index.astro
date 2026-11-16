@@ -1,0 +1,153 @@
+---
+import Layout from '../components/Layout.astro';
+import ProductCard from '../components/ProductCard.astro';
+import { getVisibleProducts, formatPKR } from '../lib/products.js';
+import productsData from '../../data/products.json';
+
+const visible = getVisibleProducts(productsData);
+
+// Seasonal suggestion tiles (category → image). Replace images with brand photography.
+const seasonalTiles = [
+  {
+    label: 'Home Textiles',
+    href: '/shop?category=home-textiles',
+    image: '/images/placeholder.svg',
+  },
+  {
+    label: 'Rugs',
+    href: '/shop?category=rugs',
+    image: '/images/placeholder.svg',
+  },
+  {
+    label: 'Tableware',
+    href: '/shop?category=tableware',
+    image: '/images/placeholder.svg',
+  },
+  {
+    label: 'Woodware',
+    href: '/shop?category=woodware',
+    image: '/images/placeholder.svg',
+  },
+];
+
+// Featured products for homepage (first 4 visible)
+const featured = visible.slice(0, 4);
+---
+
+<Layout title="AASRA — considered essentials for the home" description="Considered home essentials, online in Pakistan. PKR. No Cash on Delivery.">
+  <!-- Announcement bar -->
+  <div style="background:#fff; border-bottom:1px solid var(--border);">
+    <div class="container" style="padding:0.4rem 1.5rem; font-size:0.75rem; text-transform:uppercase; letter-spacing:0.12em; color:var(--muted); text-align:center;">
+      Free shipping on orders above 20,000 PKR · No Cash on Delivery · Pay in full or deposit + balance online
+    </div>
+  </div>
+
+  <!-- Hero -->
+  <section class="hero">
+    <img src="/images/placeholder.svg" alt="Seasonal collection" class="hero-image" loading="eager" width="1600" height="900" />
+    <div class="hero-content">
+      <div class="kicker">New collection</div>
+      <h1>Considered essentials for the home</h1>
+      <div class="hero-actions">
+        <a href="/shop" class="btn btn-primary">Shop the collection</a>
+        <a href="/about" class="btn">About AASRA</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Seasonal suggestions row (4 tiles) -->
+  <section class="section">
+    <div class="container">
+      <div class="seasonal-title">
+        <div class="kicker">Seasonal suggestions</div>
+        <h2>Explore by category</h2>
+      </div>
+      <div class="seasonal-grid">
+        {seasonalTiles.map((tile) => (
+          <a href={tile.href} class="seasonal-tile">
+            <img src={tile.image} alt={tile.label} loading="lazy" width="600" height="800" />
+            <span class="seasonal-label">{tile.label}</span>
+          </a>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- Editorial banner (full width) -->
+  <section class="section" style="background:var(--surface); border-top:1px solid var(--border); border-bottom:1px solid var(--border);">
+    <div class="container" style="display:flex; align-items:center; gap:3rem; flex-wrap:wrap;">
+      <div style="flex:1; min-width:260px;">
+        <h2>Made to last</h2>
+        <p>Natural materials, honest construction, quiet prices. Everything in PKR, everything payable online.</p>
+      </div>
+      <div style="flex:1; min-width:260px;">
+        <a href="/shop" class="btn btn-primary">Shop now</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Featured products -->
+  <section class="section">
+    <div class="container">
+      <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:1.5rem; flex-wrap:wrap; gap:1rem;">
+        <div>
+          <div class="kicker">Featured</div>
+          <h2>New in</h2>
+        </div>
+        <a href="/shop" class="btn" style="font-size:0.75rem;">View all</a>
+      </div>
+      <div class="grid">
+        {featured.map((p) => (
+          <ProductCard product={p} />
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- Newsletter block -->
+  <section class="section" style="background:var(--surface); border-top:1px solid var(--border); border-bottom:1px solid var(--border); text-align:center;">
+    <div class="container">
+      <h2>Be the first to know</h2>
+      <p style="max-width:460px; margin:0 auto 1rem; color:var(--muted);">New collections, restocks, and seasonal edits. No spam.</p>
+      <form id="newsletter-form" style="max-width:360px; margin:0 auto; display:flex; gap:0.5rem; flex-wrap:wrap;">
+        <input type="email" name="email" placeholder="you@example.com" class="form-input" required style="flex:1; min-width:220px;" />
+        <button type="submit" class="btn btn-primary">Subscribe</button>
+      </form>
+      <p id="newsletter-msg" style="margin-top:0.75rem; font-size:0.8rem; color:var(--muted);"></p>
+    </div>
+  </section>
+
+  <script>
+    document.getElementById('newsletter-form')?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const form = e.target;
+      const msg = document.getElementById('newsletter-msg');
+      const btn = form.querySelector('button[type="submit"]');
+      const email = form.elements.email.value;
+      try {
+        btn.disabled = true;
+        btn.textContent = 'Subscribing...';
+        const res = await fetch('/api/newsletter', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, consent: true }),
+        });
+        const data = await res.json();
+        if (data.ok) {
+          msg.textContent = 'Subscribed — thank you.';
+          msg.style.color = '#1f5a1f';
+          form.reset();
+        } else {
+          msg.textContent = data.error || 'Something went wrong.';
+          msg.style.color = '#8a1f1f';
+        }
+      } catch (err) {
+        msg.textContent = 'Something went wrong.';
+        msg.style.color = '#8a1f1f';
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Subscribe';
+      }
+    });
+  </script>
+</Layout>

@@ -1,0 +1,86 @@
+---
+import Layout from '../components/Layout.astro';
+import ProductCard from '../components/ProductCard.astro';
+import { getProductsByCategory, getCategories, formatPKR } from '../lib/products.js';
+import productsData from '../../data/products.json';
+
+const visible = productsData.products.filter((p) => p.visible);
+const categories = getCategories(productsData);
+
+const url = new URL(Astro.request.url);
+const selectedCategory = url.searchParams.get('category') || '';
+const q = (url.searchParams.get('q') || '').toLowerCase().trim();
+
+let filtered = visible;
+if (selectedCategory) {
+  filtered = getProductsByCategory(productsData, selectedCategory);
+}
+if (q) {
+  filtered = filtered.filter((p) =>
+    p.name.toLowerCase().includes(q) ||
+    p.description.toLowerCase().includes(q) ||
+    p.tags.some((t) => t.toLowerCase().includes(q))
+  );
+}
+---
+
+<Layout title="Shop — AASRA" description="Browse the AASRA collection. Home textiles, rugs, tableware, woodware. PKR.">
+  <!-- Announcement bar -->
+  <div style="background:#fff; border-bottom:1px solid var(--border);">
+    <div class="container" style="padding:0.4rem 1.5rem; font-size:0.75rem; text-transform:uppercase; letter-spacing:0.12em; color:var(--muted); text-align:center;">
+      Free shipping on orders above 20,000 PKR · No Cash on Delivery · Pay in full or deposit + balance online
+    </div>
+  </div>
+
+  <section class="section">
+    <div class="container">
+      <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:1rem; flex-wrap:wrap; margin-bottom:1.5rem;">
+        <div>
+          <h1>Shop</h1>
+          {q && <p style="color:var(--muted); font-size:0.85rem;">Search results for “{q}”</p>}
+        </div>
+        <form action="/shop" method="GET" style="display:flex; gap:0.5rem; flex-wrap:wrap;">
+          <input type="text" name="q" placeholder="Search products…" class="form-input" value={q} />
+          <button type="submit" class="btn">Search</button>
+        </form>
+      </div>
+
+      <div class="container" style="display:flex; gap:2rem; align-items:flex-start;">
+        <!-- Filters sidebar -->
+        <aside style="flex:0 0 220px; font-size:0.8rem;">
+          <div style="font-size:0.7rem; text-transform:uppercase; letter-spacing:0.14em; color:var(--muted); margin-bottom:0.75rem;">Category</div>
+          <ul style="list-style:none;">
+            <li>
+              <a href="/shop" class={selectedCategory === '' ? 'font-bold text-black' : ''}>All</a>
+            </li>
+            {categories.map((cat) => (
+              <li>
+                <a href={`/shop?category=${cat}`} class={selectedCategory === cat ? 'font-bold text-black' : ''}>
+                  {cat.charAt(0).toUpperCase() + cat.slice(1)}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </aside>
+
+        <!-- Product grid -->
+        <div class="grid" style="flex:1;">
+          {filtered.length > 0 ? (
+            filtered.map((p) => <ProductCard product={p} />)
+          ) : (
+            <p style="grid-column:1/-1; color:var(--muted);">No products found.</p>
+          )}
+        </div>
+      </div>
+
+      <p style="margin-top:1rem; font-size:0.8rem; color:var(--muted);">
+        {filtered.length} result{filtered.length !== 1 ? 's' : ''}
+      </p>
+    </div>
+  </section>
+</Layout>
+
+<style>
+  .font-bold { font-weight: 600; }
+  .text-black { color: var(--text); }
+</style>

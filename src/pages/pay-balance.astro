@@ -1,0 +1,79 @@
+---
+import Layout from '../components/Layout.astro';
+import { formatPKR } from '../lib/products.js';
+
+const url = new URL(Astro.request.url);
+const orderId = url.searchParams.get('order') || '';
+const token = url.searchParams.get('token') || '';
+---
+
+<Layout title="Pay balance — AASRA" description="Pay the remaining balance for your order.">
+  <!-- Announcement bar -->
+  <div style="background:#fff; border-bottom:1px solid var(--border);">
+    <div class="container" style="padding:0.4rem 1.5rem; font-size:0.75rem; text-transform:uppercase; letter-spacing:0.12em; color:var(--muted); text-align:center;">
+      Free shipping on orders above 20,000 PKR · No Cash on Delivery · Pay in full or deposit + balance online
+    </div>
+  </div>
+
+  <section class="section">
+    <div class="container" style="max-width:560px;">
+      <h1>Pay balance</h1>
+      {orderId ? (
+        <>
+          <p>Order <strong>{orderId}</strong> — remaining balance due online before shipping.</p>
+          <div style="border:1px solid var(--border); padding:1.5rem; margin:1.5rem 0;">
+            <div style="display:flex; justify-content:space-between; font-size:0.85rem; color:var(--muted); margin-bottom:0.5rem;">
+              <span>Balance due</span> <span id="balance-amount">— PKR</span>
+            </div>
+          </div>
+          <button id="pay-btn" class="btn btn-primary btn-full" disabled>Loading…</button>
+          <p style="margin-top:1rem; font-size:0.8rem; color:var(--muted);">
+            You will be redirected to a secure payment page. After payment, you will receive a confirmation email.
+          </p>
+        </>
+      ) : (
+        <p>Invalid or missing order link. Please check your email or <a href="/order-lookup">look up your order</a>.</p>
+      )}
+    </div>
+  </section>
+
+  <script>
+    const orderId = '{orderId}';
+    const token = '{token}';
+    const balanceEl = document.getElementById('balance-amount');
+    const payBtn = document.getElementById('pay-btn');
+
+    // Fetch order status via lookup API (requires phone — not available here).
+    // Instead, we show the balance from the link; the backend validates at /api/pay-balance.
+    // For a real balance amount, we'd need an authenticated lookup. Here we show a placeholder.
+    if (balanceEl) balanceEl.textContent = 'Balance shown in your email · PKR';
+
+    payBtn.addEventListener('click', async () => {
+      if (!orderId || !token) {
+        alert('Invalid order link.');
+        return;
+      }
+      payBtn.disabled = true;
+      payBtn.textContent = 'Redirecting…';
+      try {
+        const res = await fetch('/api/pay-balance', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ order_id: orderId, token, turnstile_token: '' }),
+        });
+        const data = await res.json();
+        if (data.ok && data.checkout_url) {
+          window.location.href = data.checkout_url;
+        } else {
+          alert(data.error || 'Could not start payment.');
+          payBtn.disabled = false;
+          payBtn.textContent = 'Pay balance';
+        }
+      } catch (err) {
+        alert('Network error.');
+        payBtn.disabled = false;
+        payBtn.textContent = 'Pay balance';
+      }
+    });
+  </script>
+</Layout>

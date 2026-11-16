@@ -1,0 +1,215 @@
+---
+import Layout from '../components/Layout.astro';
+import { loadProducts, findVariantBySku } from '../lib/products.js';
+
+// Turnstile sitekey — configure in Cloudflare dashboard, set via env or replace placeholder.
+// VERIFY: get a real Turnstile sitekey from Cloudflare and set TURNSTILE_SITEKEY.
+const TURNSTILE_SITEKEY = '0x0000000000000000000000000000000000000000'; // placeholder
+---
+
+<Layout title="Checkout — AASRA" description="Complete your order. Pay in full or deposit + balance online. PKR.">
+  <!-- Announcement bar -->
+  <div style="background:#fff; border-bottom:1px solid var(--border);">
+    <div class="container" style="padding:0.4rem 1.5rem; font-size:0.75rem; text-transform:uppercase; letter-spacing:0.12em; color:var(--muted); text-align:center;">
+      Free shipping on orders above 20,000 PKR · No Cash on Delivery · Pay in full or deposit + balance online
+    </div>
+  </div>
+
+  <section class="section">
+    <div class="container">
+      <h1>Checkout</h1>
+
+      <div id="checkout-error" class="alert alert-error" style="display:none;"></div>
+      <div id="checkout-success" class="alert alert-success" style="display:none;"></div>
+
+      <form id="checkout-form" style="max-width:640px;">
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:1rem;">
+          <div class="form-group">
+            <label class="form-label">Full name</label>
+            <input type="text" name="name" class="form-input" required placeholder="Muhammad Ali" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Email</label>
+            <input type="email" name="email" class="form-input" required placeholder="you@example.com" />
+          </div>
+          <div class="form-group" style="grid-column:1/-1;">
+            <label class="form-label">Pakistani mobile number</label>
+            <input type="tel" name="phone" class="form-input" required placeholder="03001234567" />
+            <span style="font-size:0.7rem; color:var(--muted);">e.g. 03001234567 or +923001234567</span>
+          </div>
+          <div class="form-group" style="grid-column:1/-1;">
+            <label class="form-label">City</label>
+            <input type="text" name="city" class="form-input" required placeholder="Lahore" />
+          </div>
+          <div class="form-group" style="grid-column:1/-1;">
+            <label class="form-label">Full address</label>
+            <input type="text" name="address" class="form-input" required placeholder="House, street, area" />
+          </div>
+          <div class="form-group" style="grid-column:1/-1;">
+            <label class="form-label">Notes (optional)</label>
+            <textarea name="notes" class="form-input" rows="2" placeholder="Delivery instructions"></textarea>
+          </div>
+        </div>
+
+        <hr style="border:none; border-top:1px solid var(--border); margin:1.5rem 0;" />
+
+        <div class="form-group">
+          <label class="form-label">Payment option</label>
+          <div style="display:flex; gap:1rem; flex-wrap:wrap;">
+            <label style="display:flex; align-items:center; gap:0.5rem; font-size:0.9rem; cursor:pointer;">
+              <input type="radio" name="payment_type" value="full" checked />
+              Pay in full online
+            </label>
+            <label style="display:flex; align-items:center; gap:0.5rem; font-size:0.9rem; cursor:pointer;">
+              <input type="radio" name="payment_type" value="deposit" />
+              Pay deposit + balance online
+            </label>
+          </div>
+          <p id="deposit-info" style="font-size:0.8rem; color:var(--muted); margin-top:0.5rem;">
+            Deposit: 30% · Balance due online before shipping.
+          </p>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Coupon code (optional)</label>
+          <input type="text" name="coupon" class="form-input" placeholder="SAVE10" />
+        </div>
+
+        <div class="checkbox-group">
+          <input type="checkbox" name="terms" id="terms" required />
+          <label for="terms">
+            I agree to the <a href="/terms">Terms of Service</a>, <a href="/return-policy">Return &amp; Refund Policy</a>, and <a href="/deposit-policy">Deposit &amp; Cancellation Policy</a>.
+          </label>
+        </div>
+
+        <!-- Turnstile widget -->
+        <div class="form-group" style="margin-top:1rem;">
+          <div class="cf-turnstile" data-sitekey={TURNSTILE_SITEKEY}></div>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-full" id="checkout-btn">
+          Continue to payment
+        </button>
+
+        <p id="cart-hint" style="margin-top:1rem; font-size:0.8rem; color:var(--muted);">
+          Your cart is revalidated server-side. Prices and stock are confirmed before payment.
+        </p>
+      </form>
+    </div>
+  </section>
+
+  <script>
+    // Load Turnstile script
+    (function () {
+      const widget = document.querySelector('.cf-turnstile');
+      if (!widget) return;
+      const sitekey = '{TURNSTILE_SITEKEY}';
+      if (sitekey === '0x0000000000000000000000000000000000000000') {
+        // Dev mode: render a placeholder box so layout doesn't break
+        widget.style.border = '1px dashed var(--border)';
+        widget.style.padding = '1rem';
+        widget.style.fontSize = '0.75rem';
+        widget.style.color = 'var(--muted)';
+        widget.textContent = 'Turnstile widget (configure sitekey in Cloudflare dashboard)';
+        // Skip loading the real script in dev
+        return;
+      }
+      const script = document.createElement('script');
+      script.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';
+      script.async = true;
+      script.onload = () => {
+        try {
+          turnstile.render(widget, { sitekey });
+        } catch (e) {}
+      };
+      document.head.appendChild(script);
+    })();
+
+    const form = document.getElementById('checkout-form');
+    const errorEl = document.getElementById('checkout-error');
+    const successEl = document.getElementById('checkout-success');
+    const btn = document.getElementById('checkout-btn');
+
+    // Radio logic: hide deposit info if not deposit-eligible (server validates; UI hint only)
+    const paymentRadios = form.elements.payment_type;
+    const depositInfo = document.getElementById('deposit-info');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      errorEl.style.display = 'none';
+      successEl.style.display = 'none';
+
+      // Build cart from localStorage
+      let cart = [];
+      try {
+        cart = JSON.parse(localStorage.getItem(window.__AASRA_CART_KEY) || '[]');
+      } catch (e) {}
+      if (cart.length === 0) {
+        errorEl.textContent = 'Your cart is empty.';
+        errorEl.style.display = 'block';
+        return;
+      }
+
+      const formData = new FormData(form);
+      const paymentType = formData.get('payment_type');
+
+      // Turnstile token
+      let token = '';
+      if (typeof turnstile !== 'undefined') {
+        try {
+          token = await turnstile.getResponse();
+        } catch (e) {}
+      }
+      if (!token) {
+        // Dev mode without Turnstile: allow but warn
+        console.warn('No Turnstile token (dev mode).');
+      }
+
+      const body = {
+        cart: cart.map((i) => ({ sku: i.sku, qty: i.qty })),
+        payment_type: paymentType,
+        customer: {
+          name: formData.get('name'),
+          phone: formData.get('phone'),
+          email: formData.get('email'),
+          city: formData.get('city'),
+          address: formData.get('address'),
+          notes: formData.get('notes') || '',
+        },
+        coupon_code: formData.get('coupon') || '',
+        turnstile_token: token,
+      };
+
+      btn.disabled = true;
+      btn.textContent = 'Processing…';
+
+      try {
+        const res = await fetch('/api/checkout', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body),
+        });
+        const data = await res.json();
+
+        if (!res.ok || !data.ok) {
+          errorEl.textContent = data.error || 'Checkout failed. Please try again.';
+          errorEl.style.display = 'block';
+          btn.disabled = false;
+          btn.textContent = 'Continue to payment';
+          return;
+        }
+
+        successEl.textContent = 'Redirecting to secure payment…';
+        successEl.style.display = 'block';
+
+        // Redirect to gateway hosted checkout
+        window.location.href = data.checkout_url;
+      } catch (err) {
+        errorEl.textContent = 'Network error. Please try again.';
+        errorEl.style.display = 'block';
+        btn.disabled = false;
+        btn.textContent = 'Continue to payment';
+      }
+    });
+  </script>
+</Layout>

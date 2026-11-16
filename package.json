@@ -1,0 +1,28 @@
+{
+  "name": "aasra-store",
+  "version": "1.0.0",
+  "type": "module",
+  "private": true,
+  "description": "Headless e-commerce store for Pakistan on Cloudflare (Astro + Pages Functions + D1)",
+  "scripts": {
+    "dev": "wrangler pages dev . --d1 DB --binding DB --persist",
+    "build": "astro build",
+    "preview": "wrangler pages preview dist",
+    "deploy": "wrangler pages deploy dist",
+    "d1:create": "wrangler d1 create AASRA_DB",
+    "d1:execute": "wrangler d1 execute AASRA_DB --file=migrations/0001_initial.sql",
+    "d1:seed": "node scripts/seed-d1.js",
+    "test": "node tests/run.js",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "astro": "^4.16.0"
+  },
+  "devDependencies": {
+    "@astrojs/node": "^8.3.0",
+    "typescript": "^5.6.0"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

@@ -1,0 +1,83 @@
+---
+import Layout from '../components/Layout.astro';
+import { formatPKR } from '../lib/products.js';
+---
+
+<Layout title="Cart — AASRA" description="Review your cart before checkout.">
+  <!-- Announcement bar -->
+  <div style="background:#fff; border-bottom:1px solid var(--border);">
+    <div class="container" style="padding:0.4rem 1.5rem; font-size:0.75rem; text-transform:uppercase; letter-spacing:0.12em; color:var(--muted); text-align:center;">
+      Free shipping on orders above 20,000 PKR · No Cash on Delivery · Pay in full or deposit + balance online
+    </div>
+  </div>
+
+  <section class="section">
+    <div class="container">
+      <h1>Your cart</h1>
+
+      <div id="cart-content">
+        <div class="cart-empty">Your cart is empty.</div>
+      </div>
+
+      <div id="cart-summary" style="margin-top:2rem; display:none;">
+        <div style="border:1px solid var(--border); padding:1.5rem; max-width:460px;">
+          <div style="display:flex; justify-content:space-between; margin-bottom:0.5rem; font-size:0.85rem; color:var(--muted);">
+            <span>Subtotal</span> <span id="summary-subtotal">0 PKR</span>
+          </div>
+          <div style="display:flex; justify-content:space-between; margin-bottom:0.5rem; font-size:0.85rem; color:var(--muted);">
+            <span>Shipping</span> <span id="summary-shipping">calculated at checkout</span>
+          </div>
+          <div style="display:flex; justify-content:space-between; margin-bottom:1rem; font-size:1rem; font-weight:600; border-top:1px solid var(--border); padding-top:0.75rem;">
+            <span>Total</span> <span id="summary-total">0 PKR</span>
+          </div>
+          <p style="font-size:0.75rem; color:var(--muted); margin-bottom:1rem;">Shipping and any deposit/balance split are confirmed at checkout.</p>
+          <a href="/checkout" class="btn btn-primary btn-full">Proceed to checkout</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <script>
+    const CART_KEY = window.__AASRA_CART_KEY || 'aasra_cart_v1';
+    function loadCart() {
+      try { return JSON.parse(localStorage.getItem(CART_KEY) || '[]'); } catch { return []; }
+    }
+    function render() {
+      const cart = loadCart();
+      const content = document.getElementById('cart-content');
+      const summary = document.getElementById('cart-summary');
+      const empty = content.querySelector('.cart-empty');
+      if (cart.length === 0) {
+        content.innerHTML = '<div class="cart-empty">Your cart is empty.</div>';
+        summary.style.display = 'none';
+        return;
+      }
+      if (empty) empty.remove();
+      summary.style.display = 'block';
+      let subtotal = 0;
+      content.innerHTML = cart.map((item, i) => {
+        const line = (item.price || 0) * (item.qty || 1);
+        subtotal += line;
+        return `
+          <div class="cart-item">
+            <img src="/images/placeholder.svg" alt="${String(item.name).replace(/"/g, '&quot;')}" class="cart-item-img" loading="lazy" />
+            <div class="cart-item-info">
+              <div class="cart-item-name">${String(item.name)}</div>
+              <div class="cart-item-sku">SKU: ${String(item.sku)}</div>
+              <div class="cart-item-price">${(item.price || 0).toLocaleString()} PKR × ${item.qty}</div>
+            </div>
+            <div style="display:flex; align:center; gap:0.4rem;">
+              <button onclick="window.__aasra_updateQty(${i}, -1)" class="size-btn" style="padding:0.2rem 0.5rem; font-size:0.75rem;">−</button>
+              <button onclick="window.__aasra_updateQty(${i}, 1)" class="size-btn" style="padding:0.2rem 0.5rem; font-size:0.75rem;">+</button>
+              <button onclick="window.__aasra_remove(${i})" class="size-btn" style="padding:0.2rem 0.5rem; font-size:0.75rem; color:#b00020; border-color:#b00020;">Remove</button>
+            </div>
+          </div>
+        `;
+      }).join('');
+      document.getElementById('summary-subtotal').textContent = subtotal.toLocaleString() + ' PKR';
+      document.getElementById('summary-total').textContent = subtotal.toLocaleString() + ' PKR';
+    }
+    render();
+    window.addEventListener('storage', render);
+  </script>
+</Layout>

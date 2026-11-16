@@ -1,0 +1,72 @@
+---
+import Header from './Header.astro';
+import Footer from './Footer.astro';
+import CartDrawer from './CartDrawer.astro';
+
+export interface Props {
+  title?: string;
+  description?: string;
+}
+
+const { title = 'AASRA', description = 'AASRA — considered essentials for the home' } = Astro.props;
+---
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light" />
+    <title>{title}</title>
+    {description && <meta name="description" content={description} />}
+    <link rel="preload" as="style" href="/styles/global.css" />
+    <link rel="stylesheet" href="/styles/global.css" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <script>
+      window.__AASRA_CART_KEY = 'aasra_cart_v1';
+      window.__AASRA_WISHLIST_KEY = 'aasra_wishlist_v1';
+    </script>
+  </head>
+  <body>
+    <Header />
+    <main><slot /></main>
+    <Footer />
+    <CartDrawer />
+    <div id="overlay" class="overlay" aria-hidden="true"></div>
+    <script>
+      const cartBtn = document.getElementById('cart-btn');
+      const cartDrawer = document.getElementById('cart-drawer');
+      const overlay = document.getElementById('overlay');
+      const closeCart = document.getElementById('close-cart');
+
+      function openCart() {
+        cartDrawer?.classList.add('open');
+        overlay?.classList.add('open');
+        document.body.style.overflow = 'hidden';
+        updateCartBadge();
+      }
+      function closeCartFn() {
+        cartDrawer?.classList.remove('open');
+        overlay?.classList.remove('open');
+        document.body.style.overflow = '';
+      }
+      cartBtn?.addEventListener('click', (e) => { e.preventDefault(); openCart(); });
+      closeCart?.addEventListener('click', closeCartFn);
+      overlay?.addEventListener('click', closeCartFn);
+
+      function updateCartBadge() {
+        try {
+          const cart = JSON.parse(localStorage.getItem(window.__AASRA_CART_KEY) || '[]');
+          const totalQty = cart.reduce((sum, i) => sum + (i.qty || 0), 0);
+          const badge = document.getElementById('cart-badge');
+          if (badge) {
+            badge.textContent = totalQty;
+            badge.style.display = totalQty > 0 ? 'flex' : 'none';
+          }
+        } catch (e) {}
+      }
+      updateCartBadge();
+      window.addEventListener('storage', updateCartBadge);
+    </script>
+  </body>
+</html>

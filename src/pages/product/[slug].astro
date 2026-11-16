@@ -1,0 +1,217 @@
+---
+import Layout from '../../components/Layout.astro';
+import ProductCard from '../../components/ProductCard.astro';
+import { formatPKR, depositAmount, balanceAmount } from '../../lib/products.js';
+import productsData from '../../../data/products.json';
+
+export function getStaticPaths() {
+  return productsData.products
+    .filter((p) => p.visible)
+    .map((p) => ({ params: { slug: p.slug } }));
+}
+
+const slug = Astro.params.slug;
+const product = productsData.products.find((p) => p.slug === slug);
+
+if (!product) {
+  return Astro.redirect('/404');
+}
+
+const firstImage = product.images[0] || '/images/placeholder.svg';
+const defaultVariant = product.variants[0];
+const DEPOSIT_PERCENT = 30; // VERIFY: must match backend DEFAULT_DEPOSIT_PERCENT
+const estimatedDeposit = product.deposit_eligible ? depositAmount(product.price_pkr, DEPOSIT_PERCENT) : 0;
+const estimatedBalance = product.deposit_eligible ? balanceAmount(product.price_pkr, estimatedDeposit) : 0;
+---
+
+<Layout title={product.name} description={product.seo?.description || product.description}>
+  <!-- Announcement bar -->
+  <div style="background:#fff; border-bottom:1px solid var(--border);">
+    <div class="container" style="padding:0.4rem 1.5rem; font-size:0.75rem; text-transform:uppercase; letter-spacing:0.12em; color:var(--muted); text-align:center;">
+      Free shipping on orders above 20,000 PKR · No Cash on Delivery · Pay in full or deposit + balance online
+    </div>
+  </div>
+
+  <section class="section">
+    <div class="container">
+      <div style="display:flex; gap:2rem; align-items:flex-start;">
+        <!-- Gallery -->
+        <div class="product-gallery" style="flex:1;">
+          <div class="main-image">
+            <img id="main-img" src={firstImage} alt={product.name} loading="eager" width="900" height="1080" />
+          </div>
+          <div class="thumbs" id="thumbs">
+            {product.images.map((img, i) => (
+              <button class={`thumb ${i === 0 ? 'selected' : ''}`} data-img={img} aria-label={`Image ${i + 1}`}>
+                <img src={img} alt={product.name} loading="lazy" width="200" height="200" />
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <!-- Meta -->
+        <div class="product-meta" style="flex:0 0 420px;">
+          <div class="kicker" style="margin-bottom:0.5rem;">
+            {product.category.charAt(0).toUpperCase() + product.category.slice(1)}
+          </div>
+          <h1 class="product-title">{product.name}</h1>
+          <div class="product-price-display">{formatPKR(product.price_pkr)}</div>
+          <div class="product-color-display">
+            {defaultVariant?.size ? defaultVariant.size : ''}
+            {product.variants.length > 1 ? ` · ${product.variants.length} variants` : ''}
+          </div>
+
+          <p style="font-size:0.85rem; color:var(--muted); margin-bottom:1.5rem;">
+            {product.description}
+          </p>
+
+          <!-- Size selector -->
+          <div class="size-group">
+            <span class="size-label">Select size</span>
+            <div class="size-options" id="size-options">
+              {product.variants.map((v) => (
+                <button
+                  class="size-btn"
+                  data-sku={v.sku}
+                  data-size={v.size}
+                >
+                  {v.size}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <!-- Deposit note -->
+          {product.deposit_eligible && (
+            <div class="deposit-note">
+              <strong>Pay in instalments:</strong> Deposit {DEPOSIT_PERCENT}% = {formatPKR(estimatedDeposit)}, balance {formatPKR(estimatedBalance)} due online before shipping.
+            </div>
+          )}
+
+          <div class="actions">
+            <div class="qty-selector">
+              <button type="button" id="qty-minus">−</button>
+              <input type="number" id="qty" value="1" min="1" max="10" />
+              <button type="button" id="qty-plus">+</button>
+            </div>
+            <button id="add-to-cart" class="btn btn-primary btn-full" data-name={product.name} data-price={product.price_pkr} data-sku={defaultVariant.sku}>Add to cart</button>
+            <button id="wishlist-toggle" class="btn btn-full" style="margin-top:0.5rem;">⤖ Add to wishlist</button>
+          </div>
+
+          <div class="stock-note" id="stock-note">In stock</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Details -->
+  <section class="details-section">
+    <div class="container">
+      <h3>Details</h3>
+      <p>{product.description}</p>
+      <p><strong>Category:</strong> {product.category}</p>
+      <p><strong>Care:</strong> Handle with care. Spot clean where possible.</p>
+    </div>
+  </section>
+
+  <!-- Shipping & returns -->
+  <section class="details-section">
+    <div class="container">
+      <h3>Shipping &amp; returns</h3>
+      <p>Shipping calculated at checkout by city. Free shipping on orders above 20,000 PKR.</p>
+      <p>Returns accepted within 7 days of delivery, unused and in original packaging. See <a href="/return-policy">Return &amp; Refund Policy</a>.</p>
+      <p><strong>No Cash on Delivery.</strong> Pay in full online, or deposit + balance online before shipping.</p>
+    </div>
+  </section>
+
+  <!-- Complete the look -->
+  <section class="cross-sell">
+    <div class="container">
+      <h3>Complete the look</h3>
+      <div class="grid">
+        {productsData.products
+          .filter((p) => p.visible && p.id !== product.id && p.category === product.category)
+          .slice(0, 4)
+          .map((p) => <ProductCard product={p} />)}
+      </div>
+    </div>
+  </section>
+
+  <script>
+    // Gallery thumb click
+    const mainImg = document.getElementById('main-img');
+    const thumbs = document.querySelectorAll('.thumb');
+    thumbs.forEach((t) => {
+      t.addEventListener('click', () => {
+        thumbs.forEach((x) => x.classList.remove('selected'));
+        t.classList.add('selected');
+        mainImg.src = t.getAttribute('data-img');
+      });
+    });
+
+    // Size selection
+    const sizeBtns = document.querySelectorAll('.size-btn');
+    let selectedSku = sizeBtns[0]?.getAttribute('data-sku') || '';
+    sizeBtns.forEach((b) => {
+      b.addEventListener('click', () => {
+        sizeBtns.forEach((x) => x.classList.remove('selected'));
+        b.classList.add('selected');
+        selectedSku = b.getAttribute('data-sku');
+      });
+    });
+
+    // Qty controls
+    const qtyInput = document.getElementById('qty');
+    document.getElementById('qty-minus')?.addEventListener('click', () => {
+      const v = Math.max(1, parseInt(qtyInput.value) - 1);
+      qtyInput.value = v;
+    });
+    document.getElementById('qty-plus')?.addEventListener('click', () => {
+      const v = Math.min(10, parseInt(qtyInput.value) + 1);
+      qtyInput.value = v;
+    });
+
+    // Add to cart (reads from data attributes, safe against special chars)
+    const addBtn = document.getElementById('add-to-cart');
+    addBtn?.addEventListener('click', () => {
+      const qty = parseInt(qtyInput.value) || 1;
+      const sku = selectedSku || addBtn.getAttribute('data-sku');
+      const name = addBtn.getAttribute('data-name');
+      const price = parseInt(addBtn.getAttribute('data-price')) || 0;
+      if (!sku) return;
+      const btn = document.getElementById('add-to-cart');
+      const original = btn.textContent;
+      btn.textContent = 'Added';
+      btn.style.opacity = '0.7';
+      setTimeout(() => { btn.textContent = original; btn.style.opacity = '1'; }, 1000);
+      window.__aasra_addToCart(sku, name, price, qty);
+    });
+
+    // Wishlist toggle (localStorage)
+    const wishBtn = document.getElementById('wishlist-toggle');
+    const WL_KEY = window.__AASRA_WISHLIST_KEY || 'aasra_wishlist_v1';
+    function isWishlisted(sku) {
+      try { return JSON.parse(localStorage.getItem(WL_KEY) || '[]').includes(sku); } catch { return false; }
+    }
+    function toggleWishlist(sku) {
+      try {
+        const wl = JSON.parse(localStorage.getItem(WL_KEY) || '[]');
+        if (wl.includes(sku)) {
+          const idx = wl.indexOf(sku);
+          wl.splice(idx, 1);
+        } else {
+          wl.push(sku);
+        }
+        localStorage.setItem(WL_KEY, JSON.stringify(wl));
+      } catch (e) {}
+    }
+    const defaultSku = defaultVariant ? defaultVariant.sku : product.id;
+    if (wishBtn) {
+      if (isWishlisted(defaultSku)) wishBtn.textContent = '✔ In wishlist';
+      wishBtn.addEventListener('click', () => {
+        toggleWishlist(defaultSku);
+        wishBtn.textContent = isWishlisted(defaultSku) ? '✔ In wishlist' : '⤖ Add to wishlist';
+      });
+    }
+  </script>
+</Layout>

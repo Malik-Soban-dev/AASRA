@@ -1,0 +1,143 @@
+---
+export interface Props {}
+---
+
+<div id="cart-drawer" class="cart-drawer" role="dialog" aria-modal="true" aria-label="Shopping cart">
+  <div class="cart-drawer-header">
+    <h2>Your cart</h2>
+    <button id="close-cart" class="close-drawer" aria-label="Close cart">✕</button>
+  </div>
+
+  <div class="cart-items" id="cart-items-list">
+    <!-- populated by JS -->
+    <div class="cart-empty">Your cart is empty.</div>
+  </div>
+
+  <div class="cart-footer">
+    <div class="cart-total" id="cart-total">Total: <span id="cart-total-amount">0 PKR</span></div>
+    <div id="cart-checkout-wrapper">
+      <a href="/checkout" class="btn btn-primary btn-full" id="cart-checkout-btn">Proceed to checkout</a>
+    </div>
+    <p id="cart-deposit-note" class="deposit-note" style="margin-top:0.75rem; font-size:0.75rem;"></p>
+  </div>
+</div>
+
+<script>
+  const CART_KEY = window.__AASRA_CART_KEY || 'aasra_cart_v1';
+
+  function loadCart() {
+    try {
+      return JSON.parse(localStorage.getItem(CART_KEY) || '[]');
+    } catch (e) {
+      return [];
+    }
+  }
+
+  function saveCart(cart) {
+    localStorage.setItem(CART_KEY, JSON.stringify(cart));
+    // Notify other tabs
+    window.dispatchEvent(new Event('storage'));
+    renderCart();
+  }
+
+  function addToCart(sku, name, price, qty = 1) {
+    const cart = loadCart();
+    const existing = cart.find((i) => i.sku === sku);
+    if (existing) {
+      existing.qty = Math.min((existing.qty || 0) + qty, 10);
+    } else {
+      cart.push({ sku, name, price, qty });
+    }
+    saveCart(cart);
+    // Toast-style feedback
+    showToast(`Added to cart: ${name} × ${qty}`);
+  }
+
+  function removeFromCart(index) {
+    const cart = loadCart();
+    cart.splice(index, 1);
+    saveCart(cart);
+  }
+
+  function updateQty(index, delta) {
+    const cart = loadCart();
+    const item = cart[index];
+    if (!item) return;
+    item.qty = Math.max(1, Math.min(10, (item.qty || 1) + delta));
+    if (item.qty < 1) {
+      cart.splice(index, 1);
+    }
+    saveCart(cart);
+  }
+
+  function renderCart() {
+    const list = document.getElementById('cart-items-list');
+    const totalEl = document.getElementById('cart-total-amount');
+    const empty = list.querySelector('.cart-empty');
+    const cart = loadCart();
+
+    if (!list) return;
+
+    if (cart.length === 0) {
+      list.innerHTML = '<div class="cart-empty">Your cart is empty.</div>';
+      if (totalEl) totalEl.textContent = '0 PKR';
+      return;
+    }
+
+    if (empty) empty.remove();
+
+    let total = 0;
+    list.innerHTML = cart.map((item, i) => {
+      const lineTotal = (item.price || 0) * (item.qty || 1);
+      total += lineTotal;
+      return `
+        <div class="cart-item">
+          <img src="/images/placeholder.svg" alt="${escapeHtml(item.name)}" class="cart-item-img" loading="lazy" />
+          <div class="cart-item-info">
+            <div class="cart-item-name">${escapeHtml(item.name)}</div>
+            <div class="cart-item-sku">SKU: ${escapeHtml(item.sku)}</div>
+            <div class="cart-item-price">${(item.price || 0).toLocaleString()} PKR × ${item.qty}</div>
+            <div class="cart-item-qty">Line total: ${lineTotal.toLocaleString()} PKR</div>
+          </div>
+          <div style="display:flex; align-items:center; gap:0.4rem;">
+            <button onclick="window.__aasra_updateQty(${i}, -1)" class="size-btn" style="padding:0.2rem 0.5rem; font-size:0.75rem;">−</button>
+            <button onclick="window.__aasra_updateQty(${i}, 1)" class="size-btn" style="padding:0.2rem 0.5rem; font-size:0.75rem;">+</button>
+            <button onclick="window.__aasra_remove(${i})" class="size-btn" style="padding:0.2rem 0.5rem; font-size:0.75rem; color:#b00020; border-color:#b00020;">Remove</button>
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    if (totalEl) totalEl.textContent = total.toLocaleString() + ' PKR';
+
+    // Deposit note if any item is deposit-eligible (we don't know from cart alone; placeholder)
+    const note = document.getElementById('cart-deposit-note');
+    if (note) note.textContent = 'Some items may be eligible for deposit payment. Deposit option shown at checkout.';
+  }
+
+  function escapeHtml(s) {
+    return String(s || '').replace(/[&<>"']/g, (c) => ({
+      '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+    })[c]);
+  }
+
+  function showToast(msg) {
+    let toast = document.getElementById('aasra-toast');
+    if (!toast) {
+      toast = document.createElement('div');
+      toast.id = 'aasra-toast';
+      toast.style.cssText = 'position:fixed; bottom:1.5rem; left:50%; transform:translateX(-50%); background:var(--text); color:#fff; padding:0.7rem 1.25rem; font-size:0.8rem; z-index:200; border-radius:0; opacity:0; transition:opacity 0.3s; pointer-events:none;';
+      document.body.appendChild(toast);
+    }
+    toast.textContent = msg;
+    toast.style.opacity = '1';
+    setTimeout(() => { toast.style.opacity = '0'; }, 2000);
+  }
+
+  // Expose for inline handlers
+  window.__aasra_addToCart = addToCart;
+  window.__aasra_updateQty = updateQty;
+  window.__aasra_remove = removeFromCart;
+
+  renderCart();
+</script>

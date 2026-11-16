@@ -1,0 +1,110 @@
+---
+import Layout from '../components/Layout.astro';
+import { formatPKR } from '../lib/products.js';
+---
+
+<Layout title="Order lookup — AASRA" description="Look up your order status by order ID and phone.">
+  <!-- Announcement bar -->
+  <div style="background:#fff; border-bottom:1px solid var(--border);">
+    <div class="container" style="padding:0.4rem 1.5rem; font-size:0.75rem; text-transform:uppercase; letter-spacing:0.12em; color:var(--muted); text-align:center;">
+      Free shipping on orders above 20,000 PKR · No Cash on Delivery · Pay in full or deposit + balance online
+    </div>
+  </div>
+
+  <section class="section">
+    <div class="container" style="max-width:560px;">
+      <h1>Order lookup</h1>
+      <p>Enter your order ID and phone number to check your order status and pay any outstanding balance.</p>
+
+      <form id="lookup-form" style="max-width:400px; margin-bottom:2rem;">
+        <div class="form-group">
+          <label class="form-label">Order ID</label>
+          <input type="text" name="order_id" class="form-input" required placeholder="AAS-20261116-ABCD" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Phone number</label>
+          <input type="tel" name="phone" class="form-input" required placeholder="03001234567" />
+        </div>
+        <button type="submit" class="btn btn-primary">Look up order</button>
+      </form>
+
+      <div id="lookup-error" class="alert alert-error" style="display:none;"></div>
+      <div id="lookup-result" style="display:none;">
+        <h2>Order <span id="res-order-id"></span></h2>
+        <div style="display:flex; justify-content:space-between; gap:1rem; flex-wrap:wrap; margin:1rem 0;">
+          <div style="flex:1; min-width:140px;">
+            <div style="font-size:0.7rem; text-transform:uppercase; letter-spacing:0.12em; color:var(--muted);">Status</div>
+            <div class="status-badge" id="res-status"></div>
+          </div>
+          <div style="flex:1; min-width:140px;">
+            <div style="font-size:0.7rem; text-transform:uppercase; letter-spacing:0.12em; color:var(--muted);">Total</div>
+            <div style="font-size:1.1rem; font-weight:600;" id="res-total">0 PKR</div>
+          </div>
+          <div style="flex:1; min-width:140px;">
+            <div style="font-size:0.7rem; text-transform:uppercase; letter-spacing:0.12em; color:var(--muted);">Balance due</div>
+            <div style="font-size:1.1rem; font-weight:600;" id="res-balance">0 PKR</div>
+          </div>
+        </div>
+        <div style="margin:1rem 0;">
+          <div style="font-size:0.7rem; text-transform:uppercase; letter-spacing:0.12em; color:var(--muted); margin-bottom:0.4rem;">Deposit</div>
+          <div style="font-size:0.9rem;" id="res-deposit">—</div>
+        </div>
+        <div id="pay-balance-wrapper" style="margin-top:1.5rem; display:none;">
+          <a class="btn btn-primary btn-full" id="pay-balance-btn">Pay balance</a>
+        </div>
+        {''}
+      </div>
+    </div>
+  </section>
+
+  <script>
+    const form = document.getElementById('lookup-form');
+    const errorEl = document.getElementById('lookup-error');
+    const resultEl = document.getElementById('lookup-result');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      errorEl.style.display = 'none';
+      resultEl.style.display = 'none';
+
+      const orderId = form.elements.order_id.value.trim();
+      const phone = form.elements.phone.value.trim();
+
+      try {
+        const res = await fetch(`/api/order-lookup?order_id=${encodeURIComponent(orderId)}&phone=${encodeURIComponent(phone)}`);
+        const data = await res.json();
+
+        if (!res.ok || !data.ok) {
+          errorEl.textContent = data.error || 'Order not found. Please check your order ID and phone.';
+          errorEl.style.display = 'block';
+          return;
+        }
+
+        // Populate result
+        document.getElementById('res-order-id').textContent = data.order_id;
+        const statusEl = document.getElementById('res-status');
+        statusEl.textContent = data.status;
+        statusEl.className = 'status-badge' + (data.status === 'paid' ? ' status-paid' : ' status-pending');
+        document.getElementById('res-total').textContent = (data.total || 0).toLocaleString() + ' PKR';
+        document.getElementById('res-deposit').textContent = (data.deposit_amount || 0).toLocaleString() + ' PKR';
+        const balanceEl = document.getElementById('res-balance');
+        const bal = data.balance_due || 0;
+        balanceEl.textContent = bal.toLocaleString() + ' PKR';
+
+        const wrapper = document.getElementById('pay-balance-wrapper');
+        const btn = document.getElementById('pay-balance-btn');
+        if (data.can_pay_balance && bal > 0) {
+          wrapper.style.display = 'block';
+          btn.href = `/pay-balance?order=${encodeURIComponent(data.order_id)}&token=${encodeURIComponent(data.order_id)}`;
+        } else {
+          wrapper.style.display = 'none';
+        }
+
+        resultEl.style.display = 'block';
+      } catch (err) {
+        errorEl.textContent = 'Network error. Please try again.';
+        errorEl.style.display = 'block';
+      }
+    });
+  </script>
+</Layout>

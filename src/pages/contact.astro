@@ -1,0 +1,88 @@
+---
+import Layout from '../components/Layout.astro';
+---
+
+<Layout title="Contact — AASRA" description="Get in touch with AASRA.">
+  <section class="section">
+    <div class="container" style="max-width:640px;">
+      <h1>Contact Us</h1>
+      <p>Questions about an order, a product, or a delivery? Write to us.</p>
+
+      <div id="contact-msg" style="margin-bottom:1rem;"></div>
+
+      <form id="contact-form" style="max-width:480px;">
+        <div class="form-group">
+          <label class="form-label">Name</label>
+          <input type="text" name="name" class="form-input" required />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Email</label>
+          <input type="email" name="email" class="form-input" required />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Phone (optional)</label>
+          <input type="tel" name="phone" class="form-input" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Subject</label>
+          <input type="text" name="subject" class="form-input" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Message</label>
+          <textarea name="message" class="form-input" rows="5" required></textarea>
+        </div>
+        <div class="form-group">
+          <div class="cf-turnstile" data-sitekey="0x0000000000000000000000000000000000000000"></div>
+        </div>
+        <button type="submit" class="btn btn-primary">Send message</button>
+      </form>
+
+      <h3 style="margin-top:2rem;">Other ways to reach us</h3>
+      <p>Email: <a href="mailto:orders@example.com">orders@example.com</a></p>
+      <p>WhatsApp: <a href="https://wa.me/923000000000" target="_blank" rel="noopener">Click to chat</a></p>
+    </div>
+  </section>
+
+  <script>
+    // Turnstile placeholder for contact form
+    (function(){
+      const w = document.querySelector('.cf-turnstile');
+      if(!w) return;
+      w.style.border='1px dashed var(--border)';
+      w.style.padding='1rem';
+      w.style.fontSize='0.75rem';
+      w.style.color='var(--muted)';
+      w.textContent='Turnstile widget (configure sitekey in Cloudflare dashboard)';
+    })();
+
+    const form = document.getElementById('contact-form');
+    const msg = document.getElementById('contact-msg');
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const fd = new FormData(form);
+      const body = {
+        name: fd.get('name'),
+        email: fd.get('email'),
+        phone: fd.get('phone'),
+        subject: fd.get('subject'),
+        message: fd.get('message'),
+        turnstile_token: '',
+      };
+      try {
+        const res = await fetch('/api/contact', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) });
+        const data = await res.json();
+        if (data.ok) {
+          msg.style.color='#1f5a1f';
+          msg.textContent='Message sent. We will reply soon.';
+          form.reset();
+        } else {
+          msg.style.color='#8a1f1f';
+          msg.textContent = data.error || 'Failed to send.';
+        }
+      } catch (err) {
+        msg.style.color='#8a1f1f';
+        msg.textContent='Network error.';
+      }
+    });
+  </script>
+</Layout>

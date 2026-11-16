@@ -1,0 +1,26 @@
+{
+  "version": 1,
+  "currency": "PKR",
+  "free_shipping_threshold_pkr": 20000,
+  "updated_at": "2026-11-16T00:00:00Z",
+  "rates": [
+    { "city": "Karachi", "fee_pkr": 250, "estimated_days": "2-3", "courier": "TCS" },
+    { "city": "Lahore", "fee_pkr": 250, "estimated_days": "2-3", "courier": "TCS" },
+    { "city": "Islamabad", "fee_pkr": 300, "estimated_days": "2-3", "courier": "TCS" },
+    { "city": "Rawalpindi", "fee_pkr": 300, "estimated_days": "2-3", "courier": "TCS" },
+    { "city": "Faisalabad", "fee_pkr": 350, "estimated_days": "3-4", "courier": "TCS" },
+    { "city": "Multan", "fee_pkr": 350, "estimated_days": "3-4", "courier": "TCS" },
+    { "city": "Peshawar", "fee_pkr": 400, "estimated_days": "3-4", "courier": "TCS" },
+    { "city": "Quetta", "fee_pkr": 500, "estimated_days": "4-5", "courier": "TCS" },
+    { "city": "Hyderabad", "fee_pkr": 350, "estimated_days": "3-4", "courier": "TCS" },
+    { "city": "Sialkot", "fee_pkr": 350, "estimated_days": "3-4", "courier": "TCS" },
+    { "city": "Gujranwala", "fee_pkr": 350, "estimated_days": "3-4", "courier": "TCS" },
+    { "city": "Bahawalpur", "fee_pkr": 400, "estimated_days": "4-5", "courier": "TCS" },
+    { "city": "Sukkur", "fee_pkr": 450, "estimated_days": "4-5", "courier": "TCS" },
+    { "city": "Larkana", "fee_pkr": 450, "estimated_days": "4-5", "courier": "TCS" },
+    { "city": "Sheikhupura", "fee_pkr": 350, "estimated_days": "3-4", "courier": "TCS" },
+    { "city": "Other", "fee_pkr": 600, "estimated_days": "5-7", "courier": "TCS" }
+  ],
+  "dispatch_time_days": 2,
+  "notes": "All rates are per order, flat by city. Free shipping above the threshold. COD is not accepted."
+}

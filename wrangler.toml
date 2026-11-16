@@ -1,0 +1,29 @@
+# Cloudflare Pages + Workers configuration for AASRA
+# https://developers.cloudflare.com/pages/functions/wrangler-configuration/
+
+name = "aasra-store"
+compatibility_date = "2026-01-01"
+
+# Pages project
+[deploy]
+# Output directory for `astro build`
+project = "aasra-store"
+
+# D1 database binding (created via: wrangler d1 create AASRA_DB)
+[[d1_databases]]
+binding = "DB"          // available in Functions as context.env.DB
+database_name = "AASRA_DB"
+database_id = ""        // fill in after `wrangler d1 create AASRA_DB`
+
+# Cron triggers (schedule handlers run as Workers)
+# VERIFY the actual intervals (balance reminders N1/N2 days, auto-cancel N days)
+[triggers]
+crons = ["0 9 * * *"]   // daily 09:00 UTC — balance reminders, expiry, reconciliation
+
+# Environment variables (set via `wrangler pages secret put` / `wrangler pages variable put`)
+# [vars]  # non-secret vars (e.g. PUBLIC_BASE_URL, DEFAULT_DEPOSIT_PERCENT)
+# [secrets] # TURNSTILE_SECRET_KEY, SAFEPAY_SECRET_KEY, SAFEPAY_WEBHOOK_SECRET, EMAIL_PROVIDER_API_KEY
+
+# Node.js compatibility for Pages Functions
+[node_compat]
+# enable if needed for certain npm packages

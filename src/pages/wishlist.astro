@@ -1,0 +1,44 @@
+---
+import Layout from '../components/Layout.astro';
+import ProductCard from '../components/ProductCard.astro';
+import productsData from '../data/products.json';
+---
+
+<Layout title="Wishlist — AASRA" description="Your saved items.">
+  <section class="section">
+    <div class="container">
+      <h1>Wishlist</h1>
+      <div id="wishlist-content">
+        <p>Your wishlist is empty. Add items from product pages.</p>
+      </div>
+    </div>
+  </section>
+
+  <script id="wishlist-json" type="application/json">
+    {JSON.stringify(productsData.products)}
+  </script>
+
+  <script>
+    const WL_KEY = window.__AASRA_WISHLIST_KEY || 'aasra_wishlist_v1';
+    function loadWL() {
+      try { return JSON.parse(localStorage.getItem(WL_KEY) || '[]'); } catch { return []; }
+    }
+    function render() {
+      const skus = loadWL();
+      const products = JSON.parse(document.getElementById('wishlist-json').textContent);
+      const items = products.filter((p) => p.variants.some((v) => skus.includes(v.sku)));
+      const content = document.getElementById('wishlist-content');
+      if (items.length === 0) {
+        content.innerHTML = '<p>Your wishlist is empty. Add items from product pages.</p>';
+        return;
+      }
+      content.innerHTML = items.map((p) => {
+        const v = p.variants[0];
+        const price = new Intl.NumberFormat('en-PK', { style: 'currency', currency: 'PKR', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(p.price_pkr);
+        return `<article class="product-card"><a href="/product/${p.slug}"><div class="product-image" style="padding-top:100%;"><img src="${p.images[0] || '/images/placeholder.svg'}" alt="${p.name}" loading="lazy" width="400" height="400"></div><div class="product-info"><h3 class="product-name">${p.name}</h3><div class="product-price">${price}</div></div></a></article>`;
+      }).join('');
+    }
+    render();
+    window.addEventListener('storage', render);
+  </script>
+</Layout>
