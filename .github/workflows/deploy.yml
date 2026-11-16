@@ -1,0 +1,38 @@
+name: Deploy to Cloudflare Workers
+
+# Deploys the AASRA store (static assets + Worker script) on every push to main.
+# Requires two repository secrets (Settings → Secrets and variables → Actions):
+#   CLOUDFLARE_API_TOKEN  — token with "Edit Cloudflare Workers" template
+#   CLOUDFLARE_ACCOUNT_ID — your Cloudflare account ID (dash.cloudflare.com home)
+# Keep the Cloudflare dashboard "Deploy command" as a no-op (`true`) if you use
+# this workflow, so the two don't race each other.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build (Astro + compile functions)
+        run: npm run build
+
+      - name: Deploy to Cloudflare Workers
+        run: npx wrangler deploy
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
