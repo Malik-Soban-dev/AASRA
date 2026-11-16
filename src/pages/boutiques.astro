@@ -1,0 +1,99 @@
+---
+import Layout from '../components/Layout.astro';
+import shippingRates from '../../data/shipping-rates.json';
+
+const rates = shippingRates.rates;
+const cities = rates.map((r) => r.city);
+const areas = cities.slice(0, 12); // headline list
+---
+
+<Layout title="Boutiques & Delivery Areas — AASRA" description="Visit the AASRA studio in Karachi, or have pieces delivered across Pakistan.">
+  <div class="page-title-block">
+    <div class="kicker">Find us</div>
+    <h1>Boutiques &amp; delivery</h1>
+    <p class="page-sub">One studio in Karachi — and delivery across Pakistan, city by city.</p>
+  </div>
+
+  <!-- Flagship studio -->
+  <section class="section-tight reveal">
+    <div class="container">
+      <div class="split-grid">
+        <div>
+          <img src="/images/campaign/story-artisan.webp" alt="The AASRA studio" loading="lazy" width="900" height="1125" style="width:100%; aspect-ratio:4/5; object-fit:cover; display:block;" />
+        </div>
+        <div style="display:flex; flex-direction:column; justify-content:center;">
+          <div class="kicker">Flagship studio</div>
+          <h2 style="margin-bottom:1rem;">Karachi</h2>
+          <p style="color:var(--muted); line-height:1.9;">
+            Visit by appointment to touch the linens, walk on the rugs, and lift the ceramics.
+            We will lay out your selection, talk sizes and care, and wrap any gift in natural
+            linen with a handwritten note.
+          </p>
+          <ul class="studio-facts">
+            <li><strong>Address:</strong> AASRA Studio, Karachi, Pakistan <span class="small-caps">(exact address shared on confirmation)</span></li>
+            <li><strong>Hours:</strong> Mon–Sat, 11:00–19:00, by appointment</li>
+            <li><strong>Phone / WhatsApp:</strong> <a href="https://wa.me/923000000000" target="_blank" rel="noopener" style="text-decoration:underline; text-underline-offset:3px;">+92 300 0000000</a></li>
+            <li><strong>Email:</strong> <a href="mailto:orders@aasra.shop" style="text-decoration:underline; text-underline-offset:3px;">orders@aasra.shop</a></li>
+          </ul>
+          <div class="service-links" style="justify-content:flex-start; margin-top:1.6rem;">
+            <a href="/appointment">Book an appointment</a>
+            <a href="https://wa.me/923000000000" target="_blank" rel="noopener">WhatsApp us</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Delivery areas -->
+  <section class="section-tight reveal">
+    <div class="container" style="max-width:860px;">
+      <div class="section-head">
+        <div class="kicker">Where we deliver</div>
+        <h2>Across Pakistan</h2>
+        <p class="section-sub">Flat rates by city, dispatched within 2 business days of payment confirmation. Complimentary shipping on orders above Rs {shippingRates.free_shipping_threshold_pkr.toLocaleString()}.</p>
+      </div>
+
+      <div class="delivery-grid">
+        {areas.map((city) => {
+          const r = rates.find((x) => x.city === city);
+          return (
+            <div class="delivery-card">
+              <h3>{r.city}</h3>
+              <p>Rs {r.fee_pkr.toLocaleString()} &middot; {r.estimated_days} days &middot; {r.courier}</p>
+            </div>
+          );
+        })}
+      </div>
+
+      <details class="accordion" style="margin-top:2rem;">
+        <summary>All cities &amp; rates</summary>
+        <div class="accordion-body">
+          <table class="rate-table">
+            <thead><tr><th>City</th><th>Shipping</th><th>Delivery</th><th>Courier</th></tr></thead>
+            <tbody>
+              {rates.map((r) => (
+                <tr><td>{r.city}</td><td>Rs {r.fee_pkr.toLocaleString()}</td><td>{r.estimated_days} days</td><td>{r.courier}</td></tr>
+              ))}
+            </tbody>
+          </table>
+          <p style="margin-top:1rem;">Not on the list? <a href="/contact">Write to us</a> — we deliver nationwide through TCS out-of-network service.</p>
+        </div>
+      </details>
+    </div>
+  </section>
+</Layout>
+
+<style>
+  .studio-facts { list-style: none; margin-top: 1.2rem; }
+  .studio-facts li { margin-bottom: 0.7rem; color: var(--muted); font-size: 0.9rem; line-height: 1.7; }
+  .studio-facts strong { color: var(--text); font-weight: 500; }
+  .delivery-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; }
+  .delivery-card { border: 1px solid var(--border); padding: 1.3rem 1.1rem; text-align: center; }
+  .delivery-card h3 { font-size: 1.05rem; margin-bottom: 0.3rem; }
+  .delivery-card p { font-size: 0.72rem; color: var(--muted); letter-spacing: 0.06em; }
+  .rate-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+  .rate-table th { text-align: left; font-weight: 400; font-size: 0.65rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--muted); padding: 0.5rem 0.75rem; border-bottom: 1px solid var(--border); }
+  .rate-table td { padding: 0.55rem 0.75rem; border-bottom: 1px solid var(--border); color: var(--muted); }
+  .rate-table td:first-child { color: var(--text); }
+  @media (max-width: 820px) { .delivery-grid { grid-template-columns: repeat(2, 1fr); } }
+</style>

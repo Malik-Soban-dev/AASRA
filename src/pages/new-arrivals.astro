@@ -1,0 +1,39 @@
+---
+import Layout from '../components/Layout.astro';
+import ProductCard from '../components/ProductCard.astro';
+import { getVisibleProducts } from '../lib/products.js';
+import productsData from '../../data/products.json';
+
+// Newest additions: last items in the catalog = most recent
+const newIn = getVisibleProducts(productsData).slice(-4).reverse();
+---
+
+<Layout title="New Arrivals — AASRA" description="Just arrived at AASRA — the newest linen, rugs, ceramics, and teak.">
+  <!-- Editorial hero -->
+  <section class="hero" style="height:min(56vh,500px); min-height:380px;">
+    <img src="/images/campaign/explore-collection.webp" alt="New arrivals" class="hero-image" loading="eager" width="2000" height="1000" fetchpriority="high" />
+    <div class="hero-content">
+      <div class="kicker">Just arrived</div>
+      <h1>New Arrivals</h1>
+      <div class="hero-links">
+        <a href="#new-products">Discover</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="section-tight" id="new-products">
+    <div class="container">
+      <div class="section-head">
+        <div class="kicker">The latest</div>
+        <h2>Fresh from the workshops</h2>
+        <p class="section-sub">The newest pieces to reach our shelves — small batches, each one counted.</p>
+      </div>
+      <div class="grid" data-stagger>
+        {newIn.map((p) => <ProductCard product={p} />)}
+      </div>
+      <div style="text-align:center; margin-top:3rem;">
+        <a href="/shop" class="text-link">View the full collection</a>
+      </div>
+    </div>
+  </section>
+</Layout>

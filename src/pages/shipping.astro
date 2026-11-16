@@ -1,20 +1,65 @@
 ---
 import Layout from '../components/Layout.astro';
+import shippingRates from '../../data/shipping-rates.json';
 ---
 
-<Layout title="Shipping Information — AASRA" description="Shipping rates, delivery estimates, and courier info for Pakistan.">
-  <section class="section">
-    <div class="container" style="max-width:640px;">
-      <h1>Shipping Information</h1>
-      <p>We ship across Pakistan via TCS. Rates are flat by city and shown at checkout.</p>
-      <ul>
-        <li><strong>Free shipping</strong> on orders above 20,000 PKR.</li>
-        <li><strong>Dispatch:</strong> within 2 business days of payment confirmation.</li>
-        <li><strong>Delivery:</strong> 2–7 days depending on city.</li>
-        <li><strong>No Cash on Delivery.</strong> Pay in full online, or deposit + balance online before shipping.</li>
-        <li>Orders paid by deposit ship only after the balance is paid in full.</li>
-      </ul>
-      <p>Tracking is provided once your order ships. Use <a href="/order-lookup">Order Lookup</a> to check status.</p>
+<Layout title="Shipping Information — AASRA" description="Shipping rates, delivery estimates, and courier information for Pakistan.">
+  <div class="page-title-block">
+    <div class="kicker">Delivery</div>
+    <h1>Shipping</h1>
+    <p class="page-sub">Across Pakistan via TCS — dispatch in 2 business days, honest rates by city.</p>
+  </div>
+
+  <section class="section-tight">
+    <div class="container" style="max-width:820px;">
+      <div class="prose-intro">
+        <p>
+          Every order is packed in protective, considered packaging and dispatched within
+          <strong>2 business days</strong> of payment confirmation. Delivery takes
+          <strong>2–7 days</strong> depending on your city, with tracking provided the moment
+          your order ships. Shipping is <strong>complimentary above Rs {shippingRates.free_shipping_threshold_pkr.toLocaleString()}</strong>;
+          below that, flat rates by city apply.
+        </p>
+        <p>
+          <strong>No Cash on Delivery.</strong> Pay in full online, or place a deposit and pay
+          the balance online before shipping — deposit orders ship the day the balance clears.
+        </p>
+      </div>
+
+      <table class="rate-table">
+        <thead>
+          <tr><th>City</th><th>Shipping</th><th>Delivery estimate</th><th>Courier</th></tr>
+        </thead>
+        <tbody>
+          {shippingRates.rates.map((r) => (
+            <tr>
+              <td>{r.city}</td>
+              <td>{r.fee_pkr === 0 ? 'Free' : 'Rs ' + r.fee_pkr.toLocaleString()}</td>
+              <td>{r.estimated_days} days</td>
+              <td>{r.courier}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      <p style="font-size:0.8rem; color:var(--muted); margin-top:1rem;">
+        Your city not listed? We deliver nationwide through TCS out-of-network service —
+        <a href="/contact" style="text-decoration:underline; text-underline-offset:3px;">write to us</a> for a rate.
+      </p>
+
+      <div class="service-links" style="justify-content:flex-start; margin-top:2.5rem;">
+        <a href="/order-lookup">Track your order</a>
+        <a href="/return-policy">Return policy</a>
+        <a href="/boutiques">All delivery areas</a>
+      </div>
     </div>
   </section>
 </Layout>
+
+<style>
+  .prose-intro p { color: var(--muted); line-height: 2; margin-bottom: 1.4rem; }
+  .prose-intro strong { color: var(--text); font-weight: 500; }
+  .rate-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; margin-top: 2rem; }
+  .rate-table th { text-align: left; font-weight: 400; font-size: 0.65rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--muted); padding: 0.6rem 0.75rem; border-bottom: 1px solid var(--text); }
+  .rate-table td { padding: 0.7rem 0.75rem; border-bottom: 1px solid var(--border); color: var(--muted); }
+  .rate-table td:first-child { color: var(--text); }
+</style>

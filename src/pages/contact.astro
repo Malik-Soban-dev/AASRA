@@ -2,87 +2,130 @@
 import Layout from '../components/Layout.astro';
 ---
 
-<Layout title="Contact — AASRA" description="Get in touch with AASRA.">
-  <section class="section">
+<Layout title="Contact Us — AASRA" description="Reach the AASRA team — orders, products, deliveries, or anything else.">
+  <div class="page-title-block">
+    <div class="kicker">May we help you?</div>
+    <h1>Contact us</h1>
+    <p class="page-sub">Questions about an order, a product, or a delivery? We answer within the day.</p>
+  </div>
+
+  <!-- Contact reasons (BC-style service grid) -->
+  <section class="section-tight reveal">
+    <div class="container">
+      <div class="contact-reasons" data-stagger>
+        <a href="https://wa.me/923000000000" target="_blank" rel="noopener" class="contact-reason">
+          <h3>WhatsApp concierge</h3>
+          <p>Fastest route to us. Order help, size advice, gift wrapping — within minutes during business hours.</p>
+          <span class="text-link">Message us</span>
+        </a>
+        <a href="/order-lookup" class="contact-reason">
+          <h3>Order status</h3>
+          <p>Track an order or pay a deposit balance with your order ID and phone number — no account needed.</p>
+          <span class="text-link">Order lookup</span>
+        </a>
+        <a href="/appointment" class="contact-reason">
+          <h3>Book an appointment</h3>
+          <p>Visit the Karachi studio or book a video call — we lay out your selection before you arrive.</p>
+          <span class="text-link">Book</span>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Form -->
+  <section class="section-tight">
     <div class="container" style="max-width:640px;">
-      <h1>Contact Us</h1>
-      <p>Questions about an order, a product, or a delivery? Write to us.</p>
+      <div class="section-head">
+        <div class="kicker">Write to us</div>
+        <h2>Send a message</h2>
+      </div>
 
       <div id="contact-msg" style="margin-bottom:1rem;"></div>
 
-      <form id="contact-form" style="max-width:480px;">
+      <form id="contact-form">
         <div class="form-group">
-          <label class="form-label">Name</label>
-          <input type="text" name="name" class="form-input" required />
+          <label class="form-label" for="cf-name">Name</label>
+          <input type="text" id="cf-name" name="name" class="form-input" required />
         </div>
         <div class="form-group">
-          <label class="form-label">Email</label>
-          <input type="email" name="email" class="form-input" required />
+          <label class="form-label" for="cf-email">Email</label>
+          <input type="email" id="cf-email" name="email" class="form-input" required />
         </div>
         <div class="form-group">
-          <label class="form-label">Phone (optional)</label>
-          <input type="tel" name="phone" class="form-input" />
+          <label class="form-label" for="cf-phone">Phone (optional)</label>
+          <input type="tel" id="cf-phone" name="phone" class="form-input" />
         </div>
         <div class="form-group">
-          <label class="form-label">Subject</label>
-          <input type="text" name="subject" class="form-input" />
+          <label class="form-label" for="cf-subject">Subject</label>
+          <input type="text" id="cf-subject" name="subject" class="form-input" />
         </div>
         <div class="form-group">
-          <label class="form-label">Message</label>
-          <textarea name="message" class="form-input" rows="5" required></textarea>
+          <label class="form-label" for="cf-message">Message</label>
+          <textarea id="cf-message" name="message" rows="6" class="form-input" required></textarea>
         </div>
-        <div class="form-group">
-          <div class="cf-turnstile" data-sitekey="0x0000000000000000000000000000000000000000"></div>
-        </div>
-        <button type="submit" class="btn btn-primary">Send message</button>
+        <button type="submit" class="btn btn-primary btn-full">Send message</button>
       </form>
+    </div>
+  </section>
 
-      <h3 style="margin-top:2rem;">Other ways to reach us</h3>
-      <p>Email: <a href="mailto:orders@example.com">orders@example.com</a></p>
-      <p>WhatsApp: <a href="https://wa.me/923000000000" target="_blank" rel="noopener">Click to chat</a></p>
+  <!-- Details band -->
+  <section class="section-tight" style="background:var(--surface); border-top:1px solid var(--border); text-align:center;">
+    <div class="container">
+      <p style="font-size:0.85rem; color:var(--muted); line-height:2;">
+        AASRA Studio &middot; Karachi, Pakistan &middot; Mon–Sat, 11:00–19:00<br />
+        <a href="mailto:orders@aasra.shop" style="text-decoration:underline; text-underline-offset:3px;">orders@aasra.shop</a> &middot; <a href="https://wa.me/923000000000" target="_blank" rel="noopener" style="text-decoration:underline; text-underline-offset:3px;">+92 300 0000000 (WhatsApp)</a>
+      </p>
     </div>
   </section>
 
   <script>
-    // Turnstile placeholder for contact form
-    (function(){
-      const w = document.querySelector('.cf-turnstile');
-      if(!w) return;
-      w.style.border='1px dashed var(--border)';
-      w.style.padding='1rem';
-      w.style.fontSize='0.75rem';
-      w.style.color='var(--muted)';
-      w.textContent='Turnstile widget (configure sitekey in Cloudflare dashboard)';
-    })();
-
     const form = document.getElementById('contact-form');
     const msg = document.getElementById('contact-msg');
-    form.addEventListener('submit', async (e) => {
+    form?.addEventListener('submit', async (e) => {
       e.preventDefault();
       const fd = new FormData(form);
-      const body = {
-        name: fd.get('name'),
-        email: fd.get('email'),
-        phone: fd.get('phone'),
-        subject: fd.get('subject'),
-        message: fd.get('message'),
-        turnstile_token: '',
-      };
+      const btn = form.querySelector('button[type="submit"]');
+      btn.disabled = true;
+      btn.textContent = 'Sending…';
       try {
-        const res = await fetch('/api/contact', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) });
+        await window.__AASRA_CSRF?.ensure?.();
+        const res = await fetch('/api/contact', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', ...(window.__AASRA_CSRF?.header?.() || {}) },
+          body: JSON.stringify({
+            name: fd.get('name'),
+            email: fd.get('email'),
+            phone: fd.get('phone'),
+            subject: fd.get('subject'),
+            message: fd.get('message'),
+            turnstile_token: '',
+          }),
+        });
         const data = await res.json();
         if (data.ok) {
-          msg.style.color='#1f5a1f';
-          msg.textContent='Message sent. We will reply soon.';
+          msg.style.color = '#1f5a1f';
+          msg.textContent = 'Message sent — we will reply soon.';
           form.reset();
         } else {
-          msg.style.color='#8a1f1f';
-          msg.textContent = data.error || 'Failed to send.';
+          msg.style.color = '#8a1f1f';
+          msg.textContent = data.error || 'Failed to send. Please try WhatsApp instead.';
         }
       } catch (err) {
-        msg.style.color='#8a1f1f';
-        msg.textContent='Network error.';
+        msg.style.color = '#8a1f1f';
+        msg.textContent = 'Network error. Please try WhatsApp instead.';
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Send message';
       }
     });
   </script>
 </Layout>
+
+<style>
+  .contact-reasons { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; }
+  .contact-reason { border: 1px solid var(--border); padding: 1.8rem 1.6rem; text-align: center; display: flex; flex-direction: column; gap: 0.7rem; }
+  .contact-reason:hover { opacity: 1; border-color: var(--text); }
+  .contact-reason h3 { font-size: 1.2rem; }
+  .contact-reason p { color: var(--muted); font-size: 0.85rem; line-height: 1.7; flex: 1; }
+  @media (max-width: 820px) { .contact-reasons { grid-template-columns: 1fr; } }
+</style>

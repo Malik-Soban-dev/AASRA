@@ -104,6 +104,7 @@ const megas = {
     <div class="container header-utility-inner">
       <button type="button" data-open-country class="header-utility-country" style="background:none; border:none; cursor:pointer; padding:0; font:inherit; color:inherit; letter-spacing:inherit; text-transform:inherit;">Pakistan (PKR)</button>
       <span class="header-utility-links">
+        <a href="/services">Services</a>
         <a href="/contact">Contact us</a>
         <a href="/order-lookup">Order lookup</a>
         <a href="https://wa.me/923000000000" target="_blank" rel="noopener">WhatsApp</a>
@@ -150,7 +151,9 @@ const megas = {
           <div class="mega-links">
             <span class="small-caps">The collection</span>
             <ul>
+              <li><a href="/new-arrivals">New Arrivals</a></li>
               {megas.shop.links.map((l) => <li><a href={l.href}>{l.label}</a></li>)}
+              <li><a href="/journal">The Journal</a></li>
             </ul>
           </div>
           <a href={megas.shop.feature.href} class="mega-feature">

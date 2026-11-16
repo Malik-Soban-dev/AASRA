@@ -1,0 +1,106 @@
+---
+import Layout from '../components/Layout.astro';
+---
+
+<Layout title="Book an Appointment — AASRA" description="Book a private appointment at the AASRA studio in Karachi, or a video consultation.">
+  <div class="page-title-block">
+    <div class="kicker">Private service</div>
+    <h1>Book an appointment</h1>
+    <p class="page-sub">The studio to yourself — or a video call, if you are not in Karachi.</p>
+  </div>
+
+  <section class="section-tight">
+    <div class="container" style="max-width:820px;">
+      <div class="split-grid">
+        <div class="reveal">
+          <img src="/images/campaign/gifts-home.webp" alt="Laid-out selection at the studio" loading="lazy" width="900" height="1125" style="width:100%; aspect-ratio:4/5; object-fit:cover; display:block;" />
+          <p style="margin-top:1.2rem; color:var(--muted); font-size:0.875rem; line-height:1.85;">
+            Tell us what you are choosing for — a room, a table, a gift — and we will prepare
+            the pieces before you arrive. Appointments last about an hour. There is no
+            obligation to buy; there is tea.
+          </p>
+        </div>
+
+        <div>
+          <div id="appt-msg" style="margin-bottom:1rem;"></div>
+          <form id="appt-form">
+            <div class="form-group">
+              <label class="form-label" for="appt-name">Name</label>
+              <input class="form-input" id="appt-name" name="name" type="text" required />
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="appt-email">Email</label>
+              <input class="form-input" id="appt-email" name="email" type="email" required />
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="appt-phone">Phone / WhatsApp</label>
+              <input class="form-input" id="appt-phone" name="phone" type="tel" required />
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="appt-type">Appointment type</label>
+              <select class="form-input" id="appt-type" name="appt_type">
+                <option>Studio visit — Karachi</option>
+                <option>Video consultation</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="appt-date">Preferred date</label>
+              <input class="form-input" id="appt-date" name="preferred_date" type="date" />
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="appt-notes">What are you choosing for?</label>
+              <textarea class="form-input" id="appt-notes" name="notes" rows="4" placeholder="e.g. living room curtains and a rug for a 14 x 16 ft room"></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary btn-full">Request appointment</button>
+            <p style="margin-top:0.8rem; font-size:0.75rem; color:var(--muted);">We confirm every appointment by WhatsApp within one business day.</p>
+          </form>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <script>
+    const form = document.getElementById('appt-form');
+    const msg = document.getElementById('appt-msg');
+    form?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const fd = new FormData(form);
+      const subject = `[Appointment] ${fd.get('appt_type')} — ${fd.get('preferred_date') || 'date flexible'}`;
+      const message = `Type: ${fd.get('appt_type')}\nPreferred date: ${fd.get('preferred_date') || 'flexible'}\nWhat for: ${fd.get('notes') || '—'}`;
+      const btn = form.querySelector('button[type="submit"]');
+      btn.disabled = true;
+      btn.textContent = 'Sending…';
+      try {
+        // Ensure the CSRF cookie exists before POSTing (double-submit pattern)
+        await window.__AASRA_CSRF?.ensure?.();
+        const res = await fetch('/api/contact', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', ...(window.__AASRA_CSRF?.header?.() || {}) },
+          body: JSON.stringify({
+            name: fd.get('name'),
+            email: fd.get('email'),
+            phone: fd.get('phone'),
+            subject,
+            message,
+            turnstile_token: '',
+          }),
+        });
+        const data = await res.json();
+        if (data.ok) {
+          msg.style.color = '#1f5a1f';
+          msg.textContent = 'Request received — we will confirm by WhatsApp shortly.';
+          form.reset();
+        } else {
+          msg.style.color = '#8a1f1f';
+          msg.textContent = data.error || 'Failed to send. Please try WhatsApp instead.';
+        }
+      } catch (err) {
+        msg.style.color = '#8a1f1f';
+        msg.textContent = 'Network error. Please try WhatsApp instead.';
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Request appointment';
+      }
+    });
+  </script>
+</Layout>

@@ -1,0 +1,107 @@
+---
+import Layout from '../components/Layout.astro';
+
+const services = [
+  {
+    no: '01',
+    title: 'Packaging & gift wrapping',
+    body: 'Every piece arrives in protective, considered packaging. For gifts, we wrap in natural linen with cotton twine and add a handwritten note at no charge — mention it in the order notes at checkout.',
+    links: [{ label: 'Gift Selection', href: '/gifts' }],
+  },
+  {
+    no: '02',
+    title: 'Shipping & delivery',
+    body: 'We deliver across Pakistan via TCS. Dispatch within 2 business days of payment confirmation, delivery in 2–7 days by city. Complimentary shipping on orders above Rs 20,000. No Cash on Delivery.',
+    links: [
+      { label: 'Shipping information', href: '/shipping' },
+      { label: 'Delivery areas', href: '/boutiques' },
+    ],
+  },
+  {
+    no: '03',
+    title: 'Deposit & payment plans',
+    body: 'On eligible pieces, pay a 30% deposit at checkout and the balance online before shipping. Your balance link arrives by email, with reminders before the due date. Nothing ships until it is fully paid.',
+    links: [{ label: 'Deposit policy', href: '/deposit-policy' }],
+  },
+  {
+    no: '04',
+    title: 'Returns & exchanges',
+    body: 'Returns are accepted within 7 days of delivery — unused, in original packaging. Write to us or message on WhatsApp and we arrange the courier from your door.',
+    links: [{ label: 'Return & refund policy', href: '/return-policy' }],
+  },
+  {
+    no: '05',
+    title: 'Order tracking & balance payment',
+    body: 'Track any order with your order ID and phone number — no account needed. Deposit customers can pay their balance online in a few taps.',
+    links: [
+      { label: 'Order lookup', href: '/order-lookup' },
+      { label: 'Pay balance', href: '/pay-balance' },
+    ],
+  },
+  {
+    no: '06',
+    title: 'Care & maintenance',
+    body: 'Natural materials want a little care. Wash linens cool and line-dry, vacuum dhurries without a beater bar, oil teak twice a year. Full care notes arrive with every order.',
+    links: [{ label: 'Size & care guide', href: '/size-guide' }],
+  },
+  {
+    no: '07',
+    title: 'Personal appointment',
+    body: 'Choosing for a whole room, or sending a significant gift? Book a private appointment at our Karachi studio, or a video call — we will lay out the pieces for you.',
+    links: [{ label: 'Book an appointment', href: '/appointment' }],
+  },
+];
+---
+
+<Layout title="Services — AASRA" description="AASRA services — packaging, shipping, deposits, returns, care, and personal appointments.">
+  <div class="page-title-block">
+    <div class="kicker">At your service</div>
+    <h1>Services</h1>
+    <p class="page-sub">The quiet machinery behind every order — from gift wrap to appointments.</p>
+  </div>
+
+  <section class="section-tight">
+    <div class="container" style="max-width:860px;">
+      {services.map((s) => (
+        <div class="service-row reveal">
+          <div class="service-no">{s.no}</div>
+          <div class="service-body">
+            <h3>{s.title}</h3>
+            <p>{s.body}</p>
+            <div class="service-row-links">
+              {s.links.map((l) => <a href={l.href} class="text-link">{l.label}</a>)}
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  </section>
+
+  <!-- Concierge band -->
+  <section class="section" style="background:var(--surface); border-top:1px solid var(--border);">
+    <div class="container" style="text-align:center;">
+      <div class="kicker">May we help you?</div>
+      <h2 style="margin-bottom:1rem;">Our concierge is a message away</h2>
+      <div class="service-links" style="justify-content:center;">
+        <a href="https://wa.me/923000000000" target="_blank" rel="noopener">WhatsApp us</a>
+        <a href="/contact">Write to us</a>
+        <a href="/appointment">Book an appointment</a>
+      </div>
+    </div>
+  </section>
+</Layout>
+
+<style>
+  .service-row {
+    display: flex;
+    gap: 2.5rem;
+    border-top: 1px solid var(--border);
+    padding: 2.2rem 0;
+  }
+  .service-row:last-of-type { border-bottom: 1px solid var(--border); }
+  .service-no { font-family: var(--serif); font-size: 1.6rem; color: var(--muted); flex: 0 0 60px; }
+  .service-body h3 { font-size: 1.45rem; margin-bottom: 0.7rem; }
+  .service-body p { color: var(--muted); line-height: 1.85; margin-bottom: 1rem; max-width: 60ch; }
+  .service-row-links { display: flex; gap: 1.6rem; flex-wrap: wrap; }
+  @media (max-width: 820px) { .service-row { flex-direction: column; gap: 0.8rem; } }
+</style>

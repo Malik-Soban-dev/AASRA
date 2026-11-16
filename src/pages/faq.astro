@@ -1,31 +1,76 @@
 ---
 import Layout from '../components/Layout.astro';
+
+const groups = [
+  {
+    title: 'Orders & payment',
+    items: [
+      { q: 'Do you accept Cash on Delivery?', a: 'No. We do not offer Cash on Delivery. Pay in full online, or pay a deposit and the balance online before your order ships.' },
+      { q: 'How does deposit payment work?', a: 'On eligible pieces, pay a 30% deposit at checkout and the remaining balance online before shipping. Your balance link arrives by email, with reminders before the due date. Orders ship only when fully paid.' },
+      { q: 'What payment methods do you accept?', a: 'All major debit and credit cards through our secure hosted gateway (Safepay). Card data never touches our servers.' },
+      { q: 'Is my payment secure?', a: 'Yes. Payments are processed on the gateway\'s hosted, PCI-compliant checkout. We never see or store your card details.' },
+      { q: 'Can I cancel a deposit order?', a: 'Yes — before it ships, and without a fee. Cancel by writing to us or on WhatsApp; deposits are refunded to the original card.' },
+    ],
+  },
+  {
+    title: 'Shipping & delivery',
+    items: [
+      { q: 'How long does delivery take?', a: 'Dispatch within 2 business days of payment confirmation; delivery 2–7 days depending on your city. Rates and estimates are listed by city on our shipping page.' },
+      { q: 'Do you ship to my city?', a: 'We deliver across Pakistan via TCS — see the full city list and rates on the boutiques & delivery page. If your city is not listed, write to us.' },
+      { q: 'Is shipping free?', a: 'Complimentary shipping on orders above Rs 20,000. Below that, flat rates by city apply and are shown at checkout.' },
+      { q: 'How do I track my order?', a: 'Use Order Lookup with your order ID and the phone number you ordered with — no account needed. A tracking number is also emailed when your order ships.' },
+    ],
+  },
+  {
+    title: 'Returns & exchanges',
+    items: [
+      { q: 'Can I return an item?', a: 'Yes. Returns are accepted within 7 days of delivery — unused, in original packaging. Write to us or message on WhatsApp and we arrange the courier from your door.' },
+      { q: 'How long do refunds take?', a: 'Refunds are issued to the original payment card within 7 business days of the returned piece reaching our studio and passing inspection.' },
+      { q: 'What if my item arrives damaged?', a: 'Tell us within 48 hours with photos and we will make it right — replacement or full refund, including shipping. Damaged-goods returns are always on us.' },
+    ],
+  },
+  {
+    title: 'Care & products',
+    items: [
+      { q: 'Are the colours exactly as shown?', a: 'We photograph in natural light and keep editing minimal, but screens differ. Handwoven and hand-glazed pieces also carry small variations — that is the signature of the making.' },
+      { q: 'How do I wash the linens?', a: 'Cool wash (30°C), mild detergent, line-dry in shade. Full care notes ship with every order, and our journal has a longer guide to caring for linen.' },
+      { q: 'Do you offer gift wrapping?', a: 'Yes — natural linen wrap with cotton twine and a handwritten note, at no charge. Mention it in the order notes at checkout.' },
+    ],
+  },
+];
 ---
 
-<Layout title="FAQ — AASRA" description="Frequently asked questions.">
-  <section class="section">
-    <div class="container" style="max-width:640px;">
-      <h1>FAQ</h1>
-      <details>
-        <summary>Do you accept Cash on Delivery?</summary>
-        <p>No. We do not offer Cash on Delivery. Pay in full online, or pay a deposit and the balance online before shipping.</p>
-      </details>
-      <details>
-        <summary>How does deposit payment work?</summary>
-        <p>On eligible products, you can pay a deposit (30%) at checkout and the remaining balance online before your order ships. The balance link is sent by email.</p>
-      </details>
-      <details>
-        <summary>How long does delivery take?</summary>
-        <p>Dispatch within 2 business days of payment confirmation; delivery 2–7 days by city.</p>
-      </details>
-      <details>
-        <summary>Can I return an item?</summary>
-        <p>Returns accepted within 7 days of delivery, unused and in original packaging. See our Return &amp; Refund Policy.</p>
-      </details>
-      <details>
-        <summary>Is my payment secure?</summary>
-        <p>Yes. Payments are processed on a secure hosted gateway. Card data never touches our servers.</p>
-      </details>
+<Layout title="FAQ — AASRA" description="Frequently asked questions — orders, payment, shipping, returns, and care.">
+  <div class="page-title-block">
+    <div class="kicker">Assistance</div>
+    <h1>Frequently asked</h1>
+    <p class="page-sub">Everything customers ask us most. Anything else — we answer on WhatsApp within the day.</p>
+  </div>
+
+  <section class="section-tight">
+    <div class="container" style="max-width:820px;">
+      {groups.map((g) => (
+        <div class="faq-group">
+          <h2 class="faq-group-title">{g.title}</h2>
+          {g.items.map((it) => (
+            <details class="accordion">
+              <summary>{it.q}</summary>
+              <div class="accordion-body">{it.a}</div>
+            </details>
+          ))}
+        </div>
+      ))}
+
+      <div class="service-links" style="justify-content:center; margin-top:3rem;">
+        <a href="https://wa.me/923000000000" target="_blank" rel="noopener">WhatsApp us</a>
+        <a href="/contact">Write to us</a>
+        <a href="/services">Our services</a>
+      </div>
     </div>
   </section>
 </Layout>
+
+<style>
+  .faq-group { margin-bottom: 3rem; }
+  .faq-group-title { text-align: center; font-size: 1.6rem; margin-bottom: 1.6rem; }
+</style>
