@@ -41,13 +41,14 @@ export interface Props {}
     renderCart();
   }
 
-  function addToCart(sku, name, price, qty = 1) {
+  function addToCart(sku, name, price, qty = 1, image = '') {
     const cart = loadCart();
     const existing = cart.find((i) => i.sku === sku);
     if (existing) {
       existing.qty = Math.min((existing.qty || 0) + qty, 10);
+      if (image) existing.image = image;
     } else {
-      cart.push({ sku, name, price, qty });
+      cart.push({ sku, name, price, qty, image });
     }
     saveCart(cart);
     // Toast-style feedback
@@ -95,7 +96,7 @@ export interface Props {}
       total += lineTotal;
       return `
         <div class="cart-item">
-          <img src="/images/placeholder.svg" alt="${escapeHtml(item.name)}" class="cart-item-img" loading="lazy" />
+          <img src="${escapeHtml(item.image || '/images/placeholder.svg')}" alt="${escapeHtml(item.name)}" class="cart-item-img" loading="lazy" />
           <div class="cart-item-info">
             <div class="cart-item-name">${escapeHtml(item.name)}</div>
             <div class="cart-item-sku">SKU: ${escapeHtml(item.sku)}</div>

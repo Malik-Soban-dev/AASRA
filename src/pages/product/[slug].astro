@@ -83,7 +83,7 @@ const estimatedBalance = product.deposit_eligible ? balanceAmount(product.price_
               <input type="number" id="qty" value="1" min="1" max="10" />
               <button type="button" id="qty-plus">+</button>
             </div>
-            <button id="add-to-cart" class="btn btn-primary btn-full" data-name={product.name} data-price={product.price_pkr} data-sku={defaultVariant.sku}>Add to cart</button>
+            <button id="add-to-cart" class="btn btn-primary btn-full" data-name={product.name} data-price={product.price_pkr} data-sku={defaultVariant.sku} data-image={product.images[0]}>Add to cart</button>
             <button id="wishlist-toggle" class="btn btn-full" style="margin-top:0.5rem;">⤖ Add to wishlist</button>
           </div>
 
@@ -97,6 +97,7 @@ const estimatedBalance = product.deposit_eligible ? balanceAmount(product.price_
           <div class="service-links" style="justify-content:flex-start;">
             <a href="https://wa.me/923000000000" target="_blank" rel="noopener">Order on WhatsApp</a>
             <a href="/order-lookup">Track your order</a>
+            <a href="/boutiques">Find in boutique</a>
           </div>
 
           <!-- Accordions (BC-style hairline details) -->
@@ -131,6 +132,57 @@ const estimatedBalance = product.deposit_eligible ? balanceAmount(product.price_
       </div>
     </div>
   </section>
+
+  <!-- Meet our style advisors (BC pattern) -->
+  <section class="section-tight advisor-band">
+    <div class="container">
+      <div class="split-grid">
+        <div>
+          <img src="/images/campaign/gifts-home.webp" alt="Style advisors" loading="lazy" width="900" height="1125" style="width:100%; aspect-ratio:16/10; object-fit:cover; display:block;" />
+        </div>
+        <div style="display:flex; flex-direction:column; justify-content:center; text-align:center; gap:1rem;">
+          <h3 style="font-size:1.6rem;">Meet our style advisors</h3>
+          <p style="color:var(--muted); line-height:1.85; max-width:46ch; margin:0 auto;">
+            We are available to help you with styling suggestions and inspiration tailored
+            for you — in the Karachi studio, or by video call.
+          </p>
+          <div class="hero-links" style="justify-content:center;">
+            <a href="/appointment" style="color:var(--text); border-bottom-color:var(--text);">Book an appointment</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Share (BC pattern: SHARE row under product content) -->
+  <section class="section-tight" style="text-align:center; border-top:1px solid var(--border);">
+    <div class="container">
+      <div class="kicker" style="margin-bottom:1.2rem;">Share</div>
+      <div class="share-row">
+        <a id="share-wa" href="#" target="_blank" rel="noopener">WhatsApp</a>
+        <a id="share-mail" href="#">Email</a>
+        <button type="button" id="share-copy">Copy link</button>
+      </div>
+    </div>
+  </section>
+
+  <script is:inline>
+    (function () {
+      var url = window.location.href;
+      var title = document.title;
+      var wa = document.getElementById('share-wa');
+      var mail = document.getElementById('share-mail');
+      var copy = document.getElementById('share-copy');
+      if (wa) wa.href = 'https://wa.me/?text=' + encodeURIComponent(title + ' — ' + url);
+      if (mail) mail.href = 'mailto:?subject=' + encodeURIComponent(title) + '&body=' + encodeURIComponent(url);
+      if (copy) copy.addEventListener('click', function () {
+        navigator.clipboard?.writeText(url).then(function () {
+          copy.textContent = 'Copied';
+          setTimeout(function () { copy.textContent = 'Copy link'; }, 1600);
+        });
+      });
+    })();
+  </script>
 
   <!-- Complete the look -->
   <section class="cross-sell">
@@ -192,7 +244,7 @@ const estimatedBalance = product.deposit_eligible ? balanceAmount(product.price_
       btn.textContent = 'Added';
       btn.style.opacity = '0.7';
       setTimeout(() => { btn.textContent = original; btn.style.opacity = '1'; }, 1000);
-      window.__aasra_addToCart(sku, name, price, qty);
+      window.__aasra_addToCart(sku, name, price, qty, addBtn.getAttribute('data-image') || '');
     });
 
     // Wishlist toggle (localStorage)

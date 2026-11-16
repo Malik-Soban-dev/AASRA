@@ -43,7 +43,7 @@ export interface Props {}
 
 <script>
   (function () {
-    const KEY = 'aasra_country_seen_v1';
+    const KEY = 'aasra_country_seen_session_v1';
     const modal = document.getElementById('country-modal');
     if (!modal) return;
     const closeBtn = document.getElementById('country-modal-close');
@@ -56,12 +56,12 @@ export interface Props {}
     function close() {
       modal.classList.remove('open');
       document.body.style.overflow = '';
-      try { localStorage.setItem(KEY, '1'); } catch (e) {}
+      try { sessionStorage.setItem(KEY, '1'); } catch (e) {}
     }
 
     // First visit only
     let seen = false;
-    try { seen = localStorage.getItem(KEY) === '1'; } catch (e) {}
+    try { seen = sessionStorage.getItem(KEY) === '1'; } catch (e) {}
     if (!seen) setTimeout(open, 900);
 
     closeBtn?.addEventListener('click', close);

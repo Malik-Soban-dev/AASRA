@@ -54,7 +54,7 @@ import { formatPKR } from '../lib/products.js';
         subtotal += line;
         return `
           <div class="cart-item">
-            <img src="/images/placeholder.svg" alt="${String(item.name).replace(/"/g, '&quot;')}" class="cart-item-img" loading="lazy" />
+            <img src="${String(item.image || '/images/placeholder.svg').replace(/"/g, '&quot;')}" alt="${String(item.name).replace(/"/g, '&quot;')}" class="cart-item-img" loading="lazy" />
             <div class="cart-item-info">
               <div class="cart-item-name">${String(item.name)}</div>
               <div class="cart-item-sku">SKU: ${String(item.sku)}</div>
