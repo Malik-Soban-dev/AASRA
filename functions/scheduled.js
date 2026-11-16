@@ -141,7 +141,7 @@ export async function onRequestScheduled(context) {
 }
 
 async function sendBalanceReminder(env, order) {
-  const { sendEmail, balanceReminderEmail } = await import('../lib/email.js');
+  const { sendEmail, balanceReminderEmail } = await import('./lib/email.js');
   const email = balanceReminderEmail({ order, env });
   return sendEmail(env, {
     to: order.email,

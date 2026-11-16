@@ -1,6 +1,6 @@
 # AASRA — Headless E-Commerce Store for Pakistan on Cloudflare
 
-A code-only (no WordPress) online store for customers in Pakistan, hosted on Cloudflare Pages + Workers + D1.
+A code-only (no WordPress) online store for customers in Pakistan, hosted on Cloudflare Workers (static assets + API) + D1.
 Design reference: https://shop.brunellocucinelli.com (layout and feel only — no logos, text, or trademarks copied).
 
 **Live domain:** https://aasra.shop
@@ -11,8 +11,8 @@ Design reference: https://shop.brunellocucinelli.com (layout and feel only — n
 
 | Layer | Choice |
 |-------|--------|
-| Hosting | Cloudflare Pages (static) |
-| Backend | Cloudflare Pages Functions (Workers) |
+| Hosting | Cloudflare Workers — static assets (`dist/`) served from the edge |
+| Backend | Worker API (`src/index.js` + `functions/api/*` compiled via `wrangler pages functions build`) |
 | Database | Cloudflare D1 (SQLite) |
 | Frontend | Astro (static output) |
 | Payments | Safepay (primary) / PayFast (alternative) — hosted checkout only |
@@ -27,14 +27,14 @@ Design reference: https://shop.brunellocucinelli.com (layout and feel only — n
 
 ```
 /public             static assets, images, robots.txt, _headers, _redirects
-/src                Astro pages, components, styles, lib
+/src                Astro pages, components, styles, lib + src/index.js (Worker entry)
 /data/products.json product catalog (static)
 /data/shipping-rates.json city-based shipping rates
-/functions/api/*    Pages Functions: checkout, pay-balance, webhook, order-lookup, contact, newsletter, invoice, csrf-token
+/functions/api/*    API handlers (Pages Functions format): checkout, pay-balance, webhook, order-lookup, contact, newsletter, invoice, csrf-token
 /functions/scheduled.js cron: balance reminders, auto-cancel, release reservations, reconcile
 /migrations/        D1 schema (0001_initial.sql, 0002_balance_token.sql)
 /tests              automated tests
-/scripts            seed helpers
+/scripts            seed helper + smoke test (run against `wrangler dev`)
 /public/data/       public copies of products.json and shipping-rates.json
 ```
 
@@ -86,47 +86,33 @@ npm install
 
 ### 2. Create the D1 database
 
-```bash
-npx wrangler d1 create AASRA_DB
-```
+Dashboard: **Storage & Databases → D1 → Create database** → name it `AASRA_DB`.
+Copy the **Database ID**, open `wrangler.toml`, and uncomment the `[[d1_databases]]` block, pasting the ID into `database_id`.
 
-Copy the printed `database_id` into `wrangler.toml` (`[[d1_databases]] database_id`).
+Or from a terminal with Cloudflare auth: `npx wrangler d1 create AASRA_DB`.
 
 ### 3. Run migrations
 
-```bash
-npm run d1:execute
-```
+Easiest: open the database in the dashboard → **Console**, and paste the contents of `migrations/0001_initial.sql`, then `migrations/0002_balance_token.sql`.
+
+Or: `npm run d1:execute` and `npm run d1:execute:0002` (requires `wrangler login`).
 
 ### 4. Seed stock (optional)
 
 ```bash
-node scripts/seed-d1.js | npx wrangler d1 execute AASRA_DB
+node scripts/seed-d1.js | npx wrangler d1 execute AASRA_DB --remote -y
 ```
 
 ### 5. Configure secrets (never commit these)
 
-```bash
-npx wrangler pages secret put TURNSTILE_SECRET_KEY
-npx wrangler pages secret put SAFEPAY_SECRET_KEY
-npx wrangler pages secret put SAFEPAY_WEBHOOK_SECRET
-npx wrangler pages secret put EMAIL_PROVIDER_API_KEY
-npx wrangler pages secret put ALLOWED_ORIGIN   # https://aasra.shop
-```
+Dashboard: **Workers & Pages → aasra → Settings → Variables and Secrets → Add** (type **Secret**):
 
-Non-secret vars:
-```bash
-npx wrangler pages variable put PUBLIC_BASE_URL      # https://aasra.shop
-npx wrangler pages variable put DEFAULT_DEPOSIT_PERCENT  # 30
-npx wrangler pages variable put BALANCE_REMINDER_DAYS    # 3,1
-npx wrangler pages variable put BALANCE_CANCEL_AFTER_DAYS # 7
-npx wrangler pages variable put TAX_RATE_PCT           # 0 (verify with accountant)
-npx wrangler pages variable put BUSINESS_NAME          # AASRA
-npx wrangler pages variable put BUSINESS_ADDRESS       # Karachi, Pakistan
-npx wrangler pages variable put BUSINESS_PHONE         # +92 300 0000000
-npx wrangler pages variable put BUSINESS_EMAIL         # orders@aasra.shop
-npx wrangler pages variable put TAX_REGISTRATION_NO    # Not registered
-```
+- `TURNSTILE_SECRET_KEY`
+- `SAFEPAY_SECRET_KEY`
+- `SAFEPAY_WEBHOOK_SECRET`
+- `EMAIL_PROVIDER_API_KEY`
+
+Secrets persist across deployments. All non-secret variables already live in `wrangler.toml [vars]` — no dashboard step needed for them.
 
 ### 6. Configure Turnstile
 
@@ -144,21 +130,30 @@ Use separate URLs for staging (sandbox keys) and production (live keys). **Never
 
 ### 8. Add the custom domain
 
-In the Cloudflare Pages dashboard, add `aasra.shop` as a custom domain. Enable HTTPS, HSTS, and WAF rules.
+Dashboard: **Workers & Pages → aasra → Settings → Domains & Routes → Add → Custom domain** → `aasra.shop`.
+The zone is already on Cloudflare, so the DNS record is created automatically. Enable HSTS and WAF rules on the zone.
 
 ### 9. Develop locally
 
 ```bash
-npm run dev
-# or
-npx wrangler pages dev . --d1 DB --binding DB --persist
+npm run dev          # builds frontend + compiles functions, then serves at http://localhost:8787
+```
+
+Then run the smoke test against the local server:
+
+```bash
+BASE_URL=http://127.0.0.1:8787 node scripts/smoke-worker.mjs
 ```
 
 ### 10. Build & deploy
 
+Git-connected: every push to `main` runs Build command `npm run build` and Deploy command `npx wrangler deploy` automatically.
+
+Manual:
+
 ```bash
 npm run build
-npm run deploy
+npm run deploy       # npx wrangler deploy
 ```
 
 ---

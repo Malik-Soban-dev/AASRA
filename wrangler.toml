@@ -1,21 +1,60 @@
-# Cloudflare Pages + Workers configuration for AASRA
-# https://developers.cloudflare.com/pages/functions/wrangler-configuration/
+# Cloudflare Workers configuration for AASRA
+# https://developers.cloudflare.com/workers/wrangler/configuration/
 
-name = "aasra-store"
+# Must match the Git-connected Worker name in the Cloudflare dashboard
+name = "aasra"
+main = "src/index.js"
 compatibility_date = "2026-01-01"
 compatibility_flags = ["nodejs_compat"]
 
-# Pages project — deployment is handled automatically by Cloudflare Pages
-# (no [deploy] table needed; Pages reads the build output from dist/)
+# Static assets — built by `npm run build` (astro build -> dist/).
+# ASSETS binding is used by the compiled functions router for non-API routes.
+[assets]
+directory = "./dist"
+binding = "ASSETS"
+not_found_handling = "404-page"
 
-# D1 database binding (created via: wrangler d1 create AASRA_DB)
-[[d1_databases]]
-binding = "DB"
-database_name = "AASRA_DB"
-database_id = ""
+# --- Non-secret environment variables (safe to commit) ---
+[vars]
+PUBLIC_BASE_URL = "https://aasra.shop"
+# Comma-separated list of origins allowed to call the API (CORS + origin check).
+# The workers.dev preview host is included so the store can be tested before
+# the custom domain is active. Remove it once aasra.shop is live if you like.
+ALLOWED_ORIGIN = "https://aasra.shop,https://aasra.shanzeeey.workers.dev"
+DEFAULT_DEPOSIT_PERCENT = "30"
+BALANCE_REMINDER_DAYS = "3,1"
+BALANCE_CANCEL_AFTER_DAYS = "7"
+TAX_RATE_PCT = "0"                                  # VERIFY: actual sales tax rule
+BUSINESS_NAME = "AASRA"
+BUSINESS_ADDRESS = "Karachi, Pakistan"              # VERIFY: real address
+BUSINESS_PHONE = "+92 300 0000000"                  # VERIFY: real phone
+BUSINESS_EMAIL = "orders@aasra.shop"
+TAX_REGISTRATION_NO = "Not registered"              # VERIFY
+EMAIL_PROVIDER = "resend"                           # VERIFY: resend | mailchannels | ...
+EMAIL_FROM = "orders@aasra.shop"
+EMAIL_FROM_NAME = "AASRA"
+SAFEPAY_ENABLED = "true"                            # VERIFY: confirm gateway + keys
+SAFEPAY_BASE_URL = "https://pay.safepay.pk"         # VERIFY: confirm from Safepay docs
+PAYFAST_ENABLED = "false"
 
-# Cron triggers (schedule handlers run as Workers)
-# Daily 09:00 UTC — balance reminders, expiry, reconciliation
+# --- Secrets (set via dashboard > Settings > Variables and Secrets, or
+#     `npx wrangler secret put NAME`; NEVER commit these) ---
+#   TURNSTILE_SECRET_KEY
+#   SAFEPAY_SECRET_KEY
+#   SAFEPAY_WEBHOOK_SECRET
+#   EMAIL_PROVIDER_API_KEY
+
+# --- D1 database binding ---
+# Create the database first (dashboard: Storage & Databases > D1 > "AASRA_DB",
+# or `npx wrangler d1 create AASRA_DB`), then UNCOMMENT this block and paste
+# the database_id. Deploys fail if this block is active with a placeholder.
+# [[d1_databases]]
+# binding = "DB"
+# database_name = "AASRA_DB"
+# database_id = "<PASTE-DATABASE-ID>"
+
+# Cron triggers — daily 09:00 UTC: balance reminders, reservation expiry,
+# unpaid-order cancellation, gateway reconciliation (functions/scheduled.js)
 [triggers]
 crons = ["0 9 * * *"]
 
@@ -29,23 +68,3 @@ crons = ["0 9 * * *"]
 # - GET /api/order-lookup: 10 requests per minute per IP
 # - GET /api/invoice: 10 requests per minute per IP
 # - POST /api/webhook: 60 requests per minute per IP (gateway webhooks)
-
-# Environment variables (set via `wrangler pages secret put` / `wrangler pages variable put`)
-# [vars]  # non-secret vars
-#   PUBLIC_BASE_URL = "https://aasra.shop"
-#   DEFAULT_DEPOSIT_PERCENT = "30"
-#   BALANCE_REMINDER_DAYS = "3,1"
-#   BALANCE_CANCEL_AFTER_DAYS = "7"
-#   TAX_RATE_PCT = "0"           # VERIFY: set actual sales tax rate
-#   BUSINESS_NAME = "AASRA"
-#   BUSINESS_ADDRESS = "Karachi, Pakistan"
-#   BUSINESS_PHONE = "+92 300 0000000"
-#   BUSINESS_EMAIL = "orders@aasra.shop"
-#   TAX_REGISTRATION_NO = "Not registered"
-#
-# [secrets]  # secrets (never commit)
-#   TURNSTILE_SECRET_KEY = "..."
-#   SAFEPAY_SECRET_KEY = "..."
-#   SAFEPAY_WEBHOOK_SECRET = "..."
-#   EMAIL_PROVIDER_API_KEY = "..."
-#   ALLOWED_ORIGIN = "https://aasra.shop"

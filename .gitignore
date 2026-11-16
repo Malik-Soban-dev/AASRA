@@ -5,8 +5,10 @@ node_modules/
 
 # Build outputs
 dist/
+dist-worker/
 build/
 .astro/
+.wrangler/
 
 # Environment / secrets (NEVER commit real values)
 .env
