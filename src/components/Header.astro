@@ -1,12 +1,108 @@
 ---
-export interface Props {}
+// Mega-menu data: columns of serif links + a featured image tile (BC pattern)
+const megas = {
+  shop: {
+    label: 'Shop',
+    href: '/shop',
+    links: [
+      { label: 'Shop all', href: '/shop' },
+      { label: 'Home Textiles', href: '/shop?category=home-textiles' },
+      { label: 'Rugs', href: '/shop?category=rugs' },
+      { label: 'Tableware', href: '/shop?category=tableware' },
+      { label: 'Woodware', href: '/shop?category=woodware' },
+      { label: 'Gifts', href: '/gifts' },
+    ],
+    feature: {
+      img: '/images/campaign/explore-collection.webp',
+      kicker: 'The Winter Edit',
+      title: 'Explore the collection',
+      href: '/shop',
+    },
+  },
+  textiles: {
+    label: 'Home Textiles',
+    href: '/shop?category=home-textiles',
+    links: [
+      { label: 'Shop all textiles', href: '/shop?category=home-textiles' },
+      { label: 'Linen Curtain Panel — Ivory', href: '/product/linen-curtain-panel-ivory' },
+      { label: 'Linen Curtain Panel — Slate', href: '/product/linen-curtain-panel-slate' },
+      { label: 'Linen Throw Cushion — Oatmeal', href: '/product/throw-cushion-linen-oatmeal' },
+    ],
+    feature: {
+      img: '/images/products/cushion-oatmeal-2.webp',
+      kicker: 'Home Textiles',
+      title: 'Woven linen, made to stay',
+      href: '/shop?category=home-textiles',
+    },
+  },
+  rugs: {
+    label: 'Rugs',
+    href: '/shop?category=rugs',
+    links: [
+      { label: 'Shop all rugs', href: '/shop?category=rugs' },
+      { label: 'Cotton Dhurrie Rug — Beige', href: '/product/cotton-dhurrie-rug-beige' },
+      { label: 'Cotton Dhurrie Rug — Charcoal', href: '/product/cotton-dhurrie-rug-charcoal' },
+    ],
+    feature: {
+      img: '/images/products/dhurrie-beige-2.webp',
+      kicker: 'Handwoven',
+      title: 'The dhurrie edit',
+      href: '/shop?category=rugs',
+    },
+  },
+  tableware: {
+    label: 'Tableware',
+    href: '/shop?category=tableware',
+    links: [
+      { label: 'Shop all tableware', href: '/shop?category=tableware' },
+      { label: 'Ceramics Dinner Plate Set', href: '/product/ceramics-dinner-plate-set' },
+      { label: 'Ceramics Serving Bowl — Large', href: '/product/ceramics-serving-bowl-large' },
+    ],
+    feature: {
+      img: '/images/products/dinner-plate-2.webp',
+      kicker: 'New collection',
+      title: 'The Table Collection',
+      href: '/shop?category=tableware',
+    },
+  },
+  woodware: {
+    label: 'Woodware',
+    href: '/shop?category=woodware',
+    links: [
+      { label: 'Shop all woodware', href: '/shop?category=woodware' },
+      { label: 'Teak Wooden Tray — Medium', href: '/product/wooden-tray-teak-medium' },
+    ],
+    feature: {
+      img: '/images/products/teak-tray-2.webp',
+      kicker: 'Solid teak',
+      title: 'Carved by hand',
+      href: '/shop?category=woodware',
+    },
+  },
+  gifts: {
+    label: 'Gifts',
+    href: '/gifts',
+    links: [
+      { label: 'Gift Selection', href: '/gifts' },
+      { label: 'Gifts for the home', href: '/shop?category=home-textiles' },
+      { label: 'Gifts for the table', href: '/shop?category=tableware' },
+      { label: 'Gifts for the kitchen', href: '/shop?category=woodware' },
+    ],
+    feature: {
+      img: '/images/campaign/gifts-home.webp',
+      kicker: 'Holiday Season',
+      title: 'The gift edit',
+      href: '/gifts',
+    },
+  },
+};
 ---
 
 <header class="header" role="banner">
   <!-- Utility bar -->
   <div class="header-utility">
     <div class="container header-utility-inner">
-      <span>Pakistan (PKR)</span>
+      <button type="button" data-open-country class="header-utility-country" style="background:none; border:none; cursor:pointer; padding:0; font:inherit; color:inherit; letter-spacing:inherit; text-transform:inherit;">Pakistan (PKR)</button>
       <span class="header-utility-links">
         <a href="/contact">Contact us</a>
         <a href="/order-lookup">Order lookup</a>
@@ -17,7 +113,7 @@ export interface Props {}
 
   <!-- Logotype row -->
   <div class="header-logo-row">
-    <button class="menu-toggle" aria-label="Open menu" aria-expanded="false" aria-controls="main-nav">
+    <button class="menu-toggle" aria-label="Open menu" aria-expanded="false" aria-controls="mobile-menu">
       <span></span><span></span><span></span>
     </button>
 
@@ -44,16 +140,118 @@ export interface Props {}
     </div>
   </div>
 
-  <!-- Nav row -->
+  <!-- Nav row with mega menus -->
   <nav class="header-nav" id="main-nav" aria-label="Main navigation">
     <ul class="nav-list">
       <li><a href="/">Home</a></li>
-      <li><a href="/shop">Shop</a></li>
-      <li><a href="/shop?category=home-textiles">Home Textiles</a></li>
-      <li><a href="/shop?category=rugs">Rugs</a></li>
-      <li><a href="/shop?category=tableware">Tableware</a></li>
-      <li><a href="/shop?category=woodware">Woodware</a></li>
-      <li><a href="/gifts">Gifts</a></li>
+      <li class="nav-item">
+        <a href={megas.shop.href}>{megas.shop.label}</a>
+        <div class="mega">
+          <div class="mega-links">
+            <span class="small-caps">The collection</span>
+            <ul>
+              {megas.shop.links.map((l) => <li><a href={l.href}>{l.label}</a></li>)}
+            </ul>
+          </div>
+          <a href={megas.shop.feature.href} class="mega-feature">
+            <img src={megas.shop.feature.img} alt={megas.shop.feature.title} loading="lazy" width="600" height="750" />
+            <figcaption>
+              <span class="small-caps">{megas.shop.feature.kicker}</span>
+              <span class="mega-feature-title">{megas.shop.feature.title}</span>
+            </figcaption>
+          </a>
+        </div>
+      </li>
+      <li class="nav-item">
+        <a href={megas.textiles.href}>{megas.textiles.label}</a>
+        <div class="mega">
+          <div class="mega-links">
+            <span class="small-caps">Home Textiles</span>
+            <ul>
+              {megas.textiles.links.map((l) => <li><a href={l.href}>{l.label}</a></li>)}
+            </ul>
+          </div>
+          <a href={megas.textiles.feature.href} class="mega-feature">
+            <img src={megas.textiles.feature.img} alt={megas.textiles.feature.title} loading="lazy" width="600" height="750" />
+            <figcaption>
+              <span class="small-caps">{megas.textiles.feature.kicker}</span>
+              <span class="mega-feature-title">{megas.textiles.feature.title}</span>
+            </figcaption>
+          </a>
+        </div>
+      </li>
+      <li class="nav-item">
+        <a href={megas.rugs.href}>{megas.rugs.label}</a>
+        <div class="mega">
+          <div class="mega-links">
+            <span class="small-caps">Rugs</span>
+            <ul>
+              {megas.rugs.links.map((l) => <li><a href={l.href}>{l.label}</a></li>)}
+            </ul>
+          </div>
+          <a href={megas.rugs.feature.href} class="mega-feature">
+            <img src={megas.rugs.feature.img} alt={megas.rugs.feature.title} loading="lazy" width="600" height="750" />
+            <figcaption>
+              <span class="small-caps">{megas.rugs.feature.kicker}</span>
+              <span class="mega-feature-title">{megas.rugs.feature.title}</span>
+            </figcaption>
+          </a>
+        </div>
+      </li>
+      <li class="nav-item">
+        <a href={megas.tableware.href}>{megas.tableware.label}</a>
+        <div class="mega">
+          <div class="mega-links">
+            <span class="small-caps">Tableware</span>
+            <ul>
+              {megas.tableware.links.map((l) => <li><a href={l.href}>{l.label}</a></li>)}
+            </ul>
+          </div>
+          <a href={megas.tableware.feature.href} class="mega-feature">
+            <img src={megas.tableware.feature.img} alt={megas.tableware.feature.title} loading="lazy" width="600" height="750" />
+            <figcaption>
+              <span class="small-caps">{megas.tableware.feature.kicker}</span>
+              <span class="mega-feature-title">{megas.tableware.feature.title}</span>
+            </figcaption>
+          </a>
+        </div>
+      </li>
+      <li class="nav-item">
+        <a href={megas.woodware.href}>{megas.woodware.label}</a>
+        <div class="mega">
+          <div class="mega-links">
+            <span class="small-caps">Woodware</span>
+            <ul>
+              {megas.woodware.links.map((l) => <li><a href={l.href}>{l.label}</a></li>)}
+            </ul>
+          </div>
+          <a href={megas.woodware.feature.href} class="mega-feature">
+            <img src={megas.woodware.feature.img} alt={megas.woodware.feature.title} loading="lazy" width="600" height="750" />
+            <figcaption>
+              <span class="small-caps">{megas.woodware.feature.kicker}</span>
+              <span class="mega-feature-title">{megas.woodware.feature.title}</span>
+            </figcaption>
+          </a>
+        </div>
+      </li>
+      <li class="nav-item">
+        <a href={megas.gifts.href}>{megas.gifts.label}</a>
+        <div class="mega">
+          <div class="mega-links">
+            <span class="small-caps">Gifts</span>
+            <ul>
+              {megas.gifts.links.map((l) => <li><a href={l.href}>{l.label}</a></li>)}
+            </ul>
+          </div>
+          <a href={megas.gifts.feature.href} class="mega-feature">
+            <img src={megas.gifts.feature.img} alt={megas.gifts.feature.title} loading="lazy" width="600" height="750" />
+            <figcaption>
+              <span class="small-caps">{megas.gifts.feature.kicker}</span>
+              <span class="mega-feature-title">{megas.gifts.feature.title}</span>
+            </figcaption>
+          </a>
+        </div>
+      </li>
       <li><a href="/about">About</a></li>
     </ul>
   </nav>
@@ -68,16 +266,6 @@ export interface Props {}
 </header>
 
 <script>
-  const toggle = document.querySelector('.menu-toggle');
-  const nav = document.querySelector('.header-nav');
-  if (toggle && nav) {
-    toggle.addEventListener('click', () => {
-      const expanded = toggle.getAttribute('aria-expanded') === 'true';
-      toggle.setAttribute('aria-expanded', String(!expanded));
-      nav.classList.toggle('open');
-    });
-  }
-
   const searchBtn = document.getElementById('search-btn');
   const searchRow = document.getElementById('search-row');
   if (searchBtn && searchRow) {

@@ -4,7 +4,7 @@ export interface Props {}
 
 <div id="cart-drawer" class="cart-drawer" role="dialog" aria-modal="true" aria-label="Shopping cart">
   <div class="cart-drawer-header">
-    <h2>Your cart</h2>
+    <h2>Your selection ( <span id="cart-selection-count">0</span> )</h2>
     <button id="close-cart" class="close-drawer" aria-label="Close cart">✕</button>
   </div>
 
@@ -14,9 +14,10 @@ export interface Props {}
   </div>
 
   <div class="cart-footer">
-    <div class="cart-total" id="cart-total">Total: <span id="cart-total-amount">0 PKR</span></div>
+    <div class="cart-total" id="cart-total">Subtotal <span id="cart-total-amount">0 PKR</span></div>
     <div id="cart-checkout-wrapper">
-      <a href="/checkout" class="btn btn-primary btn-full" id="cart-checkout-btn">Proceed to checkout</a>
+      <a href="/cart" class="btn btn-primary btn-full" id="cart-checkout-btn">Go to the cart</a>
+      <p style="text-align:center; margin-top:0.6rem; font-size:0.72rem; letter-spacing:0.08em;"><a href="/checkout" style="color:var(--muted); text-decoration:underline; text-underline-offset:3px;">or go straight to checkout</a></p>
     </div>
     <p id="cart-deposit-note" class="deposit-note" style="margin-top:0.75rem; font-size:0.75rem;"></p>
   </div>
@@ -81,6 +82,8 @@ export interface Props {}
     if (cart.length === 0) {
       list.innerHTML = '<div class="cart-empty">Your cart is empty.</div>';
       if (totalEl) totalEl.textContent = '0 PKR';
+      const countEl0 = document.getElementById('cart-selection-count');
+      if (countEl0) countEl0.textContent = '0';
       return;
     }
 
@@ -109,6 +112,8 @@ export interface Props {}
     }).join('');
 
     if (totalEl) totalEl.textContent = total.toLocaleString() + ' PKR';
+    const countEl = document.getElementById('cart-selection-count');
+    if (countEl) countEl.textContent = String(cart.reduce((s, i) => s + (i.qty || 0), 0));
 
     // Deposit note if any item is deposit-eligible (we don't know from cart alone; placeholder)
     const note = document.getElementById('cart-deposit-note');

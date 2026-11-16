@@ -1,0 +1,80 @@
+---
+// BC-pattern country/region modal — shown on first visit, reopenable from the
+// utility bar ("Pakistan (PKR)") and mobile menu. Preference stored locally.
+export interface Props {}
+---
+
+<div class="modal-overlay" id="country-modal" role="dialog" aria-modal="true" aria-label="Change country of delivery">
+  <div class="country-modal">
+    <button class="modal-close" id="country-modal-close" aria-label="Close">&times;</button>
+    <img src="/images/campaign/explore-collection.webp" alt="" aria-hidden="true" loading="lazy" width="800" height="450" />
+    <div class="kicker" style="margin-bottom:0.5rem;">Country / Language</div>
+    <h3>You are browsing from Pakistan</h3>
+    <p>
+      Please note that product availability, shipments, prices in PKR, and general
+      terms &amp; conditions refer specifically to Pakistan.
+    </p>
+    <label class="sr-only" for="country-select">Country of delivery</label>
+    <select id="country-select">
+      <option selected>Pakistan</option>
+      <option>United Arab Emirates</option>
+      <option>Saudi Arabia</option>
+      <option>United Kingdom</option>
+      <option>United States</option>
+      <option>Canada</option>
+      <option>Australia</option>
+      <option>Qatar</option>
+      <option>Kuwait</option>
+      <option>Oman</option>
+      <option>Bahrain</option>
+      <option>Singapore</option>
+      <option>Malaysia</option>
+      <option>Turkey</option>
+      <option>Germany</option>
+      <option>France</option>
+      <option>Italy</option>
+      <option>Spain</option>
+      <option>Netherlands</option>
+      <option>Other — contact us to arrange delivery</option>
+    </select>
+    <button class="btn btn-primary btn-full" id="country-confirm">Confirm</button>
+  </div>
+</div>
+
+<script>
+  (function () {
+    const KEY = 'aasra_country_seen_v1';
+    const modal = document.getElementById('country-modal');
+    if (!modal) return;
+    const closeBtn = document.getElementById('country-modal-close');
+    const confirmBtn = document.getElementById('country-confirm');
+
+    function open() {
+      modal.classList.add('open');
+      document.body.style.overflow = 'hidden';
+    }
+    function close() {
+      modal.classList.remove('open');
+      document.body.style.overflow = '';
+      try { localStorage.setItem(KEY, '1'); } catch (e) {}
+    }
+
+    // First visit only
+    let seen = false;
+    try { seen = localStorage.getItem(KEY) === '1'; } catch (e) {}
+    if (!seen) setTimeout(open, 900);
+
+    closeBtn?.addEventListener('click', close);
+    confirmBtn?.addEventListener('click', close);
+    modal.addEventListener('click', (e) => { if (e.target === modal) close(); });
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') close(); });
+
+    // Reopeners: utility bar country label + mobile menu line
+    document.querySelectorAll('[data-open-country]').forEach((el) =>
+      el.addEventListener('click', (e) => {
+        e.preventDefault();
+        open();
+      })
+    );
+  })();
+</script>

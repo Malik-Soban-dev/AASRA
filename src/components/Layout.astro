@@ -5,6 +5,7 @@ import '../styles/global.css';
 import Header from './Header.astro';
 import Footer from './Footer.astro';
 import CartDrawer from './CartDrawer.astro';
+import CountryModal from './CountryModal.astro';
 
 export interface Props {
   title?: string;
@@ -65,10 +66,44 @@ const { title = 'AASRA', description = 'AASRA — considered essentials for the 
     </script>
   </head>
   <body>
+    <a class="skip-link" href="#maincontent">Go to main content</a>
     <Header />
-    <main><slot /></main>
+    <main id="maincontent"><slot /></main>
     <Footer />
     <CartDrawer />
+    <CountryModal />
+
+    <!-- Mobile full-screen menu -->
+    <div class="mobile-menu" id="mobile-menu" role="dialog" aria-modal="true" aria-label="Menu">
+      <div class="mobile-menu-top">
+        <span class="mobile-menu-logo">AASRA</span>
+        <button class="mobile-menu-close" id="mobile-menu-close" aria-label="Close menu">&times;</button>
+      </div>
+      <form action="/shop" method="GET" role="search">
+        <input type="text" name="q" placeholder="Search products…" aria-label="Search products" autocomplete="off" />
+        <button type="submit">Search</button>
+      </form>
+      <ul class="mobile-nav-list">
+        <li style="--d:60ms;"><a href="/">Home</a></li>
+        <li style="--d:120ms;"><a href="/shop">Shop</a></li>
+        <li style="--d:180ms;"><a href="/shop?category=home-textiles">Home Textiles</a></li>
+        <li style="--d:240ms;"><a href="/shop?category=rugs">Rugs</a></li>
+        <li style="--d:300ms;"><a href="/shop?category=tableware">Tableware</a></li>
+        <li style="--d:360ms;"><a href="/shop?category=woodware">Woodware</a></li>
+        <li style="--d:420ms;"><a href="/gifts">Gifts</a></li>
+        <li style="--d:480ms;"><a href="/about">About</a></li>
+      </ul>
+      <ul class="mobile-secondary">
+        <li><a href="/contact">Contact us</a></li>
+        <li><a href="/order-lookup">Order lookup</a></li>
+        <li><a href="/wishlist">Wishlist</a></li>
+        <li><a href="https://wa.me/923000000000" target="_blank" rel="noopener">WhatsApp</a></li>
+      </ul>
+      <div class="country-line">
+        Pakistan (PKR) &middot; <button type="button" data-open-country>Change country / language</button>
+      </div>
+    </div>
+
     <div id="overlay" class="overlay" aria-hidden="true"></div>
     <script>
       const cartBtn = document.getElementById('cart-btn');
@@ -90,6 +125,83 @@ const { title = 'AASRA', description = 'AASRA — considered essentials for the 
       cartBtn?.addEventListener('click', (e) => { e.preventDefault(); openCart(); });
       closeCart?.addEventListener('click', closeCartFn);
       overlay?.addEventListener('click', closeCartFn);
+
+      // Mobile menu
+      const menuToggle = document.querySelector('.menu-toggle');
+      const mobileMenu = document.getElementById('mobile-menu');
+      const mobileClose = document.getElementById('mobile-menu-close');
+      const headerNav = document.querySelector('.header-nav');
+      function openMobileMenu() {
+        mobileMenu?.classList.add('open');
+        document.body.style.overflow = 'hidden';
+        if (headerNav) headerNav.classList.remove('open'); // desktop fallback list off on mobile
+      }
+      function closeMobileMenu() {
+        mobileMenu?.classList.remove('open');
+        document.body.style.overflow = '';
+      }
+      menuToggle?.addEventListener('click', openMobileMenu);
+      mobileClose?.addEventListener('click', closeMobileMenu);
+      mobileMenu?.querySelectorAll('a').forEach((a) => a.addEventListener('click', closeMobileMenu));
+
+      // Header scroll behaviour: collapse utility bar, add shadow
+      const header = document.querySelector('.header');
+      function onScroll() {
+        if (!header) return;
+        header.classList.toggle('scrolled', window.scrollY > 12);
+      }
+      window.addEventListener('scroll', onScroll, { passive: true });
+      onScroll();
+
+      // Scroll reveals
+      const revealEls = document.querySelectorAll('.reveal');
+      if ('IntersectionObserver' in window && revealEls.length) {
+        const io = new IntersectionObserver(
+          (entries) => {
+            entries.forEach((entry) => {
+              if (entry.isIntersecting) {
+                entry.target.classList.add('in-view');
+                io.unobserve(entry.target);
+              }
+            });
+          },
+          { threshold: 0.12, rootMargin: '0px 0px -40px 0px' }
+        );
+        revealEls.forEach((el) => io.observe(el));
+      } else {
+        revealEls.forEach((el) => el.classList.add('in-view'));
+      }
+
+      // Stagger children of grids flagged with data-stagger
+      document.querySelectorAll('[data-stagger]').forEach((group) => {
+        Array.from(group.children).forEach((child, i) => {
+          child.classList.add('reveal-child');
+          child.style.setProperty('--d', `${Math.min(i * 70, 560)}ms`);
+        });
+      });
+      // If a stagger group itself is .reveal, children animate on group entry;
+      // otherwise observe each child directly.
+      document.querySelectorAll('[data-stagger]').forEach((group) => {
+        if (group.classList.contains('reveal')) return;
+        Array.from(group.children).forEach((child) => {
+          if ('IntersectionObserver' in window) {
+            const io2 = new IntersectionObserver(
+              (entries) => {
+                entries.forEach((entry) => {
+                  if (entry.isIntersecting) {
+                    entry.target.classList.add('in-view');
+                    io2.unobserve(entry.target);
+                  }
+                });
+              },
+              { threshold: 0.1, rootMargin: '0px 0px -30px 0px' }
+            );
+            io2.observe(child);
+          } else {
+            child.classList.add('in-view');
+          }
+        });
+      });
 
       function updateCartBadge() {
         try {

@@ -1,16 +1,78 @@
 ---
 import Layout from '../components/Layout.astro';
+import ProductCard from '../components/ProductCard.astro';
+import productsData from '../../data/products.json';
+
+const visible = productsData.products.filter((p) => p.visible);
+const forHome = visible.filter((p) => ['home-textiles', 'rugs'].includes(p.category));
+const forTable = visible.filter((p) => ['tableware', 'woodware'].includes(p.category));
 ---
 
-<Layout title="Gifts — AASRA" description="Gift ideas for her, him, and the home.">
+<Layout title="Gift Selection — AASRA" description="Considered gifts for the home and the table. PKR, payable online.">
+  <!-- Campaign hero (BC gifts template) -->
+  <section class="hero" style="height:min(62vh,560px); min-height:420px;">
+    <img src="/images/campaign/gifts-table.webp" alt="Gift selection" class="hero-image" loading="eager" width="2000" height="1125" fetchpriority="high" />
+    <div class="hero-content">
+      <div class="kicker">Holiday Season</div>
+      <h1>Gift Selection</h1>
+      <div class="hero-links">
+        <a href="#gifts-home">For the home</a>
+        <a href="#gifts-table">For the table</a>
+      </div>
+    </div>
+  </section>
 
-  <section class="section">
+  <!-- Intro -->
+  <section class="section-tight">
+    <div class="container" style="max-width:760px; text-align:center;">
+      <p style="color:var(--muted); line-height:1.9;">
+        Like a special message, gift giving is a symbol of the feelings and bonds we hold dear,
+        for the people who make every day unique. Be inspired by the selection of creations for
+        the home and the table — wrapped in natural linen with a handwritten note on request.
+      </p>
+    </div>
+  </section>
+
+  <!-- 2-up tiles -->
+  <section class="section-tight">
     <div class="container">
-      <h1>Gifts</h1>
-      <p>Considered gifts for her, for him, and for the home. All prices in PKR, payable online.</p>
-      <div style="display:flex; gap:1rem; margin-bottom:2rem; flex-wrap:wrap;">
-        <a href="/shop?category=home-textiles" class="btn">For the home</a>
-        <a href="/shop" class="btn">All collections</a>
+      <div class="gift-grid">
+        <a href="#gifts-home" class="gift-banner">
+          <img src="/images/campaign/gifts-home.webp" alt="Gifts for the home" loading="lazy" width="900" height="1125" />
+          <span class="gift-caption">Gifts for the home</span>
+        </a>
+        <a href="#gifts-table" class="gift-banner">
+          <img src="/images/campaign/gifts-table.webp" alt="Gifts for the table" loading="lazy" width="900" height="1125" />
+          <span class="gift-caption">Gifts for the table</span>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Gifts for the home -->
+  <section class="section-tight" id="gifts-home">
+    <div class="container">
+      <div class="section-head">
+        <div class="kicker">Selection</div>
+        <h2>Gifts for the home</h2>
+        <p class="section-sub">Linens and woven pieces for spaces that gather people.</p>
+      </div>
+      <div class="grid" data-stagger>
+        {forHome.map((p) => <ProductCard product={p} />)}
+      </div>
+    </div>
+  </section>
+
+  <!-- Gifts for the table -->
+  <section class="section-tight" id="gifts-table">
+    <div class="container">
+      <div class="section-head">
+        <div class="kicker">Selection</div>
+        <h2>Gifts for the table</h2>
+        <p class="section-sub">Ceramics and teak for tables that linger.</p>
+      </div>
+      <div class="grid" data-stagger>
+        {forTable.map((p) => <ProductCard product={p} />)}
       </div>
     </div>
   </section>

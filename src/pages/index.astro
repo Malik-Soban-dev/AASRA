@@ -42,12 +42,12 @@ const seasonalTiles = [
   </section>
 
   <!-- 2. Seasonal suggestions: 4-up portrait tiles with serif titles -->
-  <section class="section">
+  <section class="section reveal">
     <div class="container">
-      <div class="section-head">
+      <div class="section-head reveal">
         <div class="kicker">Seasonal suggestions</div>
       </div>
-      <div class="seasonal-grid">
+      <div class="seasonal-grid" data-stagger>
         {seasonalTiles.map((tile) => (
           <a href={tile.href} class="seasonal-tile">
             <span class="tile-frame">
@@ -63,7 +63,7 @@ const seasonalTiles = [
   <!-- 3. Gift banners: 2-up with bold caption under image -->
   <section class="section-tight">
     <div class="container">
-      <div class="gift-grid">
+      <div class="gift-grid" data-stagger>
         <a href="/gifts" class="gift-banner">
           <img src="/images/campaign/gifts-table.webp" alt="Gifts for the table" loading="lazy" width="900" height="1125" />
           <span class="gift-caption">Gifts for the table</span>
