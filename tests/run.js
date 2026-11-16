@@ -1,7 +1,8 @@
 /**
  * AASRA automated tests.
  * Covers pricing, deposit math, webhook signature verification, stock logic,
- * and order state transitions. Run with: node tests/run.js
+ * order state transitions, invoices, CSRF, and email templates.
+ * Run with: node tests/run.js
  */
 
 import assert from 'node:assert';
@@ -18,6 +19,18 @@ import {
   sanitizeString,
 } from '../functions/lib/validation.js';
 import { verifyWebhookSignature } from '../functions/lib/gateway.js';
+import { buildInvoiceHtml } from '../functions/lib/invoice.js';
+import {
+  orderReceivedEmail,
+  depositPaidEmail,
+  balancePaidEmail,
+  balanceReminderEmail,
+  shippedEmail,
+  deliveredEmail,
+  cancelledEmail,
+  refundedEmail,
+  wrapEmail,
+} from '../functions/lib/email.js';
 
 // ---- Load sample products ----
 const productsData = JSON.parse(
@@ -205,7 +218,7 @@ t('applyCoupon fixed exceeds subtotal caps', () => {
 });
 
 // ============================================================
-// Webhook signature verification (async)
+// Webhook signature verification
 // ============================================================
 t('verifyWebhookSignature accepts valid HMAC', async () => {
   const secret = 'test-secret';
@@ -269,7 +282,171 @@ t('order state transitions', () => {
 });
 
 // ============================================================
-// Run all tests (await async ones), then summary
+// Invoice generation
+// ============================================================
+const sampleOrder = {
+  id: 'AAS-20261116-TEST1',
+  status: 'paid',
+  customer_name: 'Fatima Ali',
+  phone: '03001234567',
+  email: 'fatima@example.com',
+  city: 'Lahore',
+  address: 'House 12, Street 4, Model Town',
+  notes: '',
+  items: JSON.stringify([
+    { name: 'Linen Curtain Panel — Ivory', sku: 'LIN-IV-135X240', qty: 2, unit_price_pkr: 6500, line_total_pkr: 13000 },
+  ]),
+  subtotal: 13000,
+  shipping_fee: 250,
+  discount: 0,
+  total: 13250,
+  payment_type: 'deposit',
+  deposit_amount: 3975,
+  balance_amount: 9275,
+  deposit_status: 'paid',
+  balance_status: 'paid',
+  balance_due_at: null,
+  balance_token: 'bal_abc123',
+  coupon_code: null,
+  courier: 'TCS',
+  tracking_number: 'TCS123456789',
+  created_at: '2026-11-16T10:00:00Z',
+  updated_at: '2026-11-16T14:30:00Z',
+};
+
+const sampleItems = [
+  { name: 'Linen Curtain Panel — Ivory', sku: 'LIN-IV-135X240', qty: 2, unit_price_pkr: 6500, line_total_pkr: 13000 },
+];
+
+t('invoice HTML contains order id and totals', () => {
+  const html = buildInvoiceHtml({
+    order: sampleOrder,
+    items: sampleItems,
+    type: 'final',
+    payment: { updated_at: sampleOrder.updated_at, tracker_token: 'sp_track_123' },
+    baseUrl: 'https://shop.example.com',
+    generatedAt: '2026-11-16T15:00:00Z',
+  });
+  assert.ok(html.includes('AAS-20261116-TEST1'), 'order id present');
+  assert.ok(html.includes('13,250'), 'total present');
+  assert.ok(html.includes('Total paid'), 'total paid label');
+  assert.ok(html.includes('Amount due'), 'amount due label');
+  assert.ok(html.includes('Fatima Ali'), 'customer name present');
+  assert.ok(html.includes('Tax Invoice'), 'doc title present');
+  assert.ok(!html.includes('03001234567'), 'full phone masked in invoice');
+  assert.ok(html.includes('••••••67'), 'masked phone shown');
+});
+
+t('invoice deposit receipt type', () => {
+  const html = buildInvoiceHtml({
+    order: { ...sampleOrder, payment_type: 'deposit', deposit_status: 'paid', balance_status: 'unpaid' },
+    items: sampleItems,
+    type: 'deposit',
+    payment: null,
+    baseUrl: 'https://shop.example.com',
+    generatedAt: new Date().toISOString(),
+  });
+  assert.ok(html.includes('Deposit Receipt'), 'deposit receipt title');
+  assert.ok(html.includes('Balance due'), 'balance due label');
+});
+
+t('invoice balance receipt type', () => {
+  const html = buildInvoiceHtml({
+    order: { ...sampleOrder, payment_type: 'deposit', deposit_status: 'paid', balance_status: 'paid' },
+    items: sampleItems,
+    type: 'balance',
+    payment: { updated_at: sampleOrder.updated_at, tracker_token: 'sp_track_456' },
+    baseUrl: 'https://shop.example.com',
+    generatedAt: new Date().toISOString(),
+  });
+  assert.ok(html.includes('Balance Receipt'), 'balance receipt title');
+  assert.ok(html.includes('Balance paid'), 'balance paid label');
+});
+
+// ============================================================
+// Email templates
+// ============================================================
+const testEnv = {
+  PUBLIC_BASE_URL: 'https://shop.example.com',
+  EMAIL_FROM: 'orders@example.com',
+  EMAIL_FROM_NAME: 'AASRA',
+};
+
+t('orderReceivedEmail has subject and html', () => {
+  const e = orderReceivedEmail({ order: sampleOrder, env: testEnv });
+  assert.ok(e.subject, 'has subject');
+  assert.ok(e.html, 'has html');
+  assert.ok(e.html.includes('AAS-20261116-TEST1'), 'contains order id');
+  assert.ok(e.html.includes('13,250'), 'contains total');
+});
+
+t('depositPaidEmail has subject and html', () => {
+  const e = depositPaidEmail({ order: sampleOrder, amount: 3975, env: testEnv });
+  assert.ok(e.subject, 'has subject');
+  assert.ok(e.html, 'has html');
+  assert.ok(e.html.includes('3,975'), 'contains deposit amount');
+});
+
+t('balancePaidEmail has subject and html', () => {
+  const e = balancePaidEmail({ order: sampleOrder, amount: 9275, env: testEnv });
+  assert.ok(e.subject, 'has subject');
+  assert.ok(e.html, 'has html');
+  assert.ok(e.html.includes('paid in full'), 'mentions paid in full');
+});
+
+t('balanceReminderEmail has subject and html', () => {
+  const e = balanceReminderEmail({ order: sampleOrder, env: testEnv });
+  assert.ok(e.subject, 'has subject');
+  assert.ok(e.html, 'has html');
+  assert.ok(e.html.includes('remaining balance'), 'mentions remaining balance');
+});
+
+t('shippedEmail has tracking when provided', () => {
+  const e = shippedEmail({ order: sampleOrder, tracking: 'TCS123456789', env: testEnv });
+  assert.ok(e.html.includes('TCS123456789'), 'contains tracking number');
+  assert.ok(e.html.includes('TCS'), 'contains courier');
+});
+
+t('deliveredEmail has subject and html', () => {
+  const e = deliveredEmail({ order: sampleOrder, env: testEnv });
+  assert.ok(e.subject, 'has subject');
+  assert.ok(e.html, 'has html');
+  assert.ok(e.html.includes('delivered'), 'mentions delivered');
+});
+
+t('cancelledEmail has subject and html', () => {
+  const e = cancelledEmail({ order: sampleOrder, reason: 'Stock unavailable', env: testEnv });
+  assert.ok(e.subject, 'has subject');
+  assert.ok(e.html, 'has html');
+  assert.ok(e.html.includes('cancelled'), 'mentions cancelled');
+  assert.ok(e.html.includes('Stock unavailable'), 'contains reason');
+});
+
+t('refundedEmail has subject and html', () => {
+  const e = refundedEmail({ order: sampleOrder, amount: 3975, reason: 'Customer request', env: testEnv });
+  assert.ok(e.subject, 'has subject');
+  assert.ok(e.html, 'has html');
+  assert.ok(e.html.includes('3,975'), 'contains refund amount');
+  assert.ok(e.html.includes('Customer request'), 'contains reason');
+});
+
+t('wrapEmail produces full HTML layout', () => {
+  const e = wrapEmail(testEnv, {
+    subject: 'Test Subject',
+    title: 'Test Title',
+    body: '<p>Test body</p>',
+    intro: 'Test intro',
+    outro: 'Test outro',
+  });
+  assert.ok(e.html.includes('<!DOCTYPE html>'), 'is full HTML');
+  assert.ok(e.html.includes('Test Subject'), 'contains subject');
+  assert.ok(e.html.includes('Test body'), 'contains body');
+  assert.ok(e.html.includes('orders@example.com'), 'contains from email');
+  assert.ok(e.html.includes('wa.me'), 'contains WhatsApp link');
+});
+
+// ============================================================
+// Run all tests
 // ============================================================
 (async () => {
   for (const run of tests) await run();

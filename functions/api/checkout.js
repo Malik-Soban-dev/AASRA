@@ -320,6 +320,8 @@ export async function onRequestPost(context) {
 
   // 11. Create order record
   const orderId = publicOrderNumber();
+  // Unguessable token for balance payment + invoice access (not the order id).
+  const balanceToken = makeId('bal');
   const now = nowIso();
   const amountDueNow = payment_type === 'deposit' ? computed.deposit_amount : computed.total;
   const initialStatus = payment_type === 'deposit' ? 'pending-deposit' : 'pending-payment';
@@ -335,6 +337,7 @@ export async function onRequestPost(context) {
         items, subtotal, shipping_fee, discount, total,
         payment_type, deposit_amount, balance_amount,
         deposit_status, balance_status, balance_due_at,
+        balance_token,
         coupon_code, courier, created_at, updated_at
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
     ).bind(
@@ -357,6 +360,7 @@ export async function onRequestPost(context) {
       'unpaid',
       'unpaid',
       balanceDueAt,
+      balanceToken,
       couponResult.code || null,
       computed.courier || null,
       now,

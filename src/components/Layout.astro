@@ -25,6 +25,41 @@ const { title = 'AASRA', description = 'AASRA — considered essentials for the 
     <script>
       window.__AASRA_CART_KEY = 'aasra_cart_v1';
       window.__AASRA_WISHLIST_KEY = 'aasra_wishlist_v1';
+      window.__AASRA_API_BASE = '';
+    </script>
+
+    <!-- CSRF token init: fetch token from same-origin API, store as cookie -->
+    <script>
+      (function () {
+        const COOKIE_NAME = 'csrf_token';
+        function getCookie(name) {
+          const v = document.cookie.match('(?:^|;\\s*)' + name + '=([^;]*)');
+          return v ? v[1] : '';
+        }
+        function setCookie(name, value) {
+          document.cookie = name + '=' + value + '; Path=/; SameSite=Strict; Secure';
+        }
+        window.__AASRA_CSRF = {
+          token: getCookie(COOKIE_NAME),
+          ensure: async function () {
+            if (this.token) return this.token;
+            try {
+              const res = await fetch('/api/csrf-token', { credentials: 'same-origin' });
+              if (res.ok) {
+                const data = await res.json();
+                if (data.csrf_token) {
+                  this.token = data.csrf_token;
+                  setCookie(COOKIE_NAME, data.csrf_token);
+                }
+              }
+            } catch (e) {}
+            return this.token;
+          },
+          header: function () {
+            return { 'X-CSRF-Token': this.token || '' };
+          },
+        };
+      })();
     </script>
   </head>
   <body>

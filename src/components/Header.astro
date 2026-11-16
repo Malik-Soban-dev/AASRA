@@ -18,11 +18,18 @@ export interface Props {}
       </ul>
     </nav>
 
-    <div class="header-icons" aria-label="Utilities">
-      <a href="/wishlist" aria-label="Wishlist" title="Wishlist" style="position:relative;">⤖</a>
-      <a href="/order-lookup" aria-label="Order lookup" title="Order lookup">☰</a>
-      <button id="cart-btn" aria-label="Shopping cart" title="Cart" style="position:relative; background:none; border:none; font-size:1.1rem; cursor:pointer;">🛒</button>
+    <div class="header-utils" aria-label="Utilities">
+      <a href="/wishlist" aria-label="Wishlist" title="Wishlist" class="util-icon">⤖</a>
+      <a href="/order-lookup" aria-label="Order lookup" title="Order lookup" class="util-icon">☰</a>
+      <button id="cart-btn" aria-label="Shopping cart" title="Cart" class="util-icon" style="position:relative;">🛒</button>
       <span id="cart-badge" class="cart-count" style="display:none;">0</span>
+      <!-- WhatsApp click-to-chat support -->
+      <a href="https://wa.me/923000000000" target="_blank" rel="noopener" aria-label="WhatsApp support" title="WhatsApp" class="util-icon whatsapp">💬</a>
+    </div>
+
+    <div class="header-contact" aria-label="Business contact">
+      <span class="contact-phone">📞 +92 300 0000000</span>
+      <span class="contact-email">✉ orders@example.com</span>
     </div>
 
     <button class="menu-toggle" aria-label="Open menu" aria-expanded="false">☰</button>
@@ -30,7 +37,6 @@ export interface Props {}
 </header>
 
 <script>
-  // Simple mobile menu toggle
   const toggle = document.querySelector('.menu-toggle');
   const nav = document.querySelector('.nav-list');
   if (toggle && nav) {

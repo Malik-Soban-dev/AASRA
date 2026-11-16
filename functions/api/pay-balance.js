@@ -69,8 +69,8 @@ export async function onRequestPost(context) {
     return errorResponse('order_not_found', 404, 'order_not_found');
   }
 
-  // Token bound to order: token must equal order id (unguessable enough given order id format)
-  if (token !== order.id) {
+  // Token bound to order: token must equal the unguessable balance_token stored on the order.
+  if (!order.balance_token || token !== order.balance_token) {
     return errorResponse('invalid_token', 403, 'invalid_token');
   }
 

@@ -228,7 +228,7 @@ export async function onRequestPost(context) {
     const baseUrl = env.PUBLIC_BASE_URL || 'https://shop.example.com';
     await sendEmail(env, {
       to: order.email,
-      ...paymentPaidEmail({ order, kind: payment.kind, amount: payment.amount }),
+      ...paymentPaidEmail({ order, kind: payment.kind, amount: payment.amount, env }),
     });
   } catch (e) {
     // Email failure must not fail the webhook; log and continue.

@@ -24,12 +24,24 @@ Design reference: https://shop.brunellocucinelli.com (layout and feel only — n
 /src                Astro pages, components, styles, lib
 /data/products.json product catalog (static)
 /data/shipping-rates.json city-based shipping rates
-/functions/api/*    Pages Functions: checkout, pay-balance, webhook, order-lookup, contact, newsletter
+/functions/api/*    Pages Functions: checkout, pay-balance, webhook, order-lookup, contact, newsletter, invoice, csrf-token
 /functions/scheduled.js cron: balance reminders, auto-cancel, release reservations, reconcile
-/migrations/        D1 schema (0001_initial.sql)
+/migrations/        D1 schema (0001_initial.sql, 0002_balance_token.sql)
 /tests              automated tests
 /scripts            seed helpers
 ```
+
+## Features
+
+- **Pages**: Home, Shop (filters, search), Product (PDP), Cart drawer, Checkout, Order success, Payment cancelled, Pay balance, Order lookup, Wishlist, Size guide, Shipping info, About, Contact, FAQ, Privacy, Terms, Return/Refund, Deposit/Cancellation policy, Shipping policy, Cookie policy, Accessibility statement, custom 404.
+- **Invoices/receipts**:  — HTML invoice with itemized totals, sales tax fields, deposit/balance breakdown, print-to-PDF.
+- **Transactional emails**: order received, deposit paid, balance reminder, balance paid / paid in full, shipped (tracking), delivered, cancelled, refunded — branded HTML layout, WhatsApp + contact footer, sent from your domain via Worker-integrated provider.
+- **Support**: WhatsApp click-to-chat button in header/footer; business contact details (phone, email, address) in header and footer.
+- **Newsletter**: consent-based signup, stored privately in D1 (never in repo).
+- **Security**: secrets in Worker secrets only (/ gitignored); CSRF double-submit cookie on state-changing endpoints; CORS restricted to ; WAF rate limiting on ; Turnstile on checkout/contact/newsletter; webhook signature verified on raw body (idempotent); hosted checkout only (no card data); all prices/stock computed server-side; customer data in D1 only, masked in logs/invoices.
+- **Security headers**: HSTS, CSP, , , , ; HTTPS + minimum TLS 1.2.
+- **Accessibility**: alt text, visible focus, labeled fields, keyboard navigation, reduced motion, skip-to-content links, accessibility statement page.
+- **Payments**: full online or deposit + balance; two payments tracked separately; balance paid via unguessable expiring token; order lookup requires order ID + phone.
 
 ## Quick start
 

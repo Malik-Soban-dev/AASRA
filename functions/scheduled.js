@@ -140,16 +140,22 @@ export async function onRequestScheduled(context) {
   );
 }
 
-async function sendBalanceReminder(env, order, baseUrl) {
-  const { sendEmail } = await import('../lib/email.js');
+async function sendBalanceReminder(env, order) {
+  const { sendEmail, balanceReminderEmail } = await import('../lib/email.js');
+  const email = balanceReminderEmail({ order, env });
   return sendEmail(env, {
     to: order.email,
-    subject: `Balance due for order ${order.id}`,
-    html: `
-      <h1>Balance due</h1>
-      <p>Your order <strong>${order.id}</strong> has a remaining balance of <strong>${order.balance_amount.toLocaleString()} PKR</strong>.</p>
-      <p>Please pay the balance before your order can be shipped.</p>
-      <p><a href="${baseUrl}/pay-balance?order=${order.id}&token=${order.id}">Pay balance now</a></p>
-    `,
+    subject: email.subject,
+    html: wrapEmail(env, email.subject, email.html, email.intro, email.outro),
   });
+}
+
+function wrapEmail(env, subject, bodyHtml, intro, outro) {
+  const b = env.PUBLIC_BASE_URL || 'https://shop.example.com';
+  const from = env.EMAIL_FROM || 'orders@example.com';
+  const sender = env.EMAIL_FROM_NAME || 'AASRA';
+  return `<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>${subject}</title>
+<style>body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;font-size:14px;color:#1a1a1a;line-height:1.6;margin:0;padding:0;background:#f3f3f3}.wrap{width:100%;padding:24px 0;background:#f3f3f3}.card{max-width:600px;margin:0 auto;background:#ffffff;border:1px solid #e5e5e5;padding:32px 28px}h1{font-family:'Playfair Display',Georgia,'Times New Roman',serif;font-weight:400;font-size:24px;margin:0 0 12px;color:#1a1a1a}.kicker{font-size:11px;text-transform:uppercase;letter-spacing:0.16em;color:#666;margin-bottom:6px}p{margin:0 0 14px}a{color:#1a1a1a;text-decoration:underline;font-weight:500}.hl{font-weight:600}.btn{display:inline-block;background:#1a1a1a;color:#fff;text-decoration:none;padding:10px 20px;font-size:13px;text-transform:uppercase;letter-spacing:0.12em;border:1px solid #1a1a1a;margin:14px 0}.btn:hover{background:#333}.hr{border:none;border-top:1px solid #e5e5e5;margin:24px 0}.footer{font-size:11px;color:#666;margin-top:28px}.footer p{margin:0 0 6px}.footer a{color:#666;text-decoration:none}</title></head>
+<body><div class="wrap"><div class="card"><div style="font-family:'Playfair Display',Georgia,'Times New Roman',serif;font-size:16px;letter-spacing:0.06em;margin-bottom:4px;">AASRA</div><div class="kicker">Balance reminder</div><h1>${subject}</h1>${bodyHtml}<div class="hr"></div><div class="footer"><p>${intro}</p><p>${outro}</p><p>Questions? <a href="https://wa.me/923000000000" target="_blank" rel="noopener">WhatsApp us</a> or email <a href="mailto:${from}">${from}</a>.</p><p>&copy; 2026 ${sender}. All rights reserved.</p></div></div></div></body></html>`;
 }
