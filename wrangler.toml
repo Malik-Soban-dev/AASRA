@@ -13,6 +13,10 @@ compatibility_flags = ["nodejs_compat"]
 directory = "./dist"
 binding = "ASSETS"
 not_found_handling = "404-page"
+# CRITICAL: /api/* must always execute the Worker script. Without this, the
+# asset layer intercepts requests before the Worker runs and serves the static
+# 404 page for every API route in production. Keep this line.
+run_worker_first = ["/api/*"]
 
 # --- Non-secret environment variables (safe to commit) ---
 [vars]

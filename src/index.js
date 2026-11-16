@@ -18,7 +18,12 @@ import { onRequestScheduled } from '../functions/scheduled.js';
 
 export default {
   async fetch(request, env, ctx) {
-    return functionsRouter.fetch(request, env, ctx);
+    // Defensive: if the compiled router is missing or malformed, serve static
+    // assets rather than throwing (which would 1101 every request).
+    if (functionsRouter && typeof functionsRouter.fetch === 'function') {
+      return functionsRouter.fetch(request, env, ctx);
+    }
+    return env.ASSETS.fetch(request);
   },
 
   /**
