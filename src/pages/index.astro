@@ -1,68 +1,51 @@
 ---
 import Layout from '../components/Layout.astro';
-import ProductCard from '../components/ProductCard.astro';
-import { getVisibleProducts, formatPKR } from '../lib/products.js';
-import productsData from '../../data/products.json';
 
-const visible = getVisibleProducts(productsData);
-
-// Seasonal suggestion tiles (category → imagery).
+// Seasonal suggestion tiles — portrait imagery, serif titles (BC-style campaign row)
 const seasonalTiles = [
   {
-    label: 'Home Textiles',
+    label: 'Linen Curtains',
     href: '/shop?category=home-textiles',
-    image: '/images/products/cushion-oatmeal-1.webp',
+    image: '/images/products/linen-curtain-ivory-1.webp',
   },
   {
-    label: 'Rugs',
+    label: 'Dhurrie Rugs',
     href: '/shop?category=rugs',
     image: '/images/products/dhurrie-beige-1.webp',
   },
   {
-    label: 'Tableware',
+    label: 'Artisan Tableware',
     href: '/shop?category=tableware',
     image: '/images/products/dinner-plate-1.webp',
   },
   {
-    label: 'Woodware',
+    label: 'Teak Woodware',
     href: '/shop?category=woodware',
     image: '/images/products/teak-tray-1.webp',
   },
 ];
-
-// Featured products for homepage (first 4 visible)
-const featured = visible.slice(0, 4);
 ---
 
 <Layout title="AASRA — considered essentials for the home" description="Considered home essentials, online in Pakistan. PKR. No Cash on Delivery.">
-  <!-- Announcement bar -->
-  <div style="background:var(--text); color:#fff;">
-    <div class="container" style="padding:0.5rem 1.5rem; font-size:0.65rem; text-transform:uppercase; letter-spacing:0.22em; text-align:center;">
-      Complimentary shipping on orders above Rs 20,000 &middot; No Cash on Delivery &middot; Pay in full or deposit + balance online
-    </div>
-  </div>
-
-  <!-- Hero: full-bleed editorial -->
+  <!-- 1. Campaign hero: full-bleed seasonal image, centered serif, two text links -->
   <section class="hero">
-    <img src="/images/hero.webp" alt="Seasonal collection" class="hero-image" loading="eager" width="1600" height="900" fetchpriority="high" />
+    <img src="/images/campaign/hero-winter.webp" alt="The winter edit" class="hero-image" loading="eager" width="2000" height="1125" fetchpriority="high" />
     <div class="hero-content">
-      <div class="kicker">New collection</div>
-      <h1>Considered essentials for the home</h1>
-      <p class="hero-sub">Natural materials, honest construction, quiet prices. Everything in PKR, everything payable online.</p>
-      <div class="hero-actions">
-        <a href="/shop" class="btn btn-solid-light">Shop the collection</a>
-        <a href="/about" class="btn btn-light">Discover the story</a>
+      <div class="kicker">Holiday Season</div>
+      <h1>The Winter Edit</h1>
+      <p class="hero-sub">Warm linens, woven rugs, and candlelit tables — the season's considered gifts.</p>
+      <div class="hero-links">
+        <a href="/gifts">Gift Selection</a>
+        <a href="/about">Discover the story</a>
       </div>
     </div>
   </section>
 
-  <!-- Seasonal suggestions (4-up) -->
+  <!-- 2. Seasonal suggestions: 4-up portrait tiles with serif titles -->
   <section class="section">
     <div class="container">
       <div class="section-head">
         <div class="kicker">Seasonal suggestions</div>
-        <h2>Explore by category</h2>
-        <p class="section-sub">Four families of objects, made slowly and meant to stay.</p>
       </div>
       <div class="seasonal-grid">
         {seasonalTiles.map((tile) => (
@@ -77,68 +60,67 @@ const featured = visible.slice(0, 4);
     </div>
   </section>
 
-  <!-- Split editorial (2-up) -->
+  <!-- 3. Gift banners: 2-up with bold caption under image -->
   <section class="section-tight">
     <div class="container">
-      <div class="split-grid">
-        <a href="/shop?category=tableware" class="split-banner">
-          <img src="/images/products/dinner-plate-1.webp" alt="Artisan tableware" loading="lazy" width="800" height="500" />
-          <span class="split-caption">
-            <span class="split-title">For the table</span>
-            <span class="text-link">Discover</span>
-          </span>
+      <div class="gift-grid">
+        <a href="/gifts" class="gift-banner">
+          <img src="/images/campaign/gifts-table.webp" alt="Gifts for the table" loading="lazy" width="900" height="1125" />
+          <span class="gift-caption">Gifts for the table</span>
         </a>
-        <a href="/shop?category=home-textiles" class="split-banner">
-          <img src="/images/products/cushion-oatmeal-1.webp" alt="Linen cushions" loading="lazy" width="800" height="500" />
-          <span class="split-caption">
-            <span class="split-title">For the living space</span>
-            <span class="text-link">Discover</span>
-          </span>
+        <a href="/gifts" class="gift-banner">
+          <img src="/images/campaign/gifts-home.webp" alt="Gifts for the home" loading="lazy" width="900" height="1125" />
+          <span class="gift-caption">Gifts for the home</span>
         </a>
       </div>
     </div>
   </section>
 
-  <!-- Full-width collection banner -->
+  <!-- 4. Full-width collection banner with overlay text -->
   <section class="section-tight">
-    <div class="wide-banner">
-      <img src="/images/products/dhurrie-charcoal-1.webp" alt="Handwoven cotton dhurrie" loading="lazy" width="1200" height="800" />
+    <a href="/shop?category=tableware" class="wide-banner wide-banner-link">
+      <img src="/images/campaign/banner-table.webp" alt="The table collection" loading="lazy" width="2000" height="900" />
       <div class="wide-content">
-        <div class="kicker">The AASRA philosophy</div>
-        <h2>Made to last</h2>
-        <p>Objects that age well and are used daily — woven, thrown, and stitched by hand.</p>
-        <a href="/shop" class="btn btn-light">Explore the collection</a>
+        <div class="kicker">New collection</div>
+        <h2>The Table Collection</h2>
+        <span class="hero-links"><a href="/shop?category=tableware">Discover</a></span>
+      </div>
+    </a>
+  </section>
+
+  <!-- 5. Explore the collection band -->
+  <section class="section-tight">
+    <a href="/shop" class="wide-banner wide-banner-link explore-band">
+      <img src="/images/campaign/explore-collection.webp" alt="Explore the collection" loading="lazy" width="2000" height="1000" />
+      <div class="wide-content">
+        <h2>Explore the collection</h2>
+        <p>Considered objects, made slowly, meant to be lived with.</p>
+      </div>
+    </a>
+  </section>
+
+  <!-- 6. Story widget: single centered tile with caption -->
+  <section class="section-tight">
+    <div class="container">
+      <div class="story-widget-row">
+        <a href="/about" class="story-widget">
+          <img src="/images/campaign/story-artisan.webp" alt="Handweaving a cotton dhurrie" loading="lazy" width="900" height="900" />
+          <span class="story-caption">The AASRA story</span>
+          <span class="story-sub">Craftsmanship in every thread</span>
+        </a>
       </div>
     </div>
   </section>
 
-  <!-- Featured products -->
-  <section class="section">
+  <!-- 7. Newsletter band -->
+  <section class="section" style="border-top:1px solid var(--border); text-align:center;">
     <div class="container">
-      <div class="section-head">
-        <div class="kicker">Featured</div>
-        <h2>New in</h2>
-      </div>
-      <div class="grid">
-        {featured.map((p) => (
-          <ProductCard product={p} />
-        ))}
-      </div>
-      <div style="text-align:center; margin-top:3rem;">
-        <a href="/shop" class="text-link">View all</a>
-      </div>
-    </div>
-  </section>
-
-  <!-- Newsletter band -->
-  <section class="section" style="background:var(--surface); border-top:1px solid var(--border); border-bottom:1px solid var(--border); text-align:center;">
-    <div class="container">
-      <div class="kicker">Newsletter</div>
-      <h2 style="margin-bottom:0.6rem;">Be the first to know</h2>
+      <div class="kicker">Subscribe to our newsletter</div>
+      <h2 style="margin-bottom:0.6rem;">News from the world of AASRA</h2>
       <p style="max-width:460px; margin:0 auto 1.75rem; color:var(--muted);">New collections, restocks, and seasonal edits. No spam.</p>
-      <form id="newsletter-form" style="max-width:420px; margin:0 auto; display:flex; gap:0.5rem; flex-wrap:wrap;">
-        <input type="email" name="email" placeholder="Your email address" class="form-input" required style="flex:1; min-width:220px;" />
-        <button type="submit" class="btn btn-primary">Subscribe</button>
+      <form id="newsletter-form" class="newsletter-form">
+        <input type="email" name="email" placeholder="Your email address" required aria-label="Email address" />
+        <button type="submit">Subscribe</button>
       </form>
       <p id="newsletter-msg" style="margin-top:0.75rem; font-size:0.8rem; color:var(--muted);"></p>
     </div>
