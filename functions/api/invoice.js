@@ -87,7 +87,7 @@ export async function onRequestGet(context) {
     items,
     type,
     payment,
-    baseUrl: env.PUBLIC_BASE_URL || 'https://shop.example.com',
+    baseUrl: env.PUBLIC_BASE_URL || 'https://aasra.shop',
     generatedAt: new Date().toISOString(),
   });
 

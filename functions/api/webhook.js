@@ -225,7 +225,7 @@ export async function onRequestPost(context) {
 
   // 17. Email customer
   try {
-    const baseUrl = env.PUBLIC_BASE_URL || 'https://shop.example.com';
+    const baseUrl = env.PUBLIC_BASE_URL || 'https://aasra.shop';
     await sendEmail(env, {
       to: order.email,
       ...paymentPaidEmail({ order, kind: payment.kind, amount: payment.amount, env }),

@@ -10,7 +10,7 @@
   # Permissions
   Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=()
   # Content Security Policy (allows our inline cart/Turnstile scripts; restricts other sources)
-  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' https://challenges.cloudflare.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' https://challenges.cloudflare.com https://api.safepay.example.com; frame-ancestors 'none';
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' https://challenges.cloudflare.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' https://challenges.cloudflare.com; frame-ancestors 'none';
   # Cache static assets
   Cache-Control: public, max-age=31536000, immutable
 

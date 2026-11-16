@@ -65,7 +65,7 @@ export async function onRequestPost(context) {
   const customerSubject = sanitizeString(subject, 200) || 'Contact form';
   const customerMessage = sanitizeString(message, 2000);
 
-  const baseUrl = env.PUBLIC_BASE_URL || 'https://shop.example.com';
+  const baseUrl = env.PUBLIC_BASE_URL || 'https://aasra.shop';
 
   try {
     await sendEmail(env, {

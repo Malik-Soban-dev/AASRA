@@ -17,7 +17,7 @@ export function emailConfig(env) {
     apiKey: env.EMAIL_PROVIDER_API_KEY || '',
     from: env.EMAIL_FROM || 'orders@example.com',
     fromName: env.EMAIL_FROM_NAME || 'AASRA',
-    baseUrl: env.PUBLIC_BASE_URL || 'https://shop.example.com',
+    baseUrl: env.PUBLIC_BASE_URL || 'https://aasra.shop',
   };
 }
 
@@ -77,11 +77,11 @@ function money(amount) {
 }
 
 function invoiceLink(env, orderId, token, type) {
-  return `${env.PUBLIC_BASE_URL || 'https://shop.example.com'}/api/invoice?order_id=${encodeURIComponent(orderId)}&token=${encodeURIComponent(token)}&type=${type}`;
+  return `${env.PUBLIC_BASE_URL || 'https://aasra.shop'}/api/invoice?order_id=${encodeURIComponent(orderId)}&token=${encodeURIComponent(token)}&type=${type}`;
 }
 
 function lookupLink(env) {
-  return `${env.PUBLIC_BASE_URL || 'https://shop.example.com'}/order-lookup`;
+  return `${env.PUBLIC_BASE_URL || 'https://aasra.shop'}/order-lookup`;
 }
 
 function escapeHtml(s) {
@@ -103,7 +103,7 @@ function fromEmail(env) {
  * Order received (after checkout creates the order, before payment).
  */
 export function orderReceivedEmail({ order, env }) {
-  const b = env.PUBLIC_BASE_URL || 'https://shop.example.com';
+  const b = env.PUBLIC_BASE_URL || 'https://aasra.shop';
   const payLink =
     order.payment_type === 'deposit' && order.balance_amount > 0
       ? invoiceLink(env, order.id, order.balance_token, 'deposit')
@@ -130,7 +130,7 @@ export function orderReceivedEmail({ order, env }) {
  * Deposit payment confirmed.
  */
 export function depositPaidEmail({ order, amount, env }) {
-  const b = env.PUBLIC_BASE_URL || 'https://shop.example.com';
+  const b = env.PUBLIC_BASE_URL || 'https://aasra.shop';
   const balanceLink =
     order.balance_amount > 0
       ? invoiceLink(env, order.id, order.balance_token, 'balance')
@@ -221,7 +221,7 @@ export function deliveredEmail({ order, env }) {
  * Order cancelled.
  */
 export function cancelledEmail({ order, reason, env }) {
-  const b = env.PUBLIC_BASE_URL || 'https://shop.example.com';
+  const b = env.PUBLIC_BASE_URL || 'https://aasra.shop';
   return {
     subject: `Order cancelled — ${order.id}`,
     html: `
@@ -265,7 +265,7 @@ export function paymentPaidEmail({ order, kind, amount, env }) {
  * Returns { subject, html } with a consistent branded layout.
  */
 export function wrapEmail(env, { subject, title, body, intro, outro, btnText, btnUrl }) {
-  const b = env.PUBLIC_BASE_URL || 'https://shop.example.com';
+  const b = env.PUBLIC_BASE_URL || 'https://aasra.shop';
   const from = fromEmail(env);
   const sender = env.EMAIL_FROM_NAME || 'AASRA';
   return {

@@ -82,7 +82,7 @@ export async function onRequestScheduled(context) {
       ).bind(targetISO).all();
 
       if (dueOrders.results && dueOrders.results.length > 0) {
-        const baseUrl = env.PUBLIC_BASE_URL || 'https://shop.example.com';
+        const baseUrl = env.PUBLIC_BASE_URL || 'https://aasra.shop';
         const emailPromises = dueOrders.results.map((o) =>
           sendBalanceReminder(env, o, baseUrl)
         );
@@ -151,7 +151,7 @@ async function sendBalanceReminder(env, order) {
 }
 
 function wrapEmail(env, subject, bodyHtml, intro, outro) {
-  const b = env.PUBLIC_BASE_URL || 'https://shop.example.com';
+  const b = env.PUBLIC_BASE_URL || 'https://aasra.shop';
   const from = env.EMAIL_FROM || 'orders@example.com';
   const sender = env.EMAIL_FROM_NAME || 'AASRA';
   return `<!DOCTYPE html>

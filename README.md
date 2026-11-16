@@ -43,6 +43,19 @@ Design reference: https://shop.brunellocucinelli.com (layout and feel only — n
 - **Accessibility**: alt text, visible focus, labeled fields, keyboard navigation, reduced motion, skip-to-content links, accessibility statement page.
 - **Payments**: full online or deposit + balance; two payments tracked separately; balance paid via unguessable expiring token; order lookup requires order ID + phone.
 
+## Custom domain
+
+Your store domain is **https://aasra.shop**. Set it in Cloudflare Pages (Custom domains) and configure:
+
+-  (Pages variable)
+-  (Pages secret)
+- Safepay webhook URL: 
+- Turnstile domain added in Cloudflare dashboard
+
+## WhatsApp number (placeholder)
+
+The WhatsApp click-to-chat links use  as a placeholder. Replace with your real WhatsApp number (e.g. ) in , , and  before launch.
+
 ## Quick start
 
 ### 1. Install deps

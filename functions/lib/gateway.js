@@ -28,7 +28,7 @@ export function gatewayConfig(env) {
     baseUrl: env.SAFEPAY_BASE_URL || 'https://api.safepay.example.com/v1',
     secretKey: env.SAFEPAY_SECRET_KEY || '',
     webhookSecret: env.SAFEPAY_WEBHOOK_SECRET || '',
-    returnUrl: env.PUBLIC_BASE_URL || 'https://shop.example.com',
+    returnUrl: env.PUBLIC_BASE_URL || 'https://aasra.shop',
   };
 }
 

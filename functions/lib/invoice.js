@@ -22,7 +22,7 @@ const BUSINESS_NAME = process.env.BUSINESS_NAME || 'AASRA';
 const BUSINESS_ADDRESS =
   process.env.BUSINESS_ADDRESS || 'Karachi, Pakistan';
 const BUSINESS_PHONE = process.env.BUSINESS_PHONE || '+92 300 0000000';
-const BUSINESS_EMAIL = process.env.BUSINESS_EMAIL || 'orders@example.com';
+const BUSINESS_EMAIL = process.env.BUSINESS_EMAIL || 'orders@aasra.shop';
 
 /**
  * Money formatting for invoices (whole PKR).
@@ -70,7 +70,7 @@ export function buildInvoiceHtml(opts) {
     items,
     type = 'final',
     payment,
-    baseUrl = 'https://shop.example.com',
+    baseUrl = 'https://aasra.shop',
     generatedAt = new Date().toISOString(),
   } = opts;
 
