@@ -3,6 +3,7 @@
 
 name = "aasra-store"
 compatibility_date = "2026-01-01"
+compatibility_flags = ["nodejs_compat"]
 
 # Pages project
 [deploy]
@@ -11,9 +12,9 @@ project = "aasra-store"
 
 # D1 database binding (created via: wrangler d1 create AASRA_DB)
 [[d1_databases]]
-binding = "DB"          // available in Functions as context.env.DB
+binding = "DB"
 database_name = "AASRA_DB"
-database_id = ""        // fill in after `wrangler d1 create AASRA_DB`
+database_id = ""
 
 # Cron triggers (schedule handlers run as Workers)
 # Daily 09:00 UTC — balance reminders, expiry, reconciliation
@@ -50,7 +51,3 @@ crons = ["0 9 * * *"]
 #   SAFEPAY_WEBHOOK_SECRET = "..."
 #   EMAIL_PROVIDER_API_KEY = "..."
 #   ALLOWED_ORIGIN = "https://aasra.shop"
-
-# Node.js compatibility for Pages Functions
-[node_compat]
-compatibility_flags = ["nodejs_compat"]
