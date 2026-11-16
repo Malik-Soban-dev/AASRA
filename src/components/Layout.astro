@@ -1,6 +1,7 @@
 ---
 import '@fontsource/cormorant-garamond/500.css';
 import '@fontsource/cormorant-garamond/600.css';
+import '../styles/global.css';
 import Header from './Header.astro';
 import Footer from './Footer.astro';
 import CartDrawer from './CartDrawer.astro';
@@ -21,8 +22,7 @@ const { title = 'AASRA', description = 'AASRA — considered essentials for the 
     <meta name="color-scheme" content="light" />
     <title>{title}</title>
     {description && <meta name="description" content={description} />}
-    <link rel="preload" as="style" href="/styles/global.css" />
-    <link rel="stylesheet" href="/styles/global.css" />
+    <!-- global.css + fonts are bundled by Astro/Vite (hashed under /_astro/, auto-injected) -->
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <script>
       window.__AASRA_CART_KEY = 'aasra_cart_v1';

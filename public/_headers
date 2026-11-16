@@ -1,3 +1,4 @@
+# Security headers for all responses
 /*
   # HTTPS everywhere: HSTS (min 1 year), minimum TLS 1.2 enforced at the edge
   Strict-Transport-Security: max-age=31536000; includeSubDomains; preload
@@ -11,27 +12,29 @@
   Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=()
   # Content Security Policy (allows our inline cart/Turnstile scripts; restricts other sources)
   Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' https://challenges.cloudflare.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' https://challenges.cloudflare.com; frame-ancestors 'none';
-  # Cache static assets
+  # HTML/content pages: always revalidate so deploys are visible immediately
+  Cache-Control: no-cache, must-revalidate
+
+# Hashed build assets — safe to cache forever (filename changes on content change)
+/_astro/*
   Cache-Control: public, max-age=31536000, immutable
 
-/*.html
-  Cache-Control: no-store, no-cache, must-revalidate
-  Strict-Transport-Security: max-age=31536000; includeSubDomains
-  X-Frame-Options: DENY
-  X-Content-Type-Options: nosniff
-  Referrer-Policy: no-referrer
-  Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=()
-
-/data/*
-  Cache-Control: public, max-age=60
-  Strict-Transport-Security: max-age=31536000; includeSubDomains
-
+# Images — immutable (content changes get new filenames)
 /images/*
   Cache-Control: public, max-age=31536000, immutable
-  Strict-Transport-Security: max-age=31536000; includeSubDomains
 
+# Client data feeds — short cache
+/data/*
+  Cache-Control: public, max-age=60
+  Strict-Transport-Security: max-age=31536000; includeSubDomains; preload
+
+# Direct .html hits — never cached
+/*.html
+  Cache-Control: no-store, no-cache, must-revalidate
+
+# API — never cached
 /api/*
   Cache-Control: no-store, no-cache, must-revalidate
-  Strict-Transport-Security: max-age=31536000; includeSubDomains
+  Strict-Transport-Security: max-age=31536000; includeSubDomains; preload
   X-Content-Type-Options: nosniff
   Referrer-Policy: no-referrer

@@ -20,6 +20,24 @@ let res = await fetch(BASE + '/');
 let text = await res.text();
 check('GET / serves homepage (200 HTML)', res.status === 200 && /<html/i.test(text), `status ${res.status}, ${text.length} bytes`);
 
+// 1b. The homepage must link a stylesheet that actually resolves and contains CSS.
+//     (Regression guard: a bad href here means the whole site ships unstyled.)
+const cssHref = (text.match(/<link[^>]+rel="stylesheet"[^>]+href="([^"]+)"/) || [])[1];
+if (cssHref) {
+  const cssRes = await fetch(BASE + cssHref);
+  const cssBody = await cssRes.text();
+  check(
+    `stylesheet ${cssHref} resolves (200, text/css, non-empty)`,
+    cssRes.status === 200 &&
+      (cssRes.headers.get('Content-Type') || '').includes('text/css') &&
+      cssBody.includes('{') &&
+      cssBody.length > 1000,
+    `status ${cssRes.status}, type ${cssRes.headers.get('Content-Type')}, ${cssBody.length} bytes`
+  );
+} else {
+  check('homepage links a stylesheet', false, 'no rel="stylesheet" link found in head');
+}
+
 // 2. Static product page served from assets
 res = await fetch(BASE + '/shop');
 text = await res.text();
