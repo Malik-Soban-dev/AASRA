@@ -35,10 +35,11 @@ const imageAlt = product.images[1] || imageMain;
       />
     </div>
     <div class="product-info">
+      {product.tags?.includes('winter') && <div class="card-tag">Winter Edit</div>}
       <h3 class="product-name">{product.name}</h3>
       <div class="product-color">{firstVariant?.size || ''}</div>
       <div class="product-price">{formatPKR(product.price_pkr)}</div>
-      {product.variants.length > 1 && <div class="product-colors">{product.variants.length} variants</div>}
+      <div class="product-colors">{product.variants.length > 1 ? `${product.variants.length} variants` : '1 variant'}</div>
     </div>
   </a>
 </article>

@@ -15,11 +15,24 @@
         "/images/products/linen-curtain-ivory-2.webp"
       ],
       "variants": [
-        { "sku": "LIN-IV-135X240", "size": "135 x 240 cm", "stock_key": "stock-LIN-IV-135X240" },
-        { "sku": "LIN-IV-135X270", "size": "135 x 270 cm", "stock_key": "stock-LIN-IV-135X270" }
+        {
+          "sku": "LIN-IV-135X240",
+          "size": "135 x 240 cm",
+          "stock_key": "stock-LIN-IV-135X240"
+        },
+        {
+          "sku": "LIN-IV-135X270",
+          "size": "135 x 270 cm",
+          "stock_key": "stock-LIN-IV-135X270"
+        }
       ],
       "deposit_eligible": false,
-      "tags": ["linen", "curtain", "ivory", "home"],
+      "tags": [
+        "linen",
+        "curtain",
+        "ivory",
+        "home"
+      ],
       "seo": {
         "title": "Linen Curtain Panel — Ivory | AASRA",
         "description": "Natural linen curtain panel in ivory. Breathable, clean hem. Shop home textiles online in Pakistan."
@@ -38,11 +51,24 @@
         "/images/products/linen-curtain-slate-2.webp"
       ],
       "variants": [
-        { "sku": "LIN-SL-135X240", "size": "135 x 240 cm", "stock_key": "stock-LIN-SL-135X240" },
-        { "sku": "LIN-SL-135X270", "size": "135 x 270 cm", "stock_key": "stock-LIN-SL-135X270" }
+        {
+          "sku": "LIN-SL-135X240",
+          "size": "135 x 240 cm",
+          "stock_key": "stock-LIN-SL-135X240"
+        },
+        {
+          "sku": "LIN-SL-135X270",
+          "size": "135 x 270 cm",
+          "stock_key": "stock-LIN-SL-135X270"
+        }
       ],
       "deposit_eligible": false,
-      "tags": ["linen", "curtain", "slate", "home"],
+      "tags": [
+        "linen",
+        "curtain",
+        "slate",
+        "home"
+      ],
       "seo": {
         "title": "Linen Curtain Panel — Slate | AASRA",
         "description": "Natural linen curtain panel in slate grey. Shop home textiles online in Pakistan."
@@ -61,11 +87,25 @@
         "/images/products/dhurrie-beige-2.webp"
       ],
       "variants": [
-        { "sku": "DHR-BG-4X6", "size": "4 x 6 ft", "stock_key": "stock-DHR-BG-4X6" },
-        { "sku": "DHR-BG-6X9", "size": "6 x 9 ft", "stock_key": "stock-DHR-BG-6X9" }
+        {
+          "sku": "DHR-BG-4X6",
+          "size": "4 x 6 ft",
+          "stock_key": "stock-DHR-BG-4X6"
+        },
+        {
+          "sku": "DHR-BG-6X9",
+          "size": "6 x 9 ft",
+          "stock_key": "stock-DHR-BG-6X9"
+        }
       ],
       "deposit_eligible": true,
-      "tags": ["cotton", "dhurrie", "rug", "beige", "handwoven"],
+      "tags": [
+        "cotton",
+        "dhurrie",
+        "rug",
+        "beige",
+        "handwoven"
+      ],
       "seo": {
         "title": "Cotton Dhurrie Rug — Beige | AASRA",
         "description": "Handwoven cotton dhurrie rug in beige. Flat-weave, durable. Shop rugs online in Pakistan."
@@ -84,11 +124,26 @@
         "/images/products/dhurrie-charcoal-2.webp"
       ],
       "variants": [
-        { "sku": "DHR-CH-4X6", "size": "4 x 6 ft", "stock_key": "stock-DHR-CH-4X6" },
-        { "sku": "DHR-CH-6X9", "size": "6 x 9 ft", "stock_key": "stock-DHR-CH-6X9" }
+        {
+          "sku": "DHR-CH-4X6",
+          "size": "4 x 6 ft",
+          "stock_key": "stock-DHR-CH-4X6"
+        },
+        {
+          "sku": "DHR-CH-6X9",
+          "size": "6 x 9 ft",
+          "stock_key": "stock-DHR-CH-6X9"
+        }
       ],
       "deposit_eligible": true,
-      "tags": ["cotton", "dhurrie", "rug", "charcoal", "handwoven"],
+      "tags": [
+        "cotton",
+        "dhurrie",
+        "rug",
+        "charcoal",
+        "handwoven",
+        "winter"
+      ],
       "seo": {
         "title": "Cotton Dhurrie Rug — Charcoal | AASRA",
         "description": "Handwoven cotton dhurrie rug in charcoal grey. Shop rugs online in Pakistan."
@@ -107,10 +162,20 @@
         "/images/products/dinner-plate-2.webp"
       ],
       "variants": [
-        { "sku": "CER-DP-SET4", "size": "26 cm diameter", "stock_key": "stock-CER-DP-SET4" }
+        {
+          "sku": "CER-DP-SET4",
+          "size": "26 cm diameter",
+          "stock_key": "stock-CER-DP-SET4"
+        }
       ],
       "deposit_eligible": false,
-      "tags": ["ceramics", "dinnerware", "plate", "stoneware"],
+      "tags": [
+        "ceramics",
+        "dinnerware",
+        "plate",
+        "stoneware",
+        "winter"
+      ],
       "seo": {
         "title": "Ceramics Dinner Plate Set — Set of 4 | AASRA",
         "description": "Stoneware dinner plate set of four in matte neutral glaze. Shop tableware online in Pakistan."
@@ -129,10 +194,19 @@
         "/images/products/serving-bowl-2.webp"
       ],
       "variants": [
-        { "sku": "CER-SB-L", "size": "28 cm diameter", "stock_key": "stock-CER-SB-L" }
+        {
+          "sku": "CER-SB-L",
+          "size": "28 cm diameter",
+          "stock_key": "stock-CER-SB-L"
+        }
       ],
       "deposit_eligible": false,
-      "tags": ["ceramics", "serving", "bowl", "stoneware"],
+      "tags": [
+        "ceramics",
+        "serving",
+        "bowl",
+        "stoneware"
+      ],
       "seo": {
         "title": "Ceramics Serving Bowl — Large | AASRA",
         "description": "Large stoneware serving bowl in matte neutral glaze. Shop tableware online in Pakistan."
@@ -151,11 +225,24 @@
         "/images/products/cushion-oatmeal-2.webp"
       ],
       "variants": [
-        { "sku": "THR-OAT-18X18", "size": "18 x 18 in", "stock_key": "stock-THR-OAT-18X18" },
-        { "sku": "THR-OAT-22X22", "size": "22 x 22 in", "stock_key": "stock-THR-OAT-22X22" }
+        {
+          "sku": "THR-OAT-18X18",
+          "size": "18 x 18 in",
+          "stock_key": "stock-THR-OAT-18X18"
+        },
+        {
+          "sku": "THR-OAT-22X22",
+          "size": "22 x 22 in",
+          "stock_key": "stock-THR-OAT-22X22"
+        }
       ],
       "deposit_eligible": false,
-      "tags": ["linen", "cushion", "throw", "oatmeal"],
+      "tags": [
+        "linen",
+        "cushion",
+        "throw",
+        "oatmeal"
+      ],
       "seo": {
         "title": "Linen Throw Cushion — Oatmeal | AASRA",
         "description": "Linen throw cushion cover in oatmeal. Shop home textiles online in Pakistan."
@@ -174,10 +261,19 @@
         "/images/products/teak-tray-2.webp"
       ],
       "variants": [
-        { "sku": "WD-TRY-MED", "size": "45 x 30 cm", "stock_key": "stock-WD-TRY-MED" }
+        {
+          "sku": "WD-TRY-MED",
+          "size": "45 x 30 cm",
+          "stock_key": "stock-WD-TRY-MED"
+        }
       ],
       "deposit_eligible": false,
-      "tags": ["teak", "wood", "tray", "serving"],
+      "tags": [
+        "teak",
+        "wood",
+        "tray",
+        "serving"
+      ],
       "seo": {
         "title": "Teak Wooden Tray — Medium | AASRA",
         "description": "Reclaimed teak wooden tray, medium size. Shop woodware online in Pakistan."

@@ -6,10 +6,10 @@ export interface Props {}
   <!-- Utility bar -->
   <div class="header-utility">
     <div class="container header-utility-inner">
-      <span>Complimentary shipping on orders above Rs 20,000</span>
+      <span>Pakistan (PKR)</span>
       <span class="header-utility-links">
-        <a href="/order-lookup">Order Lookup</a>
-        <a href="/contact">Contact</a>
+        <a href="/contact">Contact us</a>
+        <a href="/order-lookup">Order lookup</a>
         <a href="https://wa.me/923000000000" target="_blank" rel="noopener">WhatsApp</a>
       </span>
     </div>
@@ -24,6 +24,11 @@ export interface Props {}
     <a href="/" class="logo" aria-label="AASRA home">AASRA</a>
 
     <div class="header-icons" aria-label="Utilities">
+      <button id="search-btn" aria-label="Search" aria-expanded="false" aria-controls="search-row" title="Search" class="util-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" aria-hidden="true">
+          <circle cx="11" cy="11" r="7"/><path d="M16.5 16.5 21 21"/>
+        </svg>
+      </button>
       <a href="/wishlist" aria-label="Wishlist" title="Wishlist" class="util-icon">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" aria-hidden="true">
           <path d="M12 20.5C7 16.5 3.5 13.2 3.5 9.6 3.5 7 5.5 5 8 5c1.6 0 3.1.8 4 2.1C12.9 5.8 14.4 5 16 5c2.5 0 4.5 2 4.5 4.6 0 3.6-3.5 6.9-8.5 10.9Z"/>
@@ -52,6 +57,14 @@ export interface Props {}
       <li><a href="/about">About</a></li>
     </ul>
   </nav>
+
+  <!-- Collapsible search row -->
+  <div class="header-search-row" id="search-row">
+    <form action="/shop" method="GET" role="search">
+      <input type="text" name="q" placeholder="Search products…" aria-label="Search products" autocomplete="off" />
+      <button type="submit">Search</button>
+    </form>
+  </div>
 </header>
 
 <script>
@@ -62,6 +75,16 @@ export interface Props {}
       const expanded = toggle.getAttribute('aria-expanded') === 'true';
       toggle.setAttribute('aria-expanded', String(!expanded));
       nav.classList.toggle('open');
+    });
+  }
+
+  const searchBtn = document.getElementById('search-btn');
+  const searchRow = document.getElementById('search-row');
+  if (searchBtn && searchRow) {
+    searchBtn.addEventListener('click', () => {
+      const open = searchRow.classList.toggle('open');
+      searchBtn.setAttribute('aria-expanded', String(open));
+      if (open) searchRow.querySelector('input')?.focus();
     });
   }
 </script>

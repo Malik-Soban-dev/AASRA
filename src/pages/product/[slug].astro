@@ -43,8 +43,8 @@ const estimatedBalance = product.deposit_eligible ? balanceAmount(product.price_
           </div>
         </div>
 
-        <!-- Meta -->
-        <div class="product-meta" style="flex:0 0 420px;">
+        <!-- Meta (sticky info column, BC-style) -->
+        <div class="product-meta pdp-info">
           <div class="kicker" style="margin-bottom:0.5rem;">
             {product.category.charAt(0).toUpperCase() + product.category.slice(1)}
           </div>
@@ -88,33 +88,36 @@ const estimatedBalance = product.deposit_eligible ? balanceAmount(product.price_
               <input type="number" id="qty" value="1" min="1" max="10" />
               <button type="button" id="qty-plus">+</button>
             </div>
-            <button id="add-to-cart" class="btn btn-primary btn-full" data-name={product.name} data-price={product.price_pkr} data-sku={defaultVariant.sku}>Add to cart</button>
+            <button id="add-to-cart" class="btn btn-primary btn-full" data-name={product.name} data-price={product.price_pkr} data-sku={defaultVariant.sku}>Add to Bag</button>
             <button id="wishlist-toggle" class="btn btn-full" style="margin-top:0.5rem;">⤖ Add to wishlist</button>
           </div>
 
           <div class="stock-note" id="stock-note">In stock</div>
+
+          <!-- Accordions (BC-style hairline details) -->
+          <details class="accordion" open style="margin-top:1.8rem;">
+            <summary>Description</summary>
+            <div class="accordion-body">
+              <p>{product.description}</p>
+              <p style="margin-top:0.5rem;"><strong>Care:</strong> Handle with care. Spot clean where possible.</p>
+              <p style="margin-top:0.5rem;">Category: {product.category.charAt(0).toUpperCase() + product.category.slice(1).replace('-', ' ')}</p>
+            </div>
+          </details>
+          <details class="accordion">
+            <summary>Shipping &amp; returns</summary>
+            <div class="accordion-body">
+              <p>Shipping calculated at checkout by city. Complimentary shipping on orders above Rs 20,000.</p>
+              <p>Returns accepted within 7 days of delivery, unused and in original packaging. See the <a href="/return-policy">Return &amp; Refund Policy</a>.</p>
+            </div>
+          </details>
+          <details class="accordion">
+            <summary>Payment &amp; deposit</summary>
+            <div class="accordion-body">
+              <p><strong>No Cash on Delivery.</strong> Pay in full online, or in two steps: deposit now, balance online before shipping. See the <a href="/deposit-policy">Deposit Policy</a>.</p>
+            </div>
+          </details>
         </div>
       </div>
-    </div>
-  </section>
-
-  <!-- Details -->
-  <section class="details-section">
-    <div class="container">
-      <h3>Details</h3>
-      <p>{product.description}</p>
-      <p><strong>Category:</strong> {product.category}</p>
-      <p><strong>Care:</strong> Handle with care. Spot clean where possible.</p>
-    </div>
-  </section>
-
-  <!-- Shipping & returns -->
-  <section class="details-section">
-    <div class="container">
-      <h3>Shipping &amp; returns</h3>
-      <p>Shipping calculated at checkout by city. Free shipping on orders above 20,000 PKR.</p>
-      <p>Returns accepted within 7 days of delivery, unused and in original packaging. See <a href="/return-policy">Return &amp; Refund Policy</a>.</p>
-      <p><strong>No Cash on Delivery.</strong> Pay in full online, or deposit + balance online before shipping.</p>
     </div>
   </section>
 
