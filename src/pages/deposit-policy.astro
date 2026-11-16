@@ -6,16 +6,34 @@ import Layout from '../components/Layout.astro';
   <section class="section">
     <div class="container" style="max-width:720px;">
       <h1>Deposit &amp; Cancellation Policy</h1>
-      <p><strong>Last updated:</strong> November 2026</p>
+      <p><strong>Last updated:</strong> November 16, 2026</p>
+      <p>AASRA sells to customers in Pakistan only. Payment is online only — we do not accept Cash on Delivery.</p>
+
+      <h3>Deposit rules</h3>
       <ul>
-        <li><strong>Deposit:</strong> 30% of the order total, payable online at checkout on eligible products.</li>
-        <li><strong>Balance:</strong> the remaining 70% is due online before shipping. A secure pay-balance link is sent by email.</li>
-        <li><strong>Balance deadline:</strong> pay within 7 days, or the order is auto-cancelled.</li>
-        <li><strong>Cancellation before deposit paid:</strong> no charge; the order is cancelled.</li>
-        <li><strong>Cancellation after deposit paid:</strong> the deposit is refunded per our refund timeline; the balance is not charged.</li>
+        <li><strong>Deposit percentage:</strong> 30% of the order total, payable online at checkout on deposit-eligible products.</li>
+        <li><strong>Eligible products:</strong> deposit-eligible items are marked on the product page. All items in the cart must be deposit-eligible to use the deposit option.</li>
+        <li><strong>Balance:</strong> the remaining 70% is due online before shipping. A secure, unguessable pay-balance link is sent by email.</li>
+        <li><strong>Balance deadline:</strong> pay within 7 days of the deposit. If the balance is not paid within 7 days, the order is auto-cancelled.</li>
+        <li><strong>Money rule:</strong> deposit + balance always equals the order total exactly (in whole PKR, no rounding gaps).</li>
         <li>Orders ship only when paid in full.</li>
       </ul>
-      <p>These are default values and must be confirmed against your gateway and legal advice before launch.</p>
+
+      <h3>Cancellation rules</h3>
+      <ul>
+        <li><strong>Before deposit paid:</strong> no charge; the order is cancelled and any stock reservation is released.</li>
+        <li><strong>After deposit paid, before balance paid:</strong> you may cancel. The deposit is refunded to your original payment method per our refund timeline; the balance is not charged.</li>
+        <li><strong>After balance paid:</strong> cancellation is treated as a return — see the Return &amp; Refund Policy.</li>
+        <li><strong>Auto-cancellation:</strong> unpaid balances are auto-cancelled after 7 days; stock reservations are released after 15 minutes.</li>
+      </ul>
+
+      <h3>Refunds on cancelled orders</h3>
+      <ul>
+        <li>Refunds are issued to the original payment method.</li>
+        <li>Refunds typically appear within 7–14 business days, depending on your bank or card issuer.</li>
+      </ul>
+
+      <p><strong>Business contact:</strong> orders@aasra.shop · WhatsApp: +92 300 0000000 · Karachi, Pakistan</p>
     </div>
   </section>
 </Layout>

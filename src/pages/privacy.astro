@@ -6,18 +6,57 @@ import Layout from '../components/Layout.astro';
   <section class="section">
     <div class="container" style="max-width:720px;">
       <h1>Privacy Policy</h1>
-      <p><strong>Last updated:</strong> November 2026</p>
-      <p>AASRA collects your name, email, phone, city, and address to process and ship your order. We do not store card data — payments are handled by our payment gateway on a secure hosted checkout.</p>
-      <h3>Who we share data with</h3>
+      <p><strong>Last updated:</strong> November 16, 2026</p>
+      <p><strong>Controller:</strong> AASRA, Karachi, Pakistan · Email: orders@aasra.shop · WhatsApp: +92 300 0000000</p>
+
+      <h3>1. Information we collect</h3>
+      <p>We collect personal data you provide when you place an order, create a wishlist, subscribe to our newsletter, or contact us:</p>
       <ul>
-        <li>Payment gateway (to process your payment)</li>
-        <li>Courier (to deliver your order)</li>
-        <li>Transactional email provider (for order emails)</li>
-        <li>Cloudflare (hosting, security, analytics)</li>
+        <li><strong>Order data:</strong> name, email, phone number, city, shipping address, and order notes.</li>
+        <li><strong>Payment data:</strong> we do <strong>not</strong> collect or store card data. Payments are processed by our payment gateway on a secure hosted checkout; we only receive a payment reference and status.</li>
+        <li><strong>Wishlist data:</strong> product SKUs you save, stored in your browser (localStorage) and not on our servers.</li>
+        <li><strong>Newsletter data:</strong> email address, stored with your consent in our private database.</li>
+        <li><strong>Technical data:</strong> Cloudflare Web Analytics (privacy-friendly, no cookies) and server logs for security and fraud prevention. Logs do not contain full phone numbers, addresses, or secrets.</li>
       </ul>
-      <h3>Your rights</h3>
-      <p>You may request correction or deletion of your data. Email us at orders@example.com.</p>
-      <p>This is a summary policy. Replace with full legal text reviewed by a lawyer before launch.</p>
+
+      <h3>2. Purposes</h3>
+      <ul>
+        <li>Processing and shipping your orders.</li>
+        <li>Taking payments (deposit and balance) and issuing receipts/invoices.</li>
+        <li>Sending order, payment, shipping, and delivery emails.</li>
+        <li>Fraud prevention, security, and dispute handling.</li>
+        <li>Newsletter communications (only with your consent).</li>
+      </ul>
+
+      <h3>3. Processors we share data with</h3>
+      <ul>
+        <li><strong>Payment gateway (Safepay / PayFast):</strong> to process your payment. Card data never touches our servers.</li>
+        <li><strong>Courier (TCS):</strong> name, phone, and address to deliver your order.</li>
+        <li><strong>Transactional email provider:</strong> to send order and marketing emails (newsletter only with consent).</li>
+        <li><strong>Cloudflare:</strong> hosting, security (WAF, Turnstile), D1 database, and analytics.</li>
+      </ul>
+
+      <h3>4. Retention</h3>
+      <ul>
+        <li><strong>Orders:</strong> retained for at least 7 years for tax and dispute purposes.</li>
+        <li><strong>Payments:</strong> payment records retained with the order for at least 7 years.</li>
+        <li><strong>Stock reservations:</strong> released automatically after 15 minutes if payment is not completed.</li>
+        <li><strong>Newsletter:</strong> retained until you unsubscribe.</li>
+        <li><strong>Logs:</strong> server logs retained for 30 days and do not contain full phone numbers, addresses, or secrets.</li>
+      </ul>
+
+      <h3>5. Your rights</h3>
+      <p>You may request correction or deletion of your personal data, or withdraw newsletter consent, at any time by emailing <a href="mailto:orders@aasra.shop">orders@aasra.shop</a>. We will respond within 30 days. Note that some data must be retained to meet legal obligations even after deletion is requested.</p>
+
+      <h3>6. Data security</h3>
+      <ul>
+        <li>All data is stored in a private Cloudflare D1 database — never in the repository or public files.</li>
+        <li>HTTPS everywhere with HSTS and minimum TLS 1.2.</li>
+        <li>Webhook signatures are verified; API endpoints are rate-limited and CSRF-protected.</li>
+        <li>Full phone numbers and addresses are masked in logs and customer-facing invoices.</li>
+      </ul>
+
+      <p>This policy is published for aasra.shop. If you have questions, email <a href="mailto:orders@aasra.shop">orders@aasra.shop</a>.</p>
     </div>
   </section>
 </Layout>

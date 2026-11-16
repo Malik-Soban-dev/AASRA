@@ -16,14 +16,41 @@ database_name = "AASRA_DB"
 database_id = ""        // fill in after `wrangler d1 create AASRA_DB`
 
 # Cron triggers (schedule handlers run as Workers)
-# VERIFY the actual intervals (balance reminders N1/N2 days, auto-cancel N days)
+# Daily 09:00 UTC — balance reminders, expiry, reconciliation
 [triggers]
-crons = ["0 9 * * *"]   // daily 09:00 UTC — balance reminders, expiry, reconciliation
+crons = ["0 9 * * *"]
+
+# WAF rate limiting rules for /api/* endpoints
+# Applied via Cloudflare dashboard > Security > WAF > Rate limiting rules
+# (These are documented here; create them in the dashboard or via the Cloudflare API)
+# - POST /api/checkout: 10 requests per minute per IP
+# - POST /api/pay-balance: 5 requests per minute per IP
+# - POST /api/contact: 5 requests per minute per IP
+# - POST /api/newsletter: 5 requests per minute per IP
+# - GET /api/order-lookup: 10 requests per minute per IP
+# - GET /api/invoice: 10 requests per minute per IP
+# - POST /api/webhook: 60 requests per minute per IP (gateway webhooks)
 
 # Environment variables (set via `wrangler pages secret put` / `wrangler pages variable put`)
-# [vars]  # non-secret vars (e.g. PUBLIC_BASE_URL, DEFAULT_DEPOSIT_PERCENT)
-# [secrets] # TURNSTILE_SECRET_KEY, SAFEPAY_SECRET_KEY, SAFEPAY_WEBHOOK_SECRET, EMAIL_PROVIDER_API_KEY
+# [vars]  # non-secret vars
+#   PUBLIC_BASE_URL = "https://aasra.shop"
+#   DEFAULT_DEPOSIT_PERCENT = "30"
+#   BALANCE_REMINDER_DAYS = "3,1"
+#   BALANCE_CANCEL_AFTER_DAYS = "7"
+#   TAX_RATE_PCT = "0"           # VERIFY: set actual sales tax rate
+#   BUSINESS_NAME = "AASRA"
+#   BUSINESS_ADDRESS = "Karachi, Pakistan"
+#   BUSINESS_PHONE = "+92 300 0000000"
+#   BUSINESS_EMAIL = "orders@aasra.shop"
+#   TAX_REGISTRATION_NO = "Not registered"
+#
+# [secrets]  # secrets (never commit)
+#   TURNSTILE_SECRET_KEY = "..."
+#   SAFEPAY_SECRET_KEY = "..."
+#   SAFEPAY_WEBHOOK_SECRET = "..."
+#   EMAIL_PROVIDER_API_KEY = "..."
+#   ALLOWED_ORIGIN = "https://aasra.shop"
 
 # Node.js compatibility for Pages Functions
 [node_compat]
-# enable if needed for certain npm packages
+compatibility_flags = ["nodejs_compat"]
