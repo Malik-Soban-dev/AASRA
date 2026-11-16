@@ -1,5 +1,43 @@
 ---
-// Mega-menu data: columns of serif links + a featured image tile (BC pattern)
+const isHome = Astro.url.pathname === '/';
+
+// AASRA's own taxonomy arranged in the broad, multi-column editorial menu
+// pattern observed in the reference. Only our original copy and imagery are used.
+const shopMenuGroups = [
+  { title: 'HOME TEXTILES', links: [
+    { label: 'Curtains', href: '/shop?category=home-textiles' },
+    { label: 'Cushions', href: '/shop?category=home-textiles' },
+    { label: 'Throws & blankets', href: '/shop?category=home-textiles' },
+    { label: 'Bedding', href: '/shop?category=home-textiles' },
+    { label: 'All home textiles', href: '/shop?category=home-textiles' },
+  ] },
+  { title: 'RUGS', links: [
+    { label: 'Cotton dhurries', href: '/shop?category=rugs' },
+    { label: 'Woven rugs', href: '/shop?category=rugs' },
+    { label: 'Small rugs', href: '/shop?category=rugs' },
+    { label: 'All rugs', href: '/shop?category=rugs' },
+  ] },
+  { title: 'TABLE & KITCHEN', links: [
+    { label: 'Dinnerware', href: '/shop?category=tableware' },
+    { label: 'Serving pieces', href: '/shop?category=tableware' },
+    { label: 'Table linens', href: '/shop?category=home-textiles' },
+    { label: 'All tableware', href: '/shop?category=tableware' },
+  ] },
+  { title: 'OBJECTS & GIFTS', links: [
+    { label: 'Woodware', href: '/shop?category=woodware' },
+    { label: 'Gifts for the home', href: '/gifts' },
+    { label: 'New arrivals', href: '/new-arrivals' },
+    { label: 'The journal', href: '/journal' },
+    { label: 'Shop all', href: '/shop' },
+  ] },
+];
+const shopMenuStories = [
+  { img: '/images/campaign/story-artisan.webp', title: 'Made by hand', href: '/about' },
+  { img: '/images/campaign/gifts-table.webp', title: 'A considered table', href: '/shop?category=tableware' },
+  { img: '/images/campaign/explore-collection.webp', title: 'The winter edit', href: '/shop' },
+];
+
+// Mega-menu data for category links.
 const megas = {
   shop: {
     label: 'Shop',
@@ -98,7 +136,7 @@ const megas = {
 };
 ---
 
-<header class="header" role="banner">
+<header class:list={["header", { "home-over-image": isHome }]} role="banner">
   <!-- Utility bar -->
   <div class="header-utility">
     <div class="container header-utility-inner">
@@ -147,22 +185,25 @@ const megas = {
       <li><a href="/">Home</a></li>
       <li class="nav-item">
         <a href={megas.shop.href}>{megas.shop.label}</a>
-        <div class="mega">
-          <div class="mega-links">
-            <span class="small-caps">The collection</span>
-            <ul>
-              <li><a href="/new-arrivals">New Arrivals</a></li>
-              {megas.shop.links.map((l) => <li><a href={l.href}>{l.label}</a></li>)}
-              <li><a href="/journal">The Journal</a></li>
-            </ul>
+        <div class="mega mega-shop" aria-label="Shop categories">
+          <div class="mega-shop-main">
+            {shopMenuGroups.map((group) => (
+              <section class="mega-shop-column">
+                <h2>{group.title}</h2>
+                <ul>{group.links.map((link) => <li><a href={link.href}>{link.label}</a></li>)}</ul>
+              </section>
+            ))}
           </div>
-          <a href={megas.shop.feature.href} class="mega-feature">
-            <img src={megas.shop.feature.img} alt={megas.shop.feature.title} loading="lazy" width="600" height="750" />
-            <figcaption>
-              <span class="small-caps">{megas.shop.feature.kicker}</span>
-              <span class="mega-feature-title">{megas.shop.feature.title}</span>
-            </figcaption>
-          </a>
+          <div class="mega-shop-stories">
+            {shopMenuStories.map((story) => (
+              <a class="mega-shop-story" href={story.href}>
+                <span class="mega-shop-story-title">{story.title}</span>
+                <img src={story.img} alt={story.title} loading="lazy" width="600" height="750" />
+                <span class="mega-shop-story-link">Discover more</span>
+              </a>
+            ))}
+          </div>
+          <a class="mega-shop-discover" href="/shop">Discover the collection</a>
         </div>
       </li>
       <li class="nav-item">
