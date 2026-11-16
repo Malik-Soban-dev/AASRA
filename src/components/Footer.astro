@@ -11,22 +11,27 @@ export interface Props {}
           <li><a href="/order-lookup">Orders and Returns</a></li>
           <li><a href="/size-guide">Size Guide</a></li>
           <li><a href="/shipping">Shipping Information</a></li>
+          <li><a href="/shipping-policy">Shipping Policy</a></li>
+          <li><a href="/return-policy">Return Policy</a></li>
           <li><a href="/contact">Contact Us</a></li>
           <li><a href="/faq">FAQ</a></li>
           <li><a href="/wishlist">Wishlist</a></li>
         </ul>
       </div>
       <div>
-        <h4>About</h4>
+        <h4>The House</h4>
         <ul>
           <li><a href="/about">About AASRA</a></li>
+          <li><a href="/gifts">Gifts</a></li>
+          <li><a href="/deposit-policy">Deposit Policy</a></li>
           <li><a href="/contact">Contact</a></li>
         </ul>
       </div>
       <div>
-        <h4>General Information</h4>
+        <h4>Legal</h4>
         <ul>
           <li><a href="/privacy">Privacy Policy</a></li>
+          <li><a href="/terms">Terms of Sale</a></li>
           <li><a href="/cookie-policy">Cookie Policy</a></li>
           <li><a href="/cookie-policy#settings">Cookie Settings</a></li>
           <li><a href="/accessibility">Accessibility Statement</a></li>
@@ -34,63 +39,29 @@ export interface Props {}
       </div>
     </div>
 
-    <hr class="footer-divider" />
-
     <div class="footer-contact">
       <div class="contact-block">
-        <strong>AASRA</strong><br />
+        <strong>AASRA</strong>
         Karachi, Pakistan<br />
         <a href="https://wa.me/923000000000" target="_blank" rel="noopener">+92 300 0000000 (WhatsApp)</a><br />
-        <a href="mailto:orders@example.com">orders@example.com</a>
+        <a href="mailto:orders@aasra.shop">orders@aasra.shop</a>
       </div>
       <div class="contact-block">
-        <strong>Payments</strong><br />
-        Online only · PKR<br />
+        <strong>Payments</strong>
+        Online only &middot; PKR<br />
         No Cash on Delivery<br />
-        Deposit + balance online
+        Pay in full or deposit + balance online
+      </div>
+      <div class="contact-block">
+        <strong>Region</strong>
+        You are browsing the Pakistan store<br />
+        Prices and shipping in PKR
       </div>
     </div>
 
     <div class="footer-bottom">
       <span>&copy; 2026 AASRA. All rights reserved.</span>
-      <span>Pakistan · PKR · No Cash on Delivery</span>
+      <span>Pakistan &middot; PKR &middot; No Cash on Delivery</span>
     </div>
   </div>
 </footer>
-
-<style>
-  .footer-divider {
-    border: none;
-    border-top: 1px solid var(--border);
-    margin: 2rem 0;
-  }
-  .footer-contact {
-    display: flex;
-    gap: 2rem;
-    flex-wrap: wrap;
-    margin-bottom: 1.5rem;
-  }
-  .contact-block {
-    font-size: 0.85rem;
-    color: var(--muted);
-  }
-  .contact-block strong {
-    color: var(--text);
-    display: block;
-    margin-bottom: 0.3rem;
-    font-size: 0.85rem;
-    text-transform: uppercase;
-    letter-spacing: 0.14em;
-  }
-  .contact-block a {
-    color: var(--text);
-    text-decoration: underline;
-  }
-  .contact-block a:hover {
-    color: var(--muted);
-  }
-  @media (max-width: 768px) {
-    .footer-grid { grid-template-columns: 1fr; }
-    .footer-contact { flex-direction: column; gap: 1rem; }
-  }
-</style>

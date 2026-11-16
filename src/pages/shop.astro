@@ -25,38 +25,31 @@ if (q) {
 ---
 
 <Layout title="Shop — AASRA" description="Browse the AASRA collection. Home textiles, rugs, tableware, woodware. PKR.">
-  <!-- Announcement bar -->
-  <div style="background:#fff; border-bottom:1px solid var(--border);">
-    <div class="container" style="padding:0.4rem 1.5rem; font-size:0.75rem; text-transform:uppercase; letter-spacing:0.12em; color:var(--muted); text-align:center;">
-      Free shipping on orders above 20,000 PKR · No Cash on Delivery · Pay in full or deposit + balance online
-    </div>
+  <div class="page-title-block">
+    <div class="kicker">The collection</div>
+    <h1>Shop</h1>
+    {q && <p class="page-sub">Search results for “{q}”</p>}
+    <form action="/shop" method="GET" style="display:flex; gap:0.5rem; justify-content:center; margin-top:1.5rem; flex-wrap:wrap;">
+      <input type="text" name="q" placeholder="Search products…" class="form-input" value={q} style="max-width:280px;" />
+      <button type="submit" class="btn">Search</button>
+    </form>
   </div>
 
-  <section class="section">
+  <section class="section-tight">
     <div class="container">
-      <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:1rem; flex-wrap:wrap; margin-bottom:1.5rem;">
-        <div>
-          <h1>Shop</h1>
-          {q && <p style="color:var(--muted); font-size:0.85rem;">Search results for “{q}”</p>}
-        </div>
-        <form action="/shop" method="GET" style="display:flex; gap:0.5rem; flex-wrap:wrap;">
-          <input type="text" name="q" placeholder="Search products…" class="form-input" value={q} />
-          <button type="submit" class="btn">Search</button>
-        </form>
-      </div>
 
-      <div class="container" style="display:flex; gap:2rem; align-items:flex-start;">
+      <div class="shop-layout">
         <!-- Filters sidebar -->
-        <aside style="flex:0 0 220px; font-size:0.8rem;">
-          <div style="font-size:0.7rem; text-transform:uppercase; letter-spacing:0.14em; color:var(--muted); margin-bottom:0.75rem;">Category</div>
-          <ul style="list-style:none;">
+        <aside class="shop-filters">
+          <div class="small-caps" style="margin-bottom:0.75rem;">Category</div>
+          <ul>
             <li>
-              <a href="/shop" class={selectedCategory === '' ? 'font-bold text-black' : ''}>All</a>
+              <a href="/shop" class={selectedCategory === '' ? 'active' : ''}>All</a>
             </li>
             {categories.map((cat) => (
               <li>
-                <a href={`/shop?category=${cat}`} class={selectedCategory === cat ? 'font-bold text-black' : ''}>
-                  {cat.charAt(0).toUpperCase() + cat.slice(1)}
+                <a href={`/shop?category=${cat}`} class={selectedCategory === cat ? 'active' : ''}>
+                  {cat.charAt(0).toUpperCase() + cat.slice(1).replace('-', ' ')}
                 </a>
               </li>
             ))}

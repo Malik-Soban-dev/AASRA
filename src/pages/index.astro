@@ -6,7 +6,7 @@ import productsData from '../../data/products.json';
 
 const visible = getVisibleProducts(productsData);
 
-// Seasonal suggestion tiles (category → image). Replace images with brand photography.
+// Seasonal suggestion tiles (category → imagery).
 const seasonalTiles = [
   {
     label: 'Home Textiles',
@@ -36,36 +36,40 @@ const featured = visible.slice(0, 4);
 
 <Layout title="AASRA — considered essentials for the home" description="Considered home essentials, online in Pakistan. PKR. No Cash on Delivery.">
   <!-- Announcement bar -->
-  <div style="background:#fff; border-bottom:1px solid var(--border);">
-    <div class="container" style="padding:0.4rem 1.5rem; font-size:0.75rem; text-transform:uppercase; letter-spacing:0.12em; color:var(--muted); text-align:center;">
-      Free shipping on orders above 20,000 PKR · No Cash on Delivery · Pay in full or deposit + balance online
+  <div style="background:var(--text); color:#fff;">
+    <div class="container" style="padding:0.5rem 1.5rem; font-size:0.65rem; text-transform:uppercase; letter-spacing:0.22em; text-align:center;">
+      Complimentary shipping on orders above Rs 20,000 &middot; No Cash on Delivery &middot; Pay in full or deposit + balance online
     </div>
   </div>
 
-  <!-- Hero -->
+  <!-- Hero: full-bleed editorial -->
   <section class="hero">
-    <img src="/images/hero.webp" alt="Seasonal collection" class="hero-image" loading="eager" width="1600" height="900" />
+    <img src="/images/hero.webp" alt="Seasonal collection" class="hero-image" loading="eager" width="1600" height="900" fetchpriority="high" />
     <div class="hero-content">
       <div class="kicker">New collection</div>
       <h1>Considered essentials for the home</h1>
+      <p class="hero-sub">Natural materials, honest construction, quiet prices. Everything in PKR, everything payable online.</p>
       <div class="hero-actions">
-        <a href="/shop" class="btn btn-primary">Shop the collection</a>
-        <a href="/about" class="btn">About AASRA</a>
+        <a href="/shop" class="btn btn-solid-light">Shop the collection</a>
+        <a href="/about" class="btn btn-light">Discover the story</a>
       </div>
     </div>
   </section>
 
-  <!-- Seasonal suggestions row (4 tiles) -->
+  <!-- Seasonal suggestions (4-up) -->
   <section class="section">
     <div class="container">
-      <div class="seasonal-title">
+      <div class="section-head">
         <div class="kicker">Seasonal suggestions</div>
         <h2>Explore by category</h2>
+        <p class="section-sub">Four families of objects, made slowly and meant to stay.</p>
       </div>
       <div class="seasonal-grid">
         {seasonalTiles.map((tile) => (
           <a href={tile.href} class="seasonal-tile">
-            <img src={tile.image} alt={tile.label} loading="lazy" width="600" height="800" />
+            <span class="tile-frame">
+              <img src={tile.image} alt={tile.label} loading="lazy" width="600" height="750" />
+            </span>
             <span class="seasonal-label">{tile.label}</span>
           </a>
         ))}
@@ -73,15 +77,37 @@ const featured = visible.slice(0, 4);
     </div>
   </section>
 
-  <!-- Editorial banner (full width) -->
-  <section class="section" style="background:var(--surface); border-top:1px solid var(--border); border-bottom:1px solid var(--border);">
-    <div class="container" style="display:flex; align-items:center; gap:3rem; flex-wrap:wrap;">
-      <div style="flex:1; min-width:260px;">
-        <h2>Made to last</h2>
-        <p>Natural materials, honest construction, quiet prices. Everything in PKR, everything payable online.</p>
+  <!-- Split editorial (2-up) -->
+  <section class="section-tight">
+    <div class="container">
+      <div class="split-grid">
+        <a href="/shop?category=tableware" class="split-banner">
+          <img src="/images/products/dinner-plate-1.webp" alt="Artisan tableware" loading="lazy" width="800" height="500" />
+          <span class="split-caption">
+            <span class="split-title">For the table</span>
+            <span class="text-link">Discover</span>
+          </span>
+        </a>
+        <a href="/shop?category=home-textiles" class="split-banner">
+          <img src="/images/products/cushion-oatmeal-1.webp" alt="Linen cushions" loading="lazy" width="800" height="500" />
+          <span class="split-caption">
+            <span class="split-title">For the living space</span>
+            <span class="text-link">Discover</span>
+          </span>
+        </a>
       </div>
-      <div style="flex:1; min-width:260px;">
-        <a href="/shop" class="btn btn-primary">Shop now</a>
+    </div>
+  </section>
+
+  <!-- Full-width collection banner -->
+  <section class="section-tight">
+    <div class="wide-banner">
+      <img src="/images/products/dhurrie-charcoal-1.webp" alt="Handwoven cotton dhurrie" loading="lazy" width="1200" height="800" />
+      <div class="wide-content">
+        <div class="kicker">The AASRA philosophy</div>
+        <h2>Made to last</h2>
+        <p>Objects that age well and are used daily — woven, thrown, and stitched by hand.</p>
+        <a href="/shop" class="btn btn-light">Explore the collection</a>
       </div>
     </div>
   </section>
@@ -89,28 +115,29 @@ const featured = visible.slice(0, 4);
   <!-- Featured products -->
   <section class="section">
     <div class="container">
-      <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:1.5rem; flex-wrap:wrap; gap:1rem;">
-        <div>
-          <div class="kicker">Featured</div>
-          <h2>New in</h2>
-        </div>
-        <a href="/shop" class="btn" style="font-size:0.75rem;">View all</a>
+      <div class="section-head">
+        <div class="kicker">Featured</div>
+        <h2>New in</h2>
       </div>
       <div class="grid">
         {featured.map((p) => (
           <ProductCard product={p} />
         ))}
       </div>
+      <div style="text-align:center; margin-top:3rem;">
+        <a href="/shop" class="text-link">View all</a>
+      </div>
     </div>
   </section>
 
-  <!-- Newsletter block -->
+  <!-- Newsletter band -->
   <section class="section" style="background:var(--surface); border-top:1px solid var(--border); border-bottom:1px solid var(--border); text-align:center;">
     <div class="container">
-      <h2>Be the first to know</h2>
-      <p style="max-width:460px; margin:0 auto 1rem; color:var(--muted);">New collections, restocks, and seasonal edits. No spam.</p>
-      <form id="newsletter-form" style="max-width:360px; margin:0 auto; display:flex; gap:0.5rem; flex-wrap:wrap;">
-        <input type="email" name="email" placeholder="you@example.com" class="form-input" required style="flex:1; min-width:220px;" />
+      <div class="kicker">Newsletter</div>
+      <h2 style="margin-bottom:0.6rem;">Be the first to know</h2>
+      <p style="max-width:460px; margin:0 auto 1.75rem; color:var(--muted);">New collections, restocks, and seasonal edits. No spam.</p>
+      <form id="newsletter-form" style="max-width:420px; margin:0 auto; display:flex; gap:0.5rem; flex-wrap:wrap;">
+        <input type="email" name="email" placeholder="Your email address" class="form-input" required style="flex:1; min-width:220px;" />
         <button type="submit" class="btn btn-primary">Subscribe</button>
       </form>
       <p id="newsletter-msg" style="margin-top:0.75rem; font-size:0.8rem; color:var(--muted);"></p>
