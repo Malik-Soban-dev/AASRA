@@ -1,7 +1,6 @@
 /* ==========================================================================
    AASRA — global stylesheet
-   Design language: luxury-minimal, Brunello-Cucinelli-inspired layout & feel
-   (layout/typography study only — no third-party brand assets).
+   Design language: warm, grounded, tactile and distinctly AASRA.
    White canvas, warm hairlines, serif display type, letterspaced caps labels.
    ========================================================================== */
 
@@ -275,7 +274,7 @@ button.btn:disabled { opacity: 0.5; cursor: not-allowed; }
 }
 .hero-actions { display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center; }
 
-/* BC-style hero: plain uppercase text links, no button boxes */
+/* Quiet editorial links for image-led feature moments */
 .hero-links {
   display: flex;
   gap: 2.75rem;
@@ -427,7 +426,7 @@ button.btn:disabled { opacity: 0.5; cursor: not-allowed; }
 }
 .story-sub { display: block; font-size: 0.75rem; letter-spacing: 0.16em; text-transform: uppercase; color: var(--muted); margin-top: 0.35rem; }
 
-/* Newsletter — underline input, BC-style */
+/* Newsletter — quiet underline form */
 .newsletter-form {
   max-width: 420px;
   margin: 0 auto;
@@ -772,7 +771,7 @@ button.btn:disabled { opacity: 0.5; cursor: not-allowed; }
 }
 
 /* --------------------------------------------------------------------------
-   BC-fidelity pass: search row, PLP toolbar/catnav, card tag, PDP accordion
+   Store details: search, collection toolbar, product card and PDP accordions
    -------------------------------------------------------------------------- */
 .header-search-row { display: none; border-top: 1px solid var(--border); }
 .header-search-row.open { display: block; }
@@ -863,7 +862,7 @@ button.btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
 /* ==========================================================================
    Interaction layer — mega menu, mobile overlay, country modal, reveals
-   (BC-pattern animations: slow fades, soft rises, letterspaced calm)
+   (AASRA motion: restrained fades, soft rises and accessible timing)
    ========================================================================== */
 
 /* ---------- Scroll reveal ---------- */
@@ -1061,7 +1060,7 @@ button.btn:disabled { opacity: 0.5; cursor: not-allowed; }
 .header { transition: box-shadow 0.4s ease; }
 .header.scrolled { box-shadow: 0 8px 24px rgba(20, 18, 15, 0.06); }
 
-/* ---------- PDP hairline structure (BC pattern) ---------- */
+/* ---------- PDP details and service links ---------- */
 .pdp-divider { border: none; border-top: 1px solid var(--border); margin: 1.6rem 0; }
 .pdp-gallery-stack { display: flex; flex-direction: column; gap: 1.5rem; }
 .pdp-gallery-stack img { width: 100%; aspect-ratio: 4 / 5; object-fit: cover; display: block; background: var(--surface); }
@@ -1101,11 +1100,11 @@ button.btn:disabled { opacity: 0.5; cursor: not-allowed; }
   .mega { display: none; }
 }
 
-/* ---------- Page-load fade (BC's seamless transitions feel) ---------- */
+/* ---------- Page-load fade ---------- */
 @keyframes pageFade { from { opacity: 0; } to { opacity: 1; } }
 body { animation: pageFade 0.5s ease both; }
 
-/* ---------- BC-style image settle on reveal (scale-from above) ---------- */
+/* ---------- Image settle on reveal ---------- */
 .reveal-child .tile-frame img,
 .gift-banner img,
 .story-widget img {
@@ -1145,7 +1144,7 @@ body { animation: pageFade 0.5s ease both; }
 }
 .share-row a:hover, .share-row button:hover { border-bottom-color: var(--text); opacity: 1; }
 
-/* ---------- Reference-led desktop header + full-width shop mega menu ---------- */
+/* ---------- Desktop header and full-width shop menu ---------- */
 @media (min-width: 821px) {
   .header.home-over-image {
     position: absolute;

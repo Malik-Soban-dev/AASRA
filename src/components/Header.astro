@@ -1,8 +1,7 @@
 ---
 const isHome = Astro.url.pathname === '/';
 
-// AASRA's own taxonomy arranged in the broad, multi-column editorial menu
-// pattern observed in the reference. Only our original copy and imagery are used.
+// AASRA's product taxonomy, with original copy and photography.
 const shopMenuGroups = [
   { title: 'HOME TEXTILES', links: [
     { label: 'Curtains', href: '/shop?category=home-textiles' },
@@ -34,7 +33,7 @@ const shopMenuGroups = [
 const shopMenuStories = [
   { img: '/images/campaign/story-artisan.webp', title: 'Made by hand', href: '/about' },
   { img: '/images/campaign/gifts-table.webp', title: 'A considered table', href: '/shop?category=tableware' },
-  { img: '/images/campaign/explore-collection.webp', title: 'The winter edit', href: '/shop' },
+  { img: '/images/campaign/explore-collection.webp', title: 'Living well, every day', href: '/shop' },
 ];
 
 // Mega-menu data for category links.
@@ -52,7 +51,7 @@ const megas = {
     ],
     feature: {
       img: '/images/campaign/explore-collection.webp',
-      kicker: 'The Winter Edit',
+      kicker: 'The Everyday Edit',
       title: 'Explore the collection',
       href: '/shop',
     },
@@ -128,7 +127,7 @@ const megas = {
     ],
     feature: {
       img: '/images/campaign/gifts-home.webp',
-      kicker: 'Holiday Season',
+      kicker: 'A thoughtful gesture',
       title: 'The gift edit',
       href: '/gifts',
     },
@@ -137,7 +136,7 @@ const megas = {
 ---
 
 <header class:list={["header", { "home-over-image": isHome }]} role="banner">
-  <div class="announcement-bar" role="note">A quieter kind of home — considered essentials, thoughtfully made <a href="/shop">Discover the collection</a></div>
+  <div class="announcement-bar" role="note">Thoughtful objects, made close to home <a href="/shop">Explore AASRA</a></div>
   <!-- Utility bar -->
   <div class="header-utility">
     <div class="container header-utility-inner">
