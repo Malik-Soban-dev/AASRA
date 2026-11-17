@@ -29,7 +29,7 @@ const estimatedBalance = product.deposit_eligible ? balanceAmount(product.price_
   <section class="section">
     <div class="container">
       <div style="display:flex; gap:2rem; align-items:flex-start;">
-        <!-- Gallery: stacked editorial images (BC pattern) -->
+        <!-- Product gallery -->
         <div class="product-gallery">
           <div class="pdp-gallery-stack">
             <img id="main-img" src={firstImage} alt={product.name} loading="eager" width="900" height="1125" />
@@ -43,7 +43,7 @@ const estimatedBalance = product.deposit_eligible ? balanceAmount(product.price_
           </div>
         </div>
 
-        <!-- Meta (sticky info column, BC-style) -->
+        <!-- Product information -->
         <div class="product-meta pdp-info">
           <div class="kicker" style="margin-bottom:0.5rem;">
             {product.category.charAt(0).toUpperCase() + product.category.slice(1)}
@@ -105,7 +105,7 @@ const estimatedBalance = product.deposit_eligible ? balanceAmount(product.price_
             <a href="/boutiques">Find in boutique</a>
           </div>
 
-          <!-- Accordions (BC-style hairline details) -->
+          <!-- Product information accordions -->
           <details class="accordion" open style="margin-top:1.8rem;">
             <summary>Description</summary>
             <div class="accordion-body">
@@ -143,7 +143,7 @@ const estimatedBalance = product.deposit_eligible ? balanceAmount(product.price_
     <button type="button" class="btn btn-primary" id="sticky-add-to-cart">Add to selection</button>
   </div>
 
-  <!-- Meet our style advisors (BC pattern) -->
+  <!-- Personal styling help -->
   <section class="section-tight advisor-band">
     <div class="container">
       <div class="split-grid">
@@ -164,7 +164,7 @@ const estimatedBalance = product.deposit_eligible ? balanceAmount(product.price_
     </div>
   </section>
 
-  <!-- Share (BC pattern: SHARE row under product content) -->
+  <!-- Share this product -->
   <section class="section-tight" style="text-align:center; border-top:1px solid var(--border);">
     <div class="container">
       <div class="kicker" style="margin-bottom:1.2rem;">Share</div>

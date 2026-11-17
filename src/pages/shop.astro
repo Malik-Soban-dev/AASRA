@@ -23,7 +23,7 @@ if (q) {
   );
 }
 
-// Sort (BC-style "Sort by" select; server-side, link-safe)
+// Sort products server-side with link-safe query parameters
 const sort = url.searchParams.get('sort') || '';
 if (sort === 'price-asc') {
   filtered = [...filtered].sort((a, b) => a.price_pkr - b.price_pkr);
@@ -41,7 +41,7 @@ if (sort === 'price-asc') {
     {q && <p class="page-sub">Search results for “{q}”</p>}
   </div>
 
-  <!-- Category nav row (BC-style breadcrumb strip) -->
+  <!-- Product category navigation -->
   <div class="container">
     <nav class="plp-catnav" aria-label="Product categories">
       <a href="/shop" class={!selectedCategory && !q ? 'active' : ''}>All</a>
