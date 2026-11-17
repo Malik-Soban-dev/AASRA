@@ -18,7 +18,7 @@ import {
   validateCart,
   sanitizeString,
 } from '../functions/lib/validation.js';
-import { verifyWebhookSignature } from '../functions/lib/gateway.js';
+import { verifyWebhookSignature, createCheckoutSession } from '../functions/lib/gateway.js';
 import { buildInvoiceHtml } from '../functions/lib/invoice.js';
 import {
   orderReceivedEmail,
@@ -30,6 +30,7 @@ import {
   cancelledEmail,
   refundedEmail,
   wrapEmail,
+  sendEmail,
 } from '../functions/lib/email.js';
 
 // ---- Load sample products ----
@@ -239,8 +240,22 @@ t('verifyWebhookSignature accepts valid HMAC', async () => {
     SAFEPAY_WEBHOOK_SECRET: secret,
     SAFEPAY_BASE_URL: '',
     SAFEPAY_ENABLED: 'true',
+    SAFEPAY_PROTOCOL_VERIFIED: 'true',
   };
   assert.ok(await verifyWebhookSignature(env, body, hex));
+});
+
+t('checkout session refuses to simulate a gateway when configuration is absent', async () => {
+  await assert.rejects(
+    createCheckoutSession({ SAFEPAY_ENABLED: 'false' }, { orderId: 'test', amountPkr: 1000 }),
+    /safepay_not_configured/
+  );
+});
+
+t('email provider reports unconfigured instead of a successful stub', async () => {
+  const result = await sendEmail({}, { to: 'person@example.com', subject: 'test', html: '', text: '' });
+  assert.equal(result.ok, false);
+  assert.equal(result.error, 'email_provider_not_configured');
 });
 
 t('verifyWebhookSignature rejects wrong signature', async () => {
@@ -442,7 +457,7 @@ t('wrapEmail produces full HTML layout', () => {
   assert.ok(e.html.includes('Test Subject'), 'contains subject');
   assert.ok(e.html.includes('Test body'), 'contains body');
   assert.ok(e.html.includes('orders@example.com'), 'contains from email');
-  assert.ok(e.html.includes('wa.me'), 'contains WhatsApp link');
+  assert.ok(e.html.includes('mailto:'), 'contains an email contact link');
 });
 
 // ============================================================

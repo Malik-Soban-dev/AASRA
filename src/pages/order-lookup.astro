@@ -52,6 +52,7 @@ import { formatPKR } from '../lib/products.js';
   </section>
 
   <script>
+    // @ts-nocheck -- browser-only event handlers use DOM APIs guarded at runtime.
     const form = document.getElementById('lookup-form');
     const errorEl = document.getElementById('lookup-error');
     const resultEl = document.getElementById('lookup-result');

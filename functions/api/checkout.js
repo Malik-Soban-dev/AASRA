@@ -68,11 +68,7 @@ function publicOrderNumber() {
 
 async function verifyTurnstile(env, token) {
   const secret = env.TURNSTILE_SECRET_KEY;
-  if (!secret) {
-    // Dev mode without Turnstile configured: allow but log.
-    console.warn('[TURNSTILE] secret not configured — skipping verification (dev only)');
-    return { ok: true, dev: true };
-  }
+  if (!secret) return { ok: false, error: 'turnstile_not_configured' };
   try {
     const resp = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
       method: 'POST',
@@ -200,6 +196,17 @@ export async function onRequestPost(context) {
   }
 
   const { cart, payment_type, customer, coupon_code, turnstile_token } = body;
+
+  // Never create an order or reserve inventory when a production dependency is
+  // absent. Configuration blockers are explicit so checkout cannot appear live
+  // while using a fake gateway or bypassing bot protection.
+  if (!env.DB) return errorResponse('checkout_unavailable:database_not_configured', 503, 'configuration_missing');
+  if (env.TURNSTILE_SECRET_KEY == null || !env.TURNSTILE_SECRET_KEY.trim()) {
+    return errorResponse('checkout_unavailable:turnstile_not_configured', 503, 'configuration_missing');
+  }
+  if (env.SAFEPAY_ENABLED !== 'true' || !env.SAFEPAY_SECRET_KEY || !env.SAFEPAY_WEBHOOK_SECRET || !env.SAFEPAY_CHECKOUT_ENDPOINT || env.SAFEPAY_PROTOCOL_VERIFIED !== 'true') {
+    return errorResponse('checkout_unavailable:safepay_not_fully_configured', 503, 'payment_not_configured');
+  }
 
   // Validate payment_type
   if (payment_type !== 'full' && payment_type !== 'deposit') {

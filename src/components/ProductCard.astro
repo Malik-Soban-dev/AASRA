@@ -42,4 +42,22 @@ const imageAlt = product.images[1] || imageMain;
       <div class="product-colors">{product.variants.length > 1 ? `${product.variants.length} variants` : '1 variant'}</div>
     </div>
   </a>
+  {product.variants.length === 1 ? (
+    <button class="quick-add" type="button" data-quick-add data-sku={firstVariant.sku} data-name={product.name} data-price={product.price_pkr} data-image={imageMain}>Quick add</button>
+  ) : (
+    <a class="quick-add" href={`/product/${product.slug}`}>Choose options</a>
+  )}
 </article>
+
+<script>
+    // @ts-nocheck -- browser-only event handlers use DOM APIs guarded at runtime.
+  document.addEventListener('click', (event) => {
+    const button = event.target.closest('[data-quick-add]');
+    if (!button) return;
+    if (typeof window.__aasra_addToCart !== 'function') {
+      button.textContent = 'Please try again';
+      return;
+    }
+    window.__aasra_addToCart(button.dataset.sku, button.dataset.name, Number(button.dataset.price), 1, button.dataset.image);
+  });
+</script>

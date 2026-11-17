@@ -110,21 +110,26 @@ export async function onRequestPost(context) {
   }
 
   // 4. Extract webhook fields (VERIFY exact field names with Safepay)
-  const eventId = payload.event_id || payload.id || null; // idempotency key
-  const eventType = payload.event || payload.type || 'payment.succeeded';
+  const eventId = payload.event_id || payload.id || null;
+  const eventType = payload.event || payload.type || null;
   const data = payload.data || payload.object || payload;
 
   const trackerToken = data.tracker_token || data.reference || data.checkout_reference || null;
-  const amount = data.amount ? Number(data.amount) : null;
-  const currency = data.currency || 'PKR';
-  const status = data.status || data.payment_status || 'succeeded';
-  const orderId = data.order_id || data.merchant_reference || data.reference || null;
-  const kind = data.payment_type || data.kind || null; // 'full' | 'deposit' | 'balance'
+  const amount = data.amount == null ? null : Number(data.amount);
+  const currency = data.currency || null;
+  const status = data.status || data.payment_status || null;
+  const orderId = data.order_id || data.merchant_reference || null;
+  const kind = data.payment_type || data.kind || null;
 
-  // 5. Ignore unknown events
-  if (!eventId || !trackerToken || !orderId) {
-    return jsonResponse({ ok: true, ignored: true, reason: 'missing_fields' });
+  // Webhooks remain closed until Safepay's signed event name and payload have
+  // been verified against the merchant's live integration documentation.
+  if (!eventId || !trackerToken || !orderId || !eventType || !status || amount === null || !Number.isFinite(amount) || !currency) {
+    return jsonResponse({ ok: false, error: 'unverified_webhook_contract' }, 400);
   }
+  if (!['payment.succeeded', 'payment.paid'].includes(String(eventType)) || !['succeeded', 'paid'].includes(String(status).toLowerCase())) {
+    return jsonResponse({ ok: true, ignored: true, reason: 'payment_not_successful' });
+  }
+  if (currency !== 'PKR') return jsonResponse({ ok: false, error: 'currency_mismatch' }, 400);
 
   // 6. Idempotency: check if this raw_event_id was already processed
   const existing = await context.env.DB.prepare(
@@ -152,32 +157,13 @@ export async function onRequestPost(context) {
     return jsonResponse({ ok: false, error: 'no_pending_payment' }, 404);
   }
 
-  // 8. Verify amount matches (never trust browser for amount)
-  if (amount !== null && Number(payment.amount) !== amount) {
-    return jsonResponse({ ok: false, error: 'amount_mismatch' }, 400);
-  }
+  // 8. Match every settlement field against our pending payment record.
+  if (payment.order_id !== orderId) return jsonResponse({ ok: false, error: 'order_mismatch' }, 400);
+  if (Number(payment.amount) !== amount) return jsonResponse({ ok: false, error: 'amount_mismatch' }, 400);
+  if (kind && kind !== payment.kind) return jsonResponse({ ok: false, error: 'payment_kind_mismatch' }, 400);
 
-  // 9. Verify currency
-  if (currency !== 'PKR') {
-    return jsonResponse({ ok: false, error: 'currency_mismatch' }, 400);
-  }
-
-  // 10. Only process successful payments
-  if (status !== 'succeeded' && status !== 'paid' && status !== 'completed') {
-    // Mark payment failed
-    await context.env.DB.prepare(
-      "UPDATE payments SET status = 'failed', updated_at = ? WHERE id = ?"
-    ).bind(nowIso(), payment.id);
-    await createOrderEvent(context.env.DB, payment.order_id, 'payment_failed', {
-      kind: payment.kind,
-      amount: payment.amount,
-      gateway_status: status,
-    });
-    return jsonResponse({ ok: true, ignored: true, reason: 'payment_not_successful' });
-  }
-
-  // 11. Fetch order
-  const order = await context.env.DB.prepare('SELECT * FROM orders WHERE id = ?').bind(orderId).first();
+  // 9. Fetch the order using the trusted payment record, not gateway text.
+  const order = await context.env.DB.prepare('SELECT * FROM orders WHERE id = ?').bind(payment.order_id).first();
   if (!order) {
     return jsonResponse({ ok: false, error: 'order_not_found' }, 404);
   }
@@ -185,7 +171,7 @@ export async function onRequestPost(context) {
   // 12. Transition order state
   let transition;
   try {
-    transition = transitionOrder(order, kind);
+    transition = transitionOrder(order, payment.kind);
   } catch (e) {
     return jsonResponse({ ok: false, error: e.message }, 400);
   }

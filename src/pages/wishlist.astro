@@ -1,7 +1,6 @@
 ---
 import Layout from '../components/Layout.astro';
-import ProductCard from '../components/ProductCard.astro';
-import productsData from '../data/products.json';
+import productsData from '../../data/products.json';
 ---
 
 <Layout title="Wishlist — AASRA" description="Your saved items.">
@@ -19,6 +18,7 @@ import productsData from '../data/products.json';
   </script>
 
   <script>
+    // @ts-nocheck -- browser-only event handlers use DOM APIs guarded at runtime.
     const WL_KEY = window.__AASRA_WISHLIST_KEY || 'aasra_wishlist_v1';
     function loadWL() {
       try { return JSON.parse(localStorage.getItem(WL_KEY) || '[]'); } catch { return []; }

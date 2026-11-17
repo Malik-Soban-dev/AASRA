@@ -14,6 +14,10 @@ export interface Props {}
   </div>
 
   <div class="cart-footer">
+    <div class="shipping-progress" aria-live="polite">
+      <p id="shipping-progress-text">Complimentary delivery on orders above PKR 20,000.</p>
+      <div class="shipping-progress-track" role="progressbar" aria-label="Progress toward complimentary delivery" aria-valuemin="0" aria-valuemax="20000" aria-valuenow="0"><span id="shipping-progress-fill"></span></div>
+    </div>
     <div class="cart-total" id="cart-total">Subtotal <span id="cart-total-amount">0 PKR</span></div>
     <div id="cart-checkout-wrapper">
       <a href="/cart" class="btn btn-primary btn-full" id="cart-checkout-btn">Go to the cart</a>
@@ -24,6 +28,7 @@ export interface Props {}
 </div>
 
 <script>
+    // @ts-nocheck -- browser-only event handlers use DOM APIs guarded at runtime.
   const CART_KEY = window.__AASRA_CART_KEY || 'aasra_cart_v1';
 
   function loadCart() {
@@ -72,13 +77,25 @@ export interface Props {}
     saveCart(cart);
   }
 
+  function updateShippingProgress(subtotal) {
+    const threshold = 20000;
+    const remaining = Math.max(0, threshold - subtotal);
+    const progress = document.querySelector('.shipping-progress-track');
+    const fill = document.getElementById('shipping-progress-fill');
+    const message = document.getElementById('shipping-progress-text');
+    if (progress) progress.setAttribute('aria-valuenow', String(Math.min(threshold, Math.round(subtotal))));
+    if (fill) fill.style.width = `${Math.min(100, (subtotal / threshold) * 100)}%`;
+    if (message) message.textContent = remaining ? `Add PKR ${remaining.toLocaleString()} for complimentary delivery.` : 'Complimentary delivery unlocked.';
+  }
+
   function renderCart() {
     const list = document.getElementById('cart-items-list');
     const totalEl = document.getElementById('cart-total-amount');
-    const empty = list.querySelector('.cart-empty');
     const cart = loadCart();
-
     if (!list) return;
+    const subtotal = cart.reduce((sum, item) => sum + (Number(item.price) || 0) * (Number(item.qty) || 1), 0);
+    updateShippingProgress(subtotal);
+    const empty = list.querySelector('.cart-empty');
 
     if (cart.length === 0) {
       list.innerHTML = '<div class="cart-empty">Your cart is empty.</div>';

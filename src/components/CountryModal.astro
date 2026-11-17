@@ -9,33 +9,15 @@ export interface Props {}
     <button class="modal-close" id="country-modal-close" aria-label="Close">&times;</button>
     <img src="/images/campaign/explore-collection.webp" alt="" aria-hidden="true" loading="lazy" width="800" height="450" />
     <div class="kicker" style="margin-bottom:0.5rem;">Country / Language</div>
-    <h3>You are browsing from Pakistan</h3>
+    <h3>Pakistan · PKR</h3>
     <p>
-      Please note that product availability, shipments, prices in PKR, and general
-      terms &amp; conditions refer specifically to Pakistan.
+      Online ordering and published delivery rates currently apply to Pakistan only.
+      International delivery and currency conversion are not configured. Please email us
+      if you need help with another destination.
     </p>
-    <label class="sr-only" for="country-select">Country of delivery</label>
-    <select id="country-select">
-      <option selected>Pakistan</option>
-      <option>United Arab Emirates</option>
-      <option>Saudi Arabia</option>
-      <option>United Kingdom</option>
-      <option>United States</option>
-      <option>Canada</option>
-      <option>Australia</option>
-      <option>Qatar</option>
-      <option>Kuwait</option>
-      <option>Oman</option>
-      <option>Bahrain</option>
-      <option>Singapore</option>
-      <option>Malaysia</option>
-      <option>Turkey</option>
-      <option>Germany</option>
-      <option>France</option>
-      <option>Italy</option>
-      <option>Spain</option>
-      <option>Netherlands</option>
-      <option>Other — contact us to arrange delivery</option>
+    <label class="sr-only" for="country-select">Current market and currency</label>
+    <select id="country-select" aria-label="Current market and currency">
+      <option selected value="PK-PKR">Pakistan — PKR</option>
     </select>
     <button class="btn btn-primary btn-full" id="country-confirm">Confirm</button>
   </div>

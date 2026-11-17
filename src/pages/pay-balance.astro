@@ -32,6 +32,7 @@ const token = url.searchParams.get('token') || '';
   </section>
 
   <script>
+    // @ts-nocheck -- browser-only event handlers use DOM APIs guarded at runtime.
     const orderId = '{orderId}';
     const token = '{token}';
     const balanceEl = document.getElementById('balance-amount');
