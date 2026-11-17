@@ -13,8 +13,8 @@ import Layout from '../components/Layout.astro';
   <section class="section-tight reveal">
     <div class="container">
       <div class="contact-reasons" data-stagger>
-        <a href="https://wa.me/923000000000" target="_blank" rel="noopener" class="contact-reason">
-          <h3>WhatsApp concierge</h3>
+        <a href="mailto:orders@aasra.shop" target="_blank" rel="noopener" class="contact-reason">
+          <h3>Email concierge</h3>
           <p>Fastest route to us. Order help, size advice, gift wrapping — within minutes during business hours.</p>
           <span class="text-link">Message us</span>
         </a>
@@ -73,12 +73,13 @@ import Layout from '../components/Layout.astro';
     <div class="container">
       <p style="font-size:0.85rem; color:var(--muted); line-height:2;">
         AASRA Studio &middot; Karachi, Pakistan &middot; Mon–Sat, 11:00–19:00<br />
-        <a href="mailto:orders@aasra.shop" style="text-decoration:underline; text-underline-offset:3px;">orders@aasra.shop</a> &middot; <a href="https://wa.me/923000000000" target="_blank" rel="noopener" style="text-decoration:underline; text-underline-offset:3px;">+92 300 0000000 (WhatsApp)</a>
+        <a href="mailto:orders@aasra.shop" style="text-decoration:underline; text-underline-offset:3px;">orders@aasra.shop</a>
       </p>
     </div>
   </section>
 
   <script>
+    // @ts-nocheck -- browser-only event handlers use DOM APIs guarded at runtime.
     const form = document.getElementById('contact-form');
     const msg = document.getElementById('contact-msg');
     form?.addEventListener('submit', async (e) => {
@@ -108,11 +109,11 @@ import Layout from '../components/Layout.astro';
           form.reset();
         } else {
           msg.style.color = '#8a1f1f';
-          msg.textContent = data.error || 'Failed to send. Please try WhatsApp instead.';
+          msg.textContent = data.error || 'Failed to send. Please try Email instead.';
         }
       } catch (err) {
         msg.style.color = '#8a1f1f';
-        msg.textContent = 'Network error. Please try WhatsApp instead.';
+        msg.textContent = 'Network error. Please try Email instead.';
       } finally {
         btn.disabled = false;
         btn.textContent = 'Send message';

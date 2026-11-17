@@ -16,12 +16,11 @@
 // Default 0% — replace with the actual sales-tax rate applicable to your goods.
 const TAX_RATE_PCT = Number(process.env.TAX_RATE_PCT || 0);
 // Your business tax / GST registration number (shown on invoices).
-const TAX_REGISTRATION_NO = process.env.TAX_REGISTRATION_NO || 'Not registered';
+const TAX_REGISTRATION_NO = process.env.TAX_REGISTRATION_NO || '';
 // Business name / address shown on invoices — replace with real details.
 const BUSINESS_NAME = process.env.BUSINESS_NAME || 'AASRA';
-const BUSINESS_ADDRESS =
-  process.env.BUSINESS_ADDRESS || 'Karachi, Pakistan';
-const BUSINESS_PHONE = process.env.BUSINESS_PHONE || '+92 300 0000000';
+const BUSINESS_ADDRESS = process.env.BUSINESS_ADDRESS || '';
+const BUSINESS_PHONE = process.env.BUSINESS_PHONE || '';
 const BUSINESS_EMAIL = process.env.BUSINESS_EMAIL || 'orders@aasra.shop';
 
 /**
@@ -197,9 +196,10 @@ export function buildInvoiceHtml(opts) {
       <div class="business">
         <div class="label">From</div>
         <p>${escapeHtml(BUSINESS_NAME)}</p>
-        <p>${escapeHtml(BUSINESS_ADDRESS)}</p>
-        <p>${escapeHtml(BUSINESS_PHONE)} · ${escapeHtml(BUSINESS_EMAIL)}</p>
-        <p><span class="label">Tax registration:</span> ${escapeHtml(TAX_REGISTRATION_NO)}</p>
+        ${BUSINESS_ADDRESS ? `<p>${escapeHtml(BUSINESS_ADDRESS)}</p>` : ''}
+        ${BUSINESS_PHONE ? `<p>${escapeHtml(BUSINESS_PHONE)}</p>` : ''}
+        <p>${escapeHtml(BUSINESS_EMAIL)}</p>
+        ${TAX_REGISTRATION_NO ? `<p><span class="label">Tax registration:</span> ${escapeHtml(TAX_REGISTRATION_NO)}</p>` : ''}
       </div>
       <div class="customer">
         <div class="label">Customer</div>

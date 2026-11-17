@@ -44,10 +44,10 @@ Design reference: https://shop.brunellocucinelli.com (layout and feel only — n
 
 - **Pages**: Home, Shop (filters, search), Product (PDP), Cart drawer, Checkout, Order success, Payment cancelled, Pay balance, Order lookup, Wishlist, Size guide, Shipping info, About, Contact, FAQ, Privacy, Terms, Return/Refund, Deposit/Cancellation policy, Shipping policy, Cookie policy, Accessibility statement, custom 404.
 - **Invoices/receipts**: `GET /api/invoice?order_id=&token=&type=deposit|balance|final` — HTML invoice with itemized totals, sales tax fields, deposit/balance breakdown, print-to-PDF.
-- **Transactional emails**: order received, deposit paid, balance reminder, balance paid / paid in full, shipped (tracking), delivered, cancelled, refunded — branded HTML layout, WhatsApp + contact footer, sent from your domain via Worker-integrated provider.
-- **Support**: WhatsApp click-to-chat button in header/footer; business contact details (phone, email, address) in header and footer.
+- **Transactional email templates**: order, payment, balance, shipping, and cancellation messages are templated. Sending remains disabled until a real email-provider adapter and credentials are configured.
+- **Support**: email contact links. No placeholder phone/WhatsApp destination is published.
 - **Newsletter**: consent-based signup, stored privately in D1 (never in repo).
-- **Security**: secrets in Worker secrets only (`.env`/`.dev.vars` gitignored); CSRF double-submit cookie on state-changing endpoints; CORS restricted to `ALLOWED_ORIGIN`; WAF rate limiting on `/api/*`; Turnstile on checkout/contact/newsletter; webhook signature verified on raw body (idempotent); hosted checkout only (no card data); all prices/stock computed server-side; customer data in D1 only, masked in logs/invoices.
+- **Security**: CSRF double-submit cookie on state-changing endpoints; CORS restricted to `ALLOWED_ORIGIN`; checkout fails closed unless D1, Turnstile, and a verified Safepay configuration are present. No mock checkout URL is returned. Email sending reports unconfigured instead of claiming success. Do not enable the payment/webhook protocol guard until Safepay's merchant contract is confirmed.
 - **Security headers**: HSTS, CSP, `X-Frame-Options: DENY`, `X-Content-Type-Options`, `Referrer-Policy`, `Permissions-Policy`; HTTPS + minimum TLS 1.2.
 - **Accessibility**: alt text, visible focus, labeled fields, keyboard navigation, reduced motion, skip-to-content links, accessibility statement page.
 - **Payments**: full online or deposit + balance; two payments tracked separately; balance paid via unguessable expiring token; order lookup requires order ID + phone.
@@ -282,7 +282,6 @@ Tests cover pricing, deposit math, coupons, webhook signature verification, stoc
 - [ ] Custom domain `aasra.shop` added in Cloudflare Pages
 - [ ] HTTPS, HSTS, WAF rules enabled
 - [ ] Email domain: SPF, DKIM, DMARC records configured; send test emails
-- [ ] WhatsApp number updated (replace `923000000000` placeholder)
 - [ ] Tax rate and registration number verified with accountant
 - [ ] Full test matrix run on staging (sandbox keys)
 - [ ] Small real order placed (deposit + balance), settlement verified, refunded
@@ -323,13 +322,14 @@ Tests cover pricing, deposit math, coupons, webhook signature verification, stoc
 
 Before public launch, you must supply:
 
-1. **Gateway**: Safepay or PayFast; methods required (cards, JazzCash, Easypaisa, bank transfer); answers to the gateway verification list (two-payment support, minimum amounts, fees, session expiry, refund rules, webhook signature method, onboarding documents).
-2. **Email provider** and sending domain (Resend, Mailgun, SendGrid, Postmark, or Amazon SES) + SPF/DKIM/DMARC.
-3. **WhatsApp number** — replace `923000000000` placeholder in `src/components/Header.astro`, `src/components/Footer.astro`, and `functions/lib/email.js`.
-4. **Couriers** — confirm TCS rates by city; update `data/shipping-rates.json`.
-5. **Tax registration and invoice format** — from your accountant (update `TAX_RATE_PCT` and `TAX_REGISTRATION_NO`).
-6. **Brand content** — logo, product photography, descriptions, size guides, all policy text, email templates.
-7. **Budget and launch date**.
+1. **D1** — create production `AASRA_DB`, add its real `database_id` to `wrangler.toml`, apply migrations, and seed/verify stock.
+2. **Safepay** — merchant keys plus written confirmation of checkout endpoint/auth/request/response and webhook event/signature/amount contract. Keep `SAFEPAY_PROTOCOL_VERIFIED=false` until confirmed.
+3. **Turnstile** — configure build-time `PUBLIC_TURNSTILE_SITE_KEY` and Worker secret `TURNSTILE_SECRET_KEY`.
+4. **Email** — select a provider, implement its API adapter, set credentials and verified sender domain.
+5. **Business details** — legal address/phone and tax/invoice requirements from the owner and accountant.
+6. **Couriers** — confirm TCS rates by city; update `data/shipping-rates.json`.
+7. **Brand content** — descriptions, size guides, policy text and email templates.
+8. **Budget and launch date**.
 
 ---
 

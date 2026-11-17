@@ -24,8 +24,11 @@
 // ---- Configuration (set via wrangler secrets / env vars) ----
 export function gatewayConfig(env) {
   return {
-    provider: (env.SAFEPAY_ENABLED === 'true' || !env.PAYFAST_ENABLED) ? 'safepay' : 'payfast',
-    baseUrl: env.SAFEPAY_BASE_URL || 'https://api.safepay.example.com/v1',
+    provider: env.PAYFAST_ENABLED === 'true' ? 'payfast' : 'safepay',
+    enabled: env.SAFEPAY_ENABLED === 'true',
+    baseUrl: env.SAFEPAY_BASE_URL || '',
+    checkoutEndpoint: env.SAFEPAY_CHECKOUT_ENDPOINT || '',
+    protocolVerified: env.SAFEPAY_PROTOCOL_VERIFIED === 'true',
     secretKey: env.SAFEPAY_SECRET_KEY || '',
     webhookSecret: env.SAFEPAY_WEBHOOK_SECRET || '',
     returnUrl: env.PUBLIC_BASE_URL || 'https://aasra.shop',
@@ -41,37 +44,59 @@ export function gatewayConfig(env) {
  */
 export async function createCheckoutSession(env, params) {
   const cfg = gatewayConfig(env);
-  const amount = Math.round(params.amountPkr);
+  // Never manufacture a tracker or a same-site URL: that would look like a
+  // successful payment session even though no gateway was contacted.
+  if (!cfg.enabled || !cfg.secretKey || !cfg.checkoutEndpoint) {
+    throw new Error('safepay_not_configured');
+  }
+  // Safepay's merchant API contract (endpoint, authentication and response
+  // fields) must be confirmed with the merchant account before enabling calls.
+  // This guard intentionally keeps payment disabled until that confirmation is
+  // supplied in Worker configuration.
+  if (!cfg.protocolVerified) throw new Error('safepay_protocol_not_verified');
+  let endpoint;
+  try {
+    endpoint = new URL(cfg.checkoutEndpoint);
+  } catch {
+    throw new Error('safepay_checkout_endpoint_invalid');
+  }
+  if (endpoint.protocol !== 'https:') throw new Error('safepay_checkout_endpoint_must_use_https');
 
-  // TODO: Replace with Safepay's real session-create request once verified.
-  // Example shape (placeholder — DO NOT use in production until confirmed):
-  const body = JSON.stringify({
-    merchant_reference: params.reference, // our order id
-    amount,
-    currency: params.currency || 'PKR',
-    customer_email: params.customerEmail,
-    customer_phone: params.customerPhone,
-    description: params.description || `AASRA order ${params.orderId}`,
-    success_url: `${cfg.returnUrl}/order-success?order=${params.orderId}`,
-    cancel_url: `${cfg.returnUrl}/payment-cancelled?order=${params.orderId}`,
-    webhook_url: `${cfg.returnUrl}/api/webhook`,
-    payment_type: params.kind, // 'full' | 'deposit' | 'balance'
-    expiry_minutes: 60,
+  const response = await fetch(endpoint, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${cfg.secretKey}`,
+      'Content-Type': 'application/json',
+      Accept: 'application/json',
+    },
+    body: JSON.stringify({
+      merchant_reference: params.reference,
+      amount: Math.round(params.amountPkr),
+      currency: params.currency || 'PKR',
+      customer_email: params.customerEmail,
+      customer_phone: params.customerPhone,
+      description: params.description || `AASRA order ${params.orderId}`,
+      success_url: `${cfg.returnUrl}/order-success?order=${encodeURIComponent(params.orderId)}`,
+      cancel_url: `${cfg.returnUrl}/payment-cancelled?order=${encodeURIComponent(params.orderId)}`,
+      webhook_url: `${cfg.returnUrl}/api/webhook`,
+      payment_type: params.kind,
+    }),
   });
-
-  // Placeholder: simulate a gateway response. In production, fetch(cfg.baseUrl + '/checkout/sessions', ...)
-  const trackerToken = `sp_${params.orderId}_${params.kind}_${Date.now()}`;
-  const checkoutUrl = `${cfg.returnUrl}/gateway/checkout?token=${encodeURIComponent(trackerToken)}`;
-  const expiresAt = new Date(Date.now() + 60 * 60 * 1000).toISOString();
-
+  if (!response.ok) throw new Error(`safepay_session_http_${response.status}`);
+  const data = await response.json();
+  const checkoutUrl = data.checkout_url || data.redirect_url || data.url;
+  const trackerToken = data.tracker_token || data.token || data.reference;
+  if (!checkoutUrl || !trackerToken) throw new Error('safepay_response_missing_checkout_fields');
+  let hostedUrl;
+  try { hostedUrl = new URL(checkoutUrl); } catch { throw new Error('safepay_checkout_url_invalid'); }
+  if (hostedUrl.protocol !== 'https:') throw new Error('safepay_checkout_url_must_use_https');
   return {
-    provider: cfg.provider,
-    checkoutUrl,
-    trackerToken,
-    amount,
+    provider: 'safepay',
+    checkoutUrl: hostedUrl.toString(),
+    trackerToken: String(trackerToken),
+    amount: Math.round(params.amountPkr),
     currency: params.currency || 'PKR',
-    expiresAt,
-    raw: body, // keep for debugging (do not log secrets)
+    expiresAt: data.expires_at || null,
   };
 }
 
@@ -87,7 +112,7 @@ export async function createCheckoutSession(env, params) {
 export async function verifyWebhookSignature(env, rawBody, signature) {
   const cfg = gatewayConfig(env);
   const secret = cfg.webhookSecret;
-  if (!secret || !signature) return false;
+  if (!cfg.enabled || !cfg.protocolVerified || !secret || !signature) return false;
 
   // TODO: Confirm Safepay's exact algorithm. Common: HMAC-SHA256 hex of raw body.
   try {

@@ -24,21 +24,23 @@ PUBLIC_BASE_URL = "https://aasra.shop"
 # Comma-separated list of origins allowed to call the API (CORS + origin check).
 # The workers.dev preview host is included so the store can be tested before
 # the custom domain is active. Remove it once aasra.shop is live if you like.
-ALLOWED_ORIGIN = "https://aasra.shop,https://aasra.shanzeeey.workers.dev"
+ALLOWED_ORIGIN = "https://aasra.shop,https://www.aasra.shop,https://aasra.shanzeeey.workers.dev"
 DEFAULT_DEPOSIT_PERCENT = "30"
 BALANCE_REMINDER_DAYS = "3,1"
 BALANCE_CANCEL_AFTER_DAYS = "7"
 TAX_RATE_PCT = "0"                                  # VERIFY: actual sales tax rule
 BUSINESS_NAME = "AASRA"
-BUSINESS_ADDRESS = "Karachi, Pakistan"              # VERIFY: real address
-BUSINESS_PHONE = "+92 300 0000000"                  # VERIFY: real phone
+BUSINESS_ADDRESS = ""                               # Set the legal business address before accepting orders
 BUSINESS_EMAIL = "orders@aasra.shop"
-TAX_REGISTRATION_NO = "Not registered"              # VERIFY
-EMAIL_PROVIDER = "resend"                           # VERIFY: resend | mailchannels | ...
+TAX_REGISTRATION_NO = ""                            # Set verified tax registration details before issuing receipts
+# EMAIL_PROVIDER = "resend"                         # Only set after provider implementation + credentials are ready
 EMAIL_FROM = "orders@aasra.shop"
 EMAIL_FROM_NAME = "AASRA"
-SAFEPAY_ENABLED = "true"                            # VERIFY: confirm gateway + keys
-SAFEPAY_BASE_URL = "https://pay.safepay.pk"         # VERIFY: confirm from Safepay docs
+SAFEPAY_ENABLED = "false"                           # Enable only after merchant onboarding and contract verification
+SAFEPAY_PROTOCOL_VERIFIED = "false"                # Must remain false until Safepay confirms API + webhook contract
+# Configure SAFEPAY_CHECKOUT_ENDPOINT only from Safepay merchant documentation.
+# Required secrets: SAFEPAY_SECRET_KEY, SAFEPAY_WEBHOOK_SECRET, TURNSTILE_SECRET_KEY
+# Required public variable: TURNSTILE_SITE_KEY
 PAYFAST_ENABLED = "false"
 
 # --- Secrets (set via dashboard > Settings > Variables and Secrets, or

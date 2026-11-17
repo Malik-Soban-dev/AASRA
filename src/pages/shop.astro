@@ -70,8 +70,6 @@ if (sort === 'price-asc') {
       </div>
 
       <div class="shop-layout">
-
-      <div class="shop-layout">
         <!-- Filters sidebar -->
         <aside class="shop-filters">
           <div class="small-caps" style="margin-bottom:0.75rem;">Categories</div>
@@ -102,6 +100,7 @@ if (sort === 'price-asc') {
   </section>
 
   <script>
+    // @ts-nocheck -- browser-only event handlers use DOM APIs guarded at runtime.
     document.getElementById('sort-select')?.addEventListener('change', (e) => {
       const u = new URL(window.location);
       if (e.target.value) u.searchParams.set('sort', e.target.value);

@@ -32,8 +32,13 @@ const estimatedBalance = product.deposit_eligible ? balanceAmount(product.price_
         <!-- Gallery: stacked editorial images (BC pattern) -->
         <div class="product-gallery">
           <div class="pdp-gallery-stack">
-            {product.images.map((img) => (
-              <img src={img} alt={product.name} loading={img === product.images[0] ? 'eager' : 'lazy'} width="900" height="1125" />
+            <img id="main-img" src={firstImage} alt={product.name} loading="eager" width="900" height="1125" />
+          </div>
+          <div class="thumbs" role="group" aria-label="Product images">
+            {product.images.map((img, index) => (
+              <button class:list={["thumb", { selected: index === 0 }]} type="button" data-img={img} aria-label={`View image ${index + 1}`} aria-pressed={index === 0}>
+                <img src={img} alt="" loading="lazy" width="90" height="90" />
+              </button>
             ))}
           </div>
         </div>
@@ -84,10 +89,10 @@ const estimatedBalance = product.deposit_eligible ? balanceAmount(product.price_
               <button type="button" id="qty-plus">+</button>
             </div>
             <button id="add-to-cart" class="btn btn-primary btn-full" data-name={product.name} data-price={product.price_pkr} data-sku={defaultVariant.sku} data-image={product.images[0]}>Add to cart</button>
-            <button id="wishlist-toggle" class="btn btn-full" style="margin-top:0.5rem;">⤖ Add to wishlist</button>
+            <button id="wishlist-toggle" class="btn btn-full" data-default-sku={defaultVariant?.sku || product.id} style="margin-top:0.5rem;">⤖ Add to wishlist</button>
           </div>
 
-          <div class="stock-note" id="stock-note">In stock</div>
+          <div class="stock-note" id="stock-note">Availability confirmed when your order is reviewed.</div>
 
           <div style="display:flex; justify-content:space-between; margin-top:0.9rem;">
             <a href="/size-guide" class="text-link">Size Guide</a>
@@ -95,7 +100,7 @@ const estimatedBalance = product.deposit_eligible ? balanceAmount(product.price_
           </div>
 
           <div class="service-links" style="justify-content:flex-start;">
-            <a href="https://wa.me/923000000000" target="_blank" rel="noopener">Order on WhatsApp</a>
+            <a href="mailto:orders@aasra.shop" target="_blank" rel="noopener">Email us about this piece</a>
             <a href="/order-lookup">Track your order</a>
             <a href="/boutiques">Find in boutique</a>
           </div>
@@ -125,13 +130,18 @@ const estimatedBalance = product.deposit_eligible ? balanceAmount(product.price_
           <details class="accordion">
             <summary>Payment &amp; deposit</summary>
             <div class="accordion-body">
-              <p><strong>No Cash on Delivery.</strong> Pay in full online, or in two steps: deposit now, balance online before shipping. See the <a href="/deposit-policy">Deposit Policy</a>.</p>
+              <p><strong>No Cash on Delivery.</strong> Online checkout is not available until gateway setup is complete. Please contact us for current ordering options. See the <a href="/deposit-policy">Deposit Policy</a>.</p>
             </div>
           </details>
         </div>
       </div>
     </div>
   </section>
+
+  <div class="pdp-sticky-bar" id="pdp-sticky-bar" aria-hidden="true">
+    <span>{product.name}<small>{formatPKR(product.price_pkr)}</small></span>
+    <button type="button" class="btn btn-primary" id="sticky-add-to-cart">Add to selection</button>
+  </div>
 
   <!-- Meet our style advisors (BC pattern) -->
   <section class="section-tight advisor-band">
@@ -159,7 +169,7 @@ const estimatedBalance = product.deposit_eligible ? balanceAmount(product.price_
     <div class="container">
       <div class="kicker" style="margin-bottom:1.2rem;">Share</div>
       <div class="share-row">
-        <a id="share-wa" href="#" target="_blank" rel="noopener">WhatsApp</a>
+        <a id="share-wa" href="#" target="_blank" rel="noopener">Email</a>
         <a id="share-mail" href="#">Email</a>
         <button type="button" id="share-copy">Copy link</button>
       </div>
@@ -167,6 +177,7 @@ const estimatedBalance = product.deposit_eligible ? balanceAmount(product.price_
   </section>
 
   <script is:inline>
+    // @ts-nocheck -- browser-only event handlers use DOM APIs guarded at runtime.
     (function () {
       var url = window.location.href;
       var title = document.title;
@@ -198,16 +209,34 @@ const estimatedBalance = product.deposit_eligible ? balanceAmount(product.price_
   </section>
 
   <script>
+    // @ts-nocheck -- browser-only event handlers use DOM APIs guarded at runtime.
     // Gallery thumb click
     const mainImg = document.getElementById('main-img');
     const thumbs = document.querySelectorAll('.thumb');
     thumbs.forEach((t) => {
       t.addEventListener('click', () => {
-        thumbs.forEach((x) => x.classList.remove('selected'));
+        thumbs.forEach((x) => { x.classList.remove('selected'); x.setAttribute('aria-pressed', 'false'); });
         t.classList.add('selected');
+        t.setAttribute('aria-pressed', 'true');
+        mainImg.classList.remove('zoomed');
         mainImg.src = t.getAttribute('data-img');
       });
     });
+
+    // Tap/click the primary image to toggle a simple detail zoom.
+    mainImg?.addEventListener('click', () => mainImg.classList.toggle('zoomed'));
+    const stickyBar = document.getElementById('pdp-sticky-bar');
+    const primaryAdd = document.getElementById('add-to-cart');
+    const stickyAdd = document.getElementById('sticky-add-to-cart');
+    stickyAdd?.addEventListener('click', () => primaryAdd?.click());
+    if (primaryAdd && stickyBar && 'IntersectionObserver' in window) {
+      const stickyObserver = new IntersectionObserver(([entry]) => {
+        const show = !entry.isIntersecting && window.scrollY > 240;
+        stickyBar.classList.toggle('visible', show);
+        stickyBar.setAttribute('aria-hidden', String(!show));
+      });
+      stickyObserver.observe(primaryAdd);
+    }
 
     // Size selection
     const sizeBtns = document.querySelectorAll('.size-btn');
@@ -265,7 +294,7 @@ const estimatedBalance = product.deposit_eligible ? balanceAmount(product.price_
         localStorage.setItem(WL_KEY, JSON.stringify(wl));
       } catch (e) {}
     }
-    const defaultSku = defaultVariant ? defaultVariant.sku : product.id;
+    const defaultSku = wishBtn?.dataset.defaultSku || '';
     if (wishBtn) {
       if (isWishlisted(defaultSku)) wishBtn.textContent = '✔ In wishlist';
       wishBtn.addEventListener('click', () => {

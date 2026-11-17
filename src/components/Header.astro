@@ -137,6 +137,7 @@ const megas = {
 ---
 
 <header class:list={["header", { "home-over-image": isHome }]} role="banner">
+  <div class="announcement-bar" role="note">A quieter kind of home — considered essentials, thoughtfully made <a href="/shop">Discover the collection</a></div>
   <!-- Utility bar -->
   <div class="header-utility">
     <div class="container header-utility-inner">
@@ -145,7 +146,7 @@ const megas = {
         <a href="/services">Services</a>
         <a href="/contact">Contact us</a>
         <a href="/order-lookup">Order lookup</a>
-        <a href="https://wa.me/923000000000" target="_blank" rel="noopener">WhatsApp</a>
+        <a href="mailto:orders@aasra.shop" target="_blank" rel="noopener">Email</a>
       </span>
     </div>
   </div>
@@ -167,6 +168,11 @@ const megas = {
       <a href="/wishlist" aria-label="Wishlist" title="Wishlist" class="util-icon">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" aria-hidden="true">
           <path d="M12 20.5C7 16.5 3.5 13.2 3.5 9.6 3.5 7 5.5 5 8 5c1.6 0 3.1.8 4 2.1C12.9 5.8 14.4 5 16 5c2.5 0 4.5 2 4.5 4.6 0 3.6-3.5 6.9-8.5 10.9Z"/>
+        </svg>
+      </a>
+      <a href="/order-lookup" aria-label="Account and orders" title="Account and orders" class="util-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" aria-hidden="true">
+          <circle cx="12" cy="8" r="3.5"/><path d="M4.5 20c.6-4 3.2-6 7.5-6s6.9 2 7.5 6"/>
         </svg>
       </a>
       <button id="cart-btn" aria-label="Shopping cart" title="Cart" class="util-icon" style="position:relative;">
@@ -300,23 +306,41 @@ const megas = {
     </ul>
   </nav>
 
-  <!-- Collapsible search row -->
-  <div class="header-search-row" id="search-row">
+  <!-- Full-screen, keyboard-dismissable search overlay -->
+  <div class="header-search-row" id="search-row" role="dialog" aria-modal="true" aria-label="Search AASRA" aria-hidden="true" inert>
+    <button type="button" class="search-close" id="search-close" aria-label="Close search">&times;</button>
     <form action="/shop" method="GET" role="search">
-      <input type="text" name="q" placeholder="Search products…" aria-label="Search products" autocomplete="off" />
+      <label class="small-caps" for="site-search">What are you looking for?</label>
+      <input id="site-search" type="search" name="q" placeholder="Search products…" aria-label="Search products" autocomplete="off" />
       <button type="submit">Search</button>
     </form>
+    <p>Explore home textiles, rugs, tableware and objects.</p>
   </div>
 </header>
 
 <script>
   const searchBtn = document.getElementById('search-btn');
   const searchRow = document.getElementById('search-row');
+  const searchClose = document.getElementById('search-close');
+  function closeSearch() {
+    searchRow?.classList.remove('open');
+    searchRow?.setAttribute('aria-hidden', 'true');
+    searchRow?.setAttribute('inert', '');
+    searchBtn?.setAttribute('aria-expanded', 'false');
+    document.body.style.overflow = '';
+    searchBtn?.focus();
+  }
   if (searchBtn && searchRow) {
     searchBtn.addEventListener('click', () => {
-      const open = searchRow.classList.toggle('open');
-      searchBtn.setAttribute('aria-expanded', String(open));
-      if (open) searchRow.querySelector('input')?.focus();
+      searchRow.classList.add('open');
+      searchRow.removeAttribute('inert');
+      searchRow.setAttribute('aria-hidden', 'false');
+      searchBtn.setAttribute('aria-expanded', 'true');
+      document.body.style.overflow = 'hidden';
+      window.setTimeout(() => searchRow.querySelector('input')?.focus(), 80);
     });
+    searchClose?.addEventListener('click', closeSearch);
+    searchRow.addEventListener('click', (event) => { if (event.target === searchRow) closeSearch(); });
+    document.addEventListener('keydown', (event) => { if (event.key === 'Escape' && searchRow.classList.contains('open')) closeSearch(); });
   }
 </script>

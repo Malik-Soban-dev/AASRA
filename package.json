@@ -12,21 +12,22 @@
     "d1:create": "wrangler d1 create AASRA_DB",
     "d1:execute": "wrangler d1 execute AASRA_DB --file=migrations/0001_initial.sql --remote",
     "d1:execute:0002": "wrangler d1 execute AASRA_DB --file=migrations/0002_balance_token.sql --remote",
+"d1:migrate": "wrangler d1 migrations apply AASRA_DB --remote",
     "d1:seed": "node scripts/seed-d1.js",
     "test": "node tests/run.js",
     "smoke": "node scripts/smoke-worker.mjs",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "astro check"
   },
   "dependencies": {
     "@fontsource/cormorant-garamond": "^5.3.0",
-    "astro": "^4.16.0"
+    "astro": "^7.4.12"
   },
   "devDependencies": {
-    "@astrojs/node": "^8.3.0",
+    "@astrojs/check": "^0.9.12",
     "typescript": "^5.6.0",
     "wrangler": "^4.163.0"
   },
   "engines": {
-    "node": ">=20"
+    "node": ">=24.0.0"
   }
 }

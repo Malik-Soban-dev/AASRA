@@ -1,10 +1,10 @@
 ---
 import Layout from '../components/Layout.astro';
-import { loadProducts, findVariantBySku } from '../lib/products.js';
+
 
 // Turnstile sitekey — configure in Cloudflare dashboard, set via env or replace placeholder.
 // VERIFY: get a real Turnstile sitekey from Cloudflare and set TURNSTILE_SITEKEY.
-const TURNSTILE_SITEKEY = '0x0000000000000000000000000000000000000000'; // placeholder
+const TURNSTILE_SITEKEY = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY || '';
 ---
 
 <Layout title="Checkout — AASRA" description="Complete your order. Pay in full or deposit + balance online. PKR.">
@@ -78,7 +78,11 @@ const TURNSTILE_SITEKEY = '0x0000000000000000000000000000000000000000'; // place
 
         <!-- Turnstile widget -->
         <div class="form-group" style="margin-top:1rem;">
-          <div class="cf-turnstile" data-sitekey={TURNSTILE_SITEKEY}></div>
+          {TURNSTILE_SITEKEY ? (
+            <div class="cf-turnstile" data-sitekey={TURNSTILE_SITEKEY}></div>
+          ) : (
+            <p class="alert alert-error" role="status">Secure checkout is not configured yet. Please contact AASRA for assistance.</p>
+          )}
         </div>
 
         <button type="submit" class="btn btn-primary btn-full" id="checkout-btn">
@@ -93,21 +97,13 @@ const TURNSTILE_SITEKEY = '0x0000000000000000000000000000000000000000'; // place
   </section>
 
   <script>
+    // @ts-nocheck -- browser-only event handlers use DOM APIs guarded at runtime.
     // Load Turnstile script
     (function () {
       const widget = document.querySelector('.cf-turnstile');
       if (!widget) return;
-      const sitekey = '{TURNSTILE_SITEKEY}';
-      if (sitekey === '0x0000000000000000000000000000000000000000') {
-        // Dev mode: render a placeholder box so layout doesn't break
-        widget.style.border = '1px dashed var(--border)';
-        widget.style.padding = '1rem';
-        widget.style.fontSize = '0.75rem';
-        widget.style.color = 'var(--muted)';
-        widget.textContent = 'Turnstile widget (configure sitekey in Cloudflare dashboard)';
-        // Skip loading the real script in dev
-        return;
-      }
+      const sitekey = widget.dataset.sitekey;
+      if (!sitekey) return;
       const script = document.createElement('script');
       script.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';
       script.async = true;
@@ -155,8 +151,9 @@ const TURNSTILE_SITEKEY = '0x0000000000000000000000000000000000000000'; // place
         } catch (e) {}
       }
       if (!token) {
-        // Dev mode without Turnstile: allow but warn
-        console.warn('No Turnstile token (dev mode).');
+        errorEl.textContent = 'Please complete the security check before continuing.';
+        errorEl.style.display = 'block';
+        return;
       }
 
       const body = {

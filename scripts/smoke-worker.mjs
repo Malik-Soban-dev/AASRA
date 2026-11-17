@@ -51,6 +51,8 @@ check('unknown path returns 404 page', res.status === 404 && /<html/i.test(text)
 // 4. GET /api/csrf-token — middleware passes, handler responds
 res = await fetch(BASE + '/api/csrf-token');
 let body = await res.json().catch(() => null);
+const csrfToken = body?.csrf_token || '';
+const csrfCookie = (res.headers.get('Set-Cookie') || '').split(';')[0];
 check('GET /api/csrf-token returns 200 JSON', res.status === 200 && !!body, `status ${res.status} ${JSON.stringify(body).slice(0, 120)}`);
 check(
   'csrf-token response has no-store cache header',
@@ -79,6 +81,21 @@ check(
   res.status === 403 && /csrf/.test(String(body && body.error)),
   `status ${res.status} ${JSON.stringify(body)}`
 );
+
+// 6b. Even with valid same-origin CSRF, checkout must fail closed before
+// touching inventory when production D1/payment configuration is absent.
+res = await fetch(BASE + '/api/checkout', {
+  method: 'POST',
+  headers: {
+    Origin: 'https://aasra.shop',
+    Cookie: csrfCookie,
+    'X-CSRF-Token': csrfToken,
+    'Content-Type': 'application/json',
+  },
+  body: JSON.stringify({ cart: [], payment_type: 'full', customer: {}, turnstile_token: 'test-token' }),
+});
+body = await res.json().catch(() => null);
+check('checkout without D1 fails closed with 503', res.status === 503 && body?.code === 'configuration_missing', `status ${res.status} ${JSON.stringify(body)}`);
 
 // 7. POST /api/webhook with NO Origin header -> passes middleware (gateway case)
 res = await fetch(BASE + '/api/webhook', {

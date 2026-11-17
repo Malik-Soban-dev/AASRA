@@ -87,7 +87,7 @@ export async function onRequestPost(context) {
       html: `
         <h1>Thank you, ${customerName}</h1>
         <p>We received your message and will respond soon.</p>
-        <p>You can also reach us on WhatsApp or at ${env.EMAIL_FROM || 'orders@example.com'}.</p>
+        <p>You can also reach us on Email or at ${env.EMAIL_FROM || 'orders@example.com'}.</p>
       `,
     });
   } catch (e) {

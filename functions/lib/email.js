@@ -13,7 +13,7 @@
 
 export function emailConfig(env) {
   return {
-    provider: env.EMAIL_PROVIDER || 'resend',
+    provider: env.EMAIL_PROVIDER || '',
     apiKey: env.EMAIL_PROVIDER_API_KEY || '',
     from: env.EMAIL_FROM || 'orders@example.com',
     fromName: env.EMAIL_FROM_NAME || 'AASRA',
@@ -33,9 +33,8 @@ export async function sendEmail(env, { to, subject, html, text }) {
   const domain = String(to || '').split('@')[1] || 'unknown';
   console.log('[EMAIL]', { to: domain, subject, provider: cfg.provider });
 
-  if (!cfg.apiKey) {
-    console.log('[EMAIL STUB]', { to: domain, subject, from: cfg.from });
-    return { ok: true, messageId: 'stub-' + Date.now(), warning: 'no_email_provider_configured' };
+  if (!cfg.provider || !cfg.apiKey) {
+    return { ok: false, error: 'email_provider_not_configured' };
   }
 
   // Real provider call (Resend example — uncomment and adjust once verified):
@@ -306,7 +305,7 @@ export function wrapEmail(env, { subject, title, body, intro, outro, btnText, bt
       <div class="footer">
         <p>${escapeHtml(intro)}</p>
         <p>${escapeHtml(outro)}</p>
-        <p>Questions? <a href="https://wa.me/923000000000" target="_blank" rel="noopener">WhatsApp us</a> or email <a href="mailto:${from}">${from}</a>.</p>
+        <p>Questions? Email <a href="mailto:${from}">${from}</a>.</p>
         <p>&copy; 2026 ${escapeHtml(sender)}. All rights reserved.</p>
       </div>
     </div>

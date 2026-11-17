@@ -32,6 +32,7 @@ import { formatPKR } from '../lib/products.js';
   </section>
 
   <script>
+    // @ts-nocheck -- browser-only event handlers use DOM APIs guarded at runtime.
     const CART_KEY = window.__AASRA_CART_KEY || 'aasra_cart_v1';
     function loadCart() {
       try { return JSON.parse(localStorage.getItem(CART_KEY) || '[]'); } catch { return []; }

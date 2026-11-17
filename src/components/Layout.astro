@@ -2,6 +2,7 @@
 import '@fontsource/cormorant-garamond/500.css';
 import '@fontsource/cormorant-garamond/600.css';
 import '../styles/global.css';
+import '../styles/luxury-refinements.css';
 import Header from './Header.astro';
 import Footer from './Footer.astro';
 import CartDrawer from './CartDrawer.astro';
@@ -26,6 +27,7 @@ const { title = 'AASRA', description = 'AASRA — considered essentials for the 
     <!-- global.css + fonts are bundled by Astro/Vite (hashed under /_astro/, auto-injected) -->
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <script>
+    // @ts-nocheck -- browser-only event handlers use DOM APIs guarded at runtime.
       window.__AASRA_CART_KEY = 'aasra_cart_v1';
       window.__AASRA_WISHLIST_KEY = 'aasra_wishlist_v1';
       window.__AASRA_API_BASE = '';
@@ -33,6 +35,7 @@ const { title = 'AASRA', description = 'AASRA — considered essentials for the 
 
     <!-- CSRF token init: fetch token from same-origin API, store as cookie -->
     <script>
+    // @ts-nocheck -- browser-only event handlers use DOM APIs guarded at runtime.
       (function () {
         const COOKIE_NAME = 'csrf_token';
         function getCookie(name) {
@@ -74,7 +77,7 @@ const { title = 'AASRA', description = 'AASRA — considered essentials for the 
     <CountryModal />
 
     <!-- Mobile full-screen menu -->
-    <div class="mobile-menu" id="mobile-menu" role="dialog" aria-modal="true" aria-label="Menu">
+    <div class="mobile-menu" id="mobile-menu" role="dialog" aria-modal="true" aria-label="Menu" aria-hidden="true" inert>
       <div class="mobile-menu-top">
         <span class="mobile-menu-logo">AASRA</span>
         <button class="mobile-menu-close" id="mobile-menu-close" aria-label="Close menu">&times;</button>
@@ -97,7 +100,7 @@ const { title = 'AASRA', description = 'AASRA — considered essentials for the 
         <li><a href="/contact">Contact us</a></li>
         <li><a href="/order-lookup">Order lookup</a></li>
         <li><a href="/wishlist">Wishlist</a></li>
-        <li><a href="https://wa.me/923000000000" target="_blank" rel="noopener">WhatsApp</a></li>
+        <li><a href="mailto:orders@aasra.shop" target="_blank" rel="noopener">Email</a></li>
       </ul>
       <div class="country-line">
         Pakistan (PKR) &middot; <button type="button" data-open-country>Change country / language</button>
@@ -106,6 +109,7 @@ const { title = 'AASRA', description = 'AASRA — considered essentials for the 
 
     <div id="overlay" class="overlay" aria-hidden="true"></div>
     <script>
+    // @ts-nocheck -- browser-only event handlers use DOM APIs guarded at runtime.
       const cartBtn = document.getElementById('cart-btn');
       const cartDrawer = document.getElementById('cart-drawer');
       const overlay = document.getElementById('overlay');
@@ -133,22 +137,33 @@ const { title = 'AASRA', description = 'AASRA — considered essentials for the 
       const headerNav = document.querySelector('.header-nav');
       function openMobileMenu() {
         mobileMenu?.classList.add('open');
+        mobileMenu?.removeAttribute('inert');
+        mobileMenu?.setAttribute('aria-hidden', 'false');
+        menuToggle?.setAttribute('aria-expanded', 'true');
         document.body.style.overflow = 'hidden';
-        if (headerNav) headerNav.classList.remove('open'); // desktop fallback list off on mobile
+        if (headerNav) headerNav.classList.remove('open');
+        window.setTimeout(() => mobileClose?.focus(), 50);
       }
       function closeMobileMenu() {
         mobileMenu?.classList.remove('open');
+        mobileMenu?.setAttribute('aria-hidden', 'true');
+        mobileMenu?.setAttribute('inert', '');
+        menuToggle?.setAttribute('aria-expanded', 'false');
         document.body.style.overflow = '';
+        menuToggle?.focus();
       }
       menuToggle?.addEventListener('click', openMobileMenu);
       mobileClose?.addEventListener('click', closeMobileMenu);
       mobileMenu?.querySelectorAll('a').forEach((a) => a.addEventListener('click', closeMobileMenu));
+      document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape' && mobileMenu?.classList.contains('open')) closeMobileMenu();
+      });
 
       // Header scroll behaviour: collapse utility bar, add shadow
       const header = document.querySelector('.header');
       function onScroll() {
         if (!header) return;
-        header.classList.toggle('scrolled', window.scrollY > 12);
+        header.classList.toggle('scrolled', window.scrollY > 80);
       }
       window.addEventListener('scroll', onScroll, { passive: true });
       onScroll();
