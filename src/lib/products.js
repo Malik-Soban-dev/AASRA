@@ -35,6 +35,24 @@ export function getCategories(products) {
   return [...cats];
 }
 
+/**
+ * Badge system (adapted from the Brunello Cucinelli deep-dive study, §12–13):
+ * purposeful merchandising tiers instead of ad-hoc tags.
+ * Types: season (seasonal story) · signature (continuity icon) · limited (scarcity) · craft (artisan/material).
+ */
+export const BADGE_LABELS = {
+  season: 'SEASONAL EDIT',
+  signature: 'SIGNATURE',
+  limited: 'LIMITED EDITION',
+  craft: 'ARTISAN MADE',
+};
+
+export function getBadge(product) {
+  const type = product?.badge;
+  if (!type || !BADGE_LABELS[type]) return null;
+  return { type, label: BADGE_LABELS[type] };
+}
+
 export function formatPKR(amount) {
   return new Intl.NumberFormat('en-PK', {
     style: 'currency',

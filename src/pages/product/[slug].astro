@@ -1,7 +1,7 @@
 ---
 import Layout from '../../components/Layout.astro';
 import ProductCard from '../../components/ProductCard.astro';
-import { formatPKR, depositAmount, balanceAmount } from '../../lib/products.js';
+import { formatPKR, depositAmount, balanceAmount, getBadge } from '../../lib/products.js';
 import productsData from '../../../data/products.json';
 
 export function getStaticPaths() {
@@ -22,6 +22,7 @@ const defaultVariant = product.variants[0];
 const DEPOSIT_PERCENT = 30; // VERIFY: must match backend DEFAULT_DEPOSIT_PERCENT
 const estimatedDeposit = product.deposit_eligible ? depositAmount(product.price_pkr, DEPOSIT_PERCENT) : 0;
 const estimatedBalance = product.deposit_eligible ? balanceAmount(product.price_pkr, estimatedDeposit) : 0;
+const badge = getBadge(product);
 ---
 
 <Layout title={product.name} description={product.seo?.description || product.description}>
@@ -48,6 +49,9 @@ const estimatedBalance = product.deposit_eligible ? balanceAmount(product.price_
           <div class="kicker" style="margin-bottom:0.5rem;">
             {product.category.charAt(0).toUpperCase() + product.category.slice(1)}
           </div>
+          {badge && (
+            <div class="product-badge product-badge--pdp" data-badge={badge.type}>{badge.label}</div>
+          )}
           <h1 class="product-title">{product.name}</h1>
           <div class="product-price-display">{formatPKR(product.price_pkr)}</div>
           <div class="product-color-display">

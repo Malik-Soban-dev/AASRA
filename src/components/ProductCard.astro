@@ -1,5 +1,5 @@
 ---
-import { formatPKR } from '../lib/products.js';
+import { formatPKR, getBadge } from '../lib/products.js';
 
 interface Props {
   product: any;
@@ -7,6 +7,7 @@ interface Props {
 }
 
 const { product, variant } = Astro.props;
+const badge = getBadge(product);
 
 const firstVariant = variant || product.variants[0];
 const imageMain = product.images[0] || '/images/placeholder.svg';
@@ -35,7 +36,11 @@ const imageAlt = product.images[1] || imageMain;
       />
     </div>
     <div class="product-info">
-      {product.tags?.includes('winter') && <div class="card-tag">AASRA selection</div>}
+      {badge ? (
+        <div class="product-badge" data-badge={badge.type}>{badge.label}</div>
+      ) : (
+        product.tags?.includes('winter') && <div class="card-tag">AASRA selection</div>
+      )}
       <h3 class="product-name">{product.name}</h3>
       <div class="product-color">{firstVariant?.size || ''}</div>
       <div class="product-price">{formatPKR(product.price_pkr)}</div>
