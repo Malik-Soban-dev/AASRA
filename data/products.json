@@ -110,7 +110,8 @@
         "title": "Cotton Dhurrie Rug — Beige | AASRA",
         "description": "Handwoven cotton dhurrie rug in beige. Flat-weave, durable. Shop rugs online in Pakistan."
       },
-      "visible": true
+      "visible": true,
+      "badge": "craft"
     },
     {
       "id": "prod-004",
@@ -148,7 +149,8 @@
         "title": "Cotton Dhurrie Rug — Charcoal | AASRA",
         "description": "Handwoven cotton dhurrie rug in charcoal grey. Shop rugs online in Pakistan."
       },
-      "visible": true
+      "visible": true,
+      "badge": "season"
     },
     {
       "id": "prod-005",
@@ -180,7 +182,8 @@
         "title": "Ceramics Dinner Plate Set — Set of 4 | AASRA",
         "description": "Stoneware dinner plate set of four in matte neutral glaze. Shop tableware online in Pakistan."
       },
-      "visible": true
+      "visible": true,
+      "badge": "signature"
     },
     {
       "id": "prod-006",
@@ -278,7 +281,8 @@
         "title": "Teak Wooden Tray — Medium | AASRA",
         "description": "Reclaimed teak wooden tray, medium size. Shop woodware online in Pakistan."
       },
-      "visible": true
+      "visible": true,
+      "badge": "limited"
     }
   ]
 }
