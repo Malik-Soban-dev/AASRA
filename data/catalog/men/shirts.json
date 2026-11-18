@@ -1,0 +1,40 @@
+{
+  "category": "shirts",
+  "label": "Shirts & Kurtas",
+  "products": [
+    {
+      "id": "M001",
+      "slug": "linen-shirt-slate",
+      "name": "Linen Shirt — Slate",
+      "price_pkr": 12400,
+      "badge": "NEW",
+      "colors": [
+        { "name": "Slate", "hex": "#5d6a72" },
+        { "name": "Ivory", "hex": "#efe9dc" }
+      ],
+      "sizes": ["S", "M", "L", "XL", "XXL"],
+      "images": ["/images/garments/m-shirt-slate.jpg"],
+      "description": "Our everyday shirt, cut generous in washed European linen. It softens with every wash and keeps its line.",
+      "details": ["Relaxed fit", "Corozo buttons", "Single chest pocket", "Curved hem"],
+      "fabric": "100% washed linen, 160 gsm",
+      "care": "Gentle wash cold, line dry, warm iron."
+    },
+    {
+      "id": "M002",
+      "slug": "kurta-shirt-indigo",
+      "name": "Kurta Shirt — Indigo",
+      "price_pkr": 13900,
+      "badge": "HANDLOOM",
+      "colors": [
+        { "name": "Indigo", "hex": "#37415c" },
+        { "name": "Sand", "hex": "#d6c9b2" }
+      ],
+      "sizes": ["S", "M", "L", "XL", "XXL"],
+      "images": ["/images/garments/m-kurta-indigo.jpg"],
+      "description": "A short kurta in handloom cotton-linen, indigo-dyed in small vats. Mandarin collar, wooden buttons, slub texture that catches the light.",
+      "details": ["Mandarin collar", "Wooden buttons", "Side vents", "Mid-hip length"],
+      "fabric": "Handloom cotton-linen, natural indigo",
+      "care": "Wash separately first two washes. Line dry in shade."
+    }
+  ]
+}

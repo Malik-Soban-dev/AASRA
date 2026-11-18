@@ -6,6 +6,9 @@
   "description": "Headless e-commerce store for Pakistan on Cloudflare (Astro + Workers static assets + D1)",
   "scripts": {
     "dev": "npm run build && wrangler dev",
+    "catalog:build": "node scripts/build-catalog.js",
+    "prebuild": "node scripts/build-catalog.js",
+    "pretest": "node scripts/build-catalog.js",
     "build": "astro build && wrangler pages functions build --outdir dist-worker --compatibility-date 2026-01-01 --compatibility-flags nodejs_compat",
     "preview": "npm run build && wrangler dev",
     "deploy": "wrangler deploy",

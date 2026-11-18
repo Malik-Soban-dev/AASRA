@@ -47,8 +47,12 @@ Product (in category files — keep them small and readable):
 ```
 
 `npm run catalog:build` expands `sizes × colors` into `variants[{sku,size,color,stock_key}]`
-(`AS-W001-IVR-XS`) and writes the generated aggregate. It runs automatically
+(`AS-W001-IVO-XS`) and writes the generated aggregate. It runs automatically
 (`prebuild`) before every `npm run dev` / `npm run build`.
+
+Deposit rule: `deposit_eligible` is true for products priced ≥ PKR 15,000
+(overridable per product in the category file). Checkout deposit plans apply
+only when every item in the cart is deposit-eligible.
 
 ### Adding / editing a product (no dashboard)
 

@@ -1,0 +1,23 @@
+{
+  "category": "outerwear",
+  "label": "Outerwear & Shawls",
+  "products": [
+    {
+      "id": "W004",
+      "slug": "quilted-shawl-coat-sand",
+      "name": "Quilted Shawl Coat — Sand",
+      "price_pkr": 32000,
+      "badge": "LIMITED",
+      "colors": [
+        { "name": "Sand", "hex": "#d6c9b2" },
+        { "name": "Charcoal", "hex": "#3c3a36" }
+      ],
+      "sizes": ["XS", "S", "M", "L", "XL"],
+      "images": ["/images/garments/w-coat-sand.jpg"],
+      "description": "Hand-stitched channel quilting over organic cotton wadding — a coat that behaves like a shawl. Each piece takes three days at the quilt frame.",
+      "details": ["Shawl collar", "Hand-stitched quilting", "Two side pockets", "Cotton binding at edges"],
+      "fabric": "Organic cotton shell and wadding",
+      "care": "Dry clean only."
+    }
+  ]
+}
