@@ -320,3 +320,66 @@ body { background: var(--aasra-paper); color: var(--aasra-ink); }
   .aasra-hero-image, .aasra-hero-copy { animation:none; }
   .aasra-collection-photo img, .aasra-story-band > img, .aasra-journal-image img, .aasra-button span { transition:none; }
 }
+
+/* ==========================================================================
+   Quiet alignment — the reference's monochrome discipline (layout & feel only).
+   NON-STRUCTURAL: color, font-style, weight, letter-spacing, text-transform.
+   No positioning, no grid changes, no !important.
+   ========================================================================== */
+:root {
+  --aasra-olive: #3a382f;   /* green accent -> warm charcoal */
+  --aasra-clay: #8f867a;    /* terracotta accent -> warm taupe */
+}
+
+.aasra-eyebrow { color: var(--muted); font-weight: 400; letter-spacing: .22em; }
+.aasra-hero-copy .aasra-eyebrow { color: rgba(255, 255, 255, .85); }
+
+h1 em, h2 em, h3 em,
+.aasra-hero h1 em, .aasra-maker h2 em,
+.aasra-story-band h2 em, .aasra-section-heading h2 em {
+  font-style: normal;
+  font-weight: inherit;
+}
+
+.aasra-collection-arrow, .aasra-collection-index, .aasra-intro-mark { display: none; }
+
+.aasra-button, .aasra-arrow-link, .aasra-quiet-link {
+  text-transform: uppercase;
+  letter-spacing: .22em;
+  font-size: .6875rem;
+}
+.aasra-button {
+  border-radius: 0;
+  transition: background .25s ease, color .25s ease, opacity .25s ease;
+}
+.aasra-button:hover { transform: none; }
+.aasra-button span, .aasra-arrow-link span { transition: none; }
+.aasra-button:hover span, .aasra-arrow-link:hover span { transform: none; }
+.aasra-arrow-link { color: var(--text); border-bottom-color: currentColor; }
+
+.product-info { text-align: center; }
+.product-name { font: 500 1rem/1.35 var(--serif); letter-spacing: .01em; }
+.product-colors {
+  text-transform: uppercase;
+  letter-spacing: .18em;
+  font-size: .625rem;
+}
+.product-badge { text-transform: uppercase; letter-spacing: .18em; }
+.quick-add, .quick-shop-chip {
+  text-transform: uppercase;
+  letter-spacing: .18em;
+  font-size: .625rem;
+  border-radius: 0;
+}
+
+.announcement-bar { text-transform: uppercase; letter-spacing: .18em; font-size: .625rem; font-weight: 400; }
+.nav-item > a, .nav-item > button { text-transform: uppercase; letter-spacing: .2em; font-size: .6875rem; font-weight: 400; }
+.accordion summary, .product-detail-label, .size-label {
+  text-transform: uppercase;
+  letter-spacing: .18em;
+  font-size: .66rem;
+  font-weight: 400;
+}
+.size-btn { border-radius: 0; }
+.aasra-value h2 { color: var(--text); }
+.aasra-section-heading h2, .aasra-hero h1 { letter-spacing: .015em; }
