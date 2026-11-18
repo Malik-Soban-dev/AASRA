@@ -1,0 +1,38 @@
+---
+/**
+ * RunwayHero — the signature home hero (design system §6): split model panels
+ * with cursor-parallax + hover expansion, kinetic staggered headline, two CTAs.
+ */
+import site from '../../../data/catalog/site.json';
+const { hero } = site;
+const words = [hero.line1, hero.line2].join(' ').split(' ');
+---
+
+<section class="as-hero" aria-label="Spring Summer — the handloom edit">
+  <a class="as-hero-panel" href={hero.women.href} aria-label={hero.women.label}>
+    <img src="/images/look/hero-women.jpg" alt="Woman in ivory handloom kurta, spring campaign" fetchpriority="high" width="1600" height="1000" />
+    <span class="as-hero-tag as-kicker" style="color:var(--as-paper)">{hero.women.label}</span>
+  </a>
+  <a class="as-hero-panel" href={hero.men.href} aria-label={hero.men.label}>
+    <img src="/images/look/hero-men.jpg" alt="Man in slate linen shirt, spring campaign" fetchpriority="high" width="1600" height="1000" />
+    <span class="as-hero-tag as-kicker" style="color:var(--as-paper)">{hero.men.label}</span>
+  </a>
+
+  <div class="as-hero-copy">
+    <p class="as-kicker">{hero.kicker}</p>
+    <h1 class="as-display-xl">
+      {words.map((word, i) => (
+        <Fragment>
+          <span class="as-hero-word"><span style={`--i:${i}`}>{word}</span></span>
+          {i < words.length - 1 ? ' ' : ''}
+        </Fragment>
+      ))}
+    </h1>
+    <div class="as-hero-actions">
+      <a class="as-link as-link--light" href={hero.women.href}>{hero.women.label}</a>
+      <a class="as-link as-link--light" href={hero.men.href}>{hero.men.label}</a>
+    </div>
+  </div>
+
+  <p class="as-hero-scroll">Scroll</p>
+</section>

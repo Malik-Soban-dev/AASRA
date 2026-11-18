@@ -1,0 +1,27 @@
+---
+/**
+ * Marquee — infinite kinetic band (design system §6). Content duplicated for a
+ * seamless loop; pauses on hover; disabled under reduced motion (CSS).
+ */
+const { items = [] } = Astro.props;
+const row = items.flatMap((t, i) => [
+  { text: t, em: i % 2 === 1 },
+  { dot: true },
+]);
+---
+
+<div class="as-marquee" aria-hidden="true">
+  <div class="as-marquee-track">
+    {[0, 1].map(() => (
+      <div class="as-marquee-item">
+        {row.map((node) =>
+          node.dot
+            ? <span class="as-marquee-dot"></span>
+            : node.em
+              ? <em>{node.text}</em>
+              : <span>{node.text}</span>
+        )}
+      </div>
+    ))}
+  </div>
+</div>
