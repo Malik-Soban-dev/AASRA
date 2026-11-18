@@ -58,7 +58,7 @@ const forTable = visible.filter((p) => ['tableware', 'woodware'].includes(p.cate
         <p class="section-sub">Linens and woven pieces for spaces that gather people.</p>
       </div>
       <div class="grid" data-stagger>
-        {forHome.map((p) => <ProductCard product={p} />)}
+        {forHome.map((p) => <ProductCard product={p} quickShop />)}
       </div>
     </div>
   </section>
@@ -72,7 +72,7 @@ const forTable = visible.filter((p) => ['tableware', 'woodware'].includes(p.cate
         <p class="section-sub">Ceramics and teak for tables that linger.</p>
       </div>
       <div class="grid" data-stagger>
-        {forTable.map((p) => <ProductCard product={p} />)}
+        {forTable.map((p) => <ProductCard product={p} quickShop />)}
       </div>
     </div>
   </section>
