@@ -4,9 +4,10 @@ import { formatPKR, getBadge } from '../lib/products.js';
 interface Props {
   product: any;
   variant?: any;
+  quickShop?: boolean;
 }
 
-const { product, variant } = Astro.props;
+const { product, variant, quickShop = false } = Astro.props;
 const badge = getBadge(product);
 
 const firstVariant = variant || product.variants[0];
@@ -49,6 +50,21 @@ const imageAlt = product.images[1] || imageMain;
   </a>
   {product.variants.length === 1 ? (
     <button class="quick-add" type="button" data-quick-add data-sku={firstVariant.sku} data-name={product.name} data-price={product.price_pkr} data-image={imageMain}>Quick add</button>
+  ) : quickShop ? (
+    <div class="quick-shop" role="group" aria-label={`Quick shop: ${product.name}`}>
+      {product.variants.map((v) => (
+        <button
+          class="quick-shop-chip"
+          type="button"
+          data-quick-shop
+          data-sku={v.sku}
+          data-size={v.size}
+          data-name={product.name}
+          data-price={product.price_pkr}
+          data-image={imageMain}
+        >{v.size}</button>
+      ))}
+    </div>
   ) : (
     <a class="quick-add" href={`/product/${product.slug}`}>Choose options</a>
   )}
@@ -57,12 +73,21 @@ const imageAlt = product.images[1] || imageMain;
 <script>
     // @ts-nocheck -- browser-only event handlers use DOM APIs guarded at runtime.
   document.addEventListener('click', (event) => {
-    const button = event.target.closest('[data-quick-add]');
+    const button = event.target.closest('[data-quick-add], [data-quick-shop]');
     if (!button) return;
     if (typeof window.__aasra_addToCart !== 'function') {
       button.textContent = 'Please try again';
       return;
     }
     window.__aasra_addToCart(button.dataset.sku, button.dataset.name, Number(button.dataset.price), 1, button.dataset.image);
+    if (button.hasAttribute('data-quick-shop')) {
+      const original = button.dataset.size || button.textContent;
+      button.textContent = 'Added ✓';
+      button.classList.add('is-added');
+      setTimeout(() => {
+        button.textContent = original;
+        button.classList.remove('is-added');
+      }, 1400);
+    }
   });
 </script>

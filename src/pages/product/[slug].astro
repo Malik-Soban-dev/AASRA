@@ -23,6 +23,16 @@ const DEPOSIT_PERCENT = 30; // VERIFY: must match backend DEFAULT_DEPOSIT_PERCEN
 const estimatedDeposit = product.deposit_eligible ? depositAmount(product.price_pkr, DEPOSIT_PERCENT) : 0;
 const estimatedBalance = product.deposit_eligible ? balanceAmount(product.price_pkr, estimatedDeposit) : 0;
 const badge = getBadge(product);
+// Complementary-category recs for "Complete the look" (dual-rec pattern, BC deep-dive §13.6)
+const COMPLEMENTS = {
+  'home-textiles': ['rugs', 'tableware'],
+  rugs: ['home-textiles', 'woodware'],
+  tableware: ['woodware', 'home-textiles'],
+  woodware: ['tableware', 'home-textiles'],
+};
+const completeLook = productsData.products
+  .filter((p) => p.visible && p.id !== product.id && (COMPLEMENTS[product.category] || []).includes(p.category))
+  .slice(0, 4);
 ---
 
 <Layout title={product.name} description={product.seo?.description || product.description}>
@@ -74,9 +84,11 @@ const badge = getBadge(product);
                   data-size={v.size}
                 >
                   {v.size}
+                  <span class="size-state" data-state-sku={v.sku}></span>
                 </button>
               ))}
             </div>
+            <div class="size-request" id="size-request" hidden></div>
           </div>
 
           <!-- Deposit note -->
@@ -199,7 +211,7 @@ const badge = getBadge(product);
     })();
   </script>
 
-  <!-- Complete the look -->
+  <!-- Cross-sell: same-category recs + "Complete the look" (dual-rec pattern) -->
   <section class="cross-sell">
     <div class="container">
       <h3>You may also be interested in</h3>
@@ -209,8 +221,60 @@ const badge = getBadge(product);
           .slice(0, 4)
           .map((p) => <ProductCard product={p} />)}
       </div>
+      {completeLook.length > 0 && (
+        <div class="complete-the-look">
+          <h3>Complete the look</h3>
+          <div class="grid">
+            {completeLook.map((p) => <ProductCard product={p} />)}
+          </div>
+        </div>
+      )}
     </div>
   </section>
+
+  <script is:inline>
+    // Stock states for the size selector — "Only one left" / "No longer available" / "Request size".
+    // /api/stock returns stock:null when D1 is not bound; then the generic note stays.
+    (function () {
+      var buttons = Array.prototype.slice.call(document.querySelectorAll('.size-btn[data-sku]'));
+      if (!buttons.length || typeof fetch !== 'function') return;
+      var skus = buttons.map(function (b) { return b.getAttribute('data-sku'); });
+      fetch('/api/stock?skus=' + encodeURIComponent(skus.join(',')))
+        .then(function (r) { return r.ok ? r.json() : null; })
+        .then(function (data) {
+          if (!data || !data.ok || !data.stock) return;
+          var missing = [];
+          buttons.forEach(function (btn) {
+            var qty = data.stock[btn.getAttribute('data-sku')];
+            if (typeof qty !== 'number') return;
+            var state = btn.querySelector('.size-state');
+            if (qty <= 0) {
+              btn.disabled = true;
+              btn.classList.add('is-unavailable');
+              if (state) state.textContent = 'No longer available';
+              missing.push(btn.getAttribute('data-size'));
+            } else if (qty === 1) {
+              btn.classList.add('is-low');
+              if (state) state.textContent = 'Only one left';
+            }
+          });
+          if (missing.length) {
+            var req = document.getElementById('size-request');
+            if (req) {
+              var subject = document.title + ' — size request';
+              var body = 'Hello AASRA,\n\nI would like to request: ' + missing.join(', ') + '\n(' + window.location.href + ')\n';
+              req.innerHTML = '<a href="mailto:orders@aasra.shop?subject=' + encodeURIComponent(subject) +
+                '&body=' + encodeURIComponent(body) + '">Request size: ' + missing.join(', ') +
+                '</a> — we will confirm availability by email.';
+              req.hidden = false;
+            }
+          }
+          var note = document.getElementById('stock-note');
+          if (note) note.textContent = 'Live availability is shown next to each size.';
+        })
+        .catch(function () { /* keep the generic availability note */ });
+    })();
+  </script>
 
   <script>
     // @ts-nocheck -- browser-only event handlers use DOM APIs guarded at runtime.

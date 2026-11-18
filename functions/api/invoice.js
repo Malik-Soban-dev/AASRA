@@ -39,7 +39,8 @@ function errorResponse(message, status = 400, code) {
 }
 
 export async function onRequestGet(context) {
-  const { url, env } = context;
+  const { env } = context;
+  const url = context.url || new URL(context.request.url);
 
   const orderId = url.searchParams.get('order_id');
   const token = url.searchParams.get('token');

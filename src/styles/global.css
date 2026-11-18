@@ -1304,3 +1304,35 @@ body { animation: pageFade 0.5s ease both; }
   font-size: 0.75rem;
   margin-bottom: 0.9rem;
 }
+
+/* ---- Inline quick-shop chips (BC deep-dive §12 gifts quick-shop pattern) ---- */
+.quick-shop { display: flex; flex-wrap: wrap; gap: 0.45rem; }
+.quick-shop-chip {
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  padding: 0.45em 0.85em;
+  border: 1px solid var(--border, #d9d2c7);
+  background: transparent;
+  color: var(--text);
+  cursor: pointer;
+  border-radius: 2px;
+}
+.quick-shop-chip:hover { border-color: var(--aasra-clay, #8a6f5a); color: var(--aasra-clay, #8a6f5a); }
+.quick-shop-chip.is-added { border-color: var(--aasra-clay, #8a6f5a); color: var(--aasra-clay, #8a6f5a); }
+
+/* ---- Size stock states (BC deep-dive §12 stock language) ---- */
+.size-state {
+  display: block;
+  font-size: 0.66rem;
+  letter-spacing: 0.05em;
+  margin-top: 0.3rem;
+  color: var(--muted);
+  font-weight: 400;
+}
+.size-state:empty { display: none; }
+.size-btn.is-low .size-state { color: #a2622f; }
+.size-btn.is-unavailable { opacity: 0.55; text-decoration: line-through; }
+.size-btn.is-unavailable .size-state { text-decoration: none; color: var(--muted); }
+.size-request { margin-top: 0.9rem; font-size: 0.85rem; color: var(--muted); }
+.size-request a { color: var(--aasra-clay, #8a6f5a); }
+.complete-the-look h3 { margin-top: 2.5rem; }
