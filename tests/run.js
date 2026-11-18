@@ -107,7 +107,7 @@ t('sanitizeString trims and caps', () => {
 // ============================================================
 t('computeOrder full payment: deposit=balance=0', () => {
   const c = computeOrder({
-    items: [{ sku: 'LIN-IV-135X240', qty: 2, _city: 'Karachi' }],
+    items: [{ sku: 'AS-W001-IVO-XS', qty: 2, _city: 'Karachi' }],
     products: productsData,
     shippingConfig: { free_shipping_threshold_pkr: 20000, rates: [] },
     paymentType: 'full',
@@ -117,12 +117,12 @@ t('computeOrder full payment: deposit=balance=0', () => {
   assertEq(c.deposit_amount, 0);
   assertEq(c.balance_amount, 0);
   assertEq(c.total, c.subtotal + c.shipping_fee);
-  assertEq(c.total, 13000);
+  assertEq(c.total, 37800);
 });
 
 t('computeOrder deposit: deposit + balance == total', () => {
   const c = computeOrder({
-    items: [{ sku: 'DHR-BG-4X6', qty: 1, _city: 'Lahore' }],
+    items: [{ sku: 'AS-W003-OLI-XS', qty: 1, _city: 'Lahore' }],
     products: productsData,
     shippingConfig: { free_shipping_threshold_pkr: 20000, rates: [] },
     paymentType: 'deposit',
@@ -138,7 +138,7 @@ t('computeOrder deposit: deposit + balance == total', () => {
 t('computeOrder deposit ineligible cart throws', () => {
   assert.throws(() =>
     computeOrder({
-      items: [{ sku: 'LIN-IV-135X240', qty: 1, _city: 'Karachi' }],
+      items: [{ sku: 'AS-M001-SLA-S', qty: 1, _city: 'Karachi' }],
       products: productsData,
       shippingConfig: { free_shipping_threshold_pkr: 20000, rates: [] },
       paymentType: 'deposit',
@@ -151,7 +151,7 @@ t('computeOrder deposit ineligible cart throws', () => {
 
 t('computeOrder odd amounts keep invariant', () => {
   const c = computeOrder({
-    items: [{ sku: 'DHR-BG-4X6', qty: 1, _city: 'Karachi' }],
+    items: [{ sku: 'AS-W001-IVO-XS', qty: 1, _city: 'Karachi' }],
     products: productsData,
     shippingConfig: { free_shipping_threshold_pkr: 20000, rates: [] },
     paymentType: 'deposit',
@@ -160,8 +160,8 @@ t('computeOrder odd amounts keep invariant', () => {
     nowIso: new Date().toISOString(),
   });
   assertEq(c.deposit_amount + c.balance_amount, c.total);
-  assertEq(c.deposit_amount, 4350);
-  assertEq(c.balance_amount, 10150);
+  assertEq(c.deposit_amount, 5670);
+  assertEq(c.balance_amount, 13230);
 });
 
 t('applyCoupon percentage caps at subtotal', async () => {

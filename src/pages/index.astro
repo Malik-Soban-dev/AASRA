@@ -1,147 +1,94 @@
 ---
-import Layout from '../components/Layout.astro';
-import ProductCard from '../components/ProductCard.astro';
-import productsData from '../../data/products.json';
+/**
+ * Home — runway hero, marquee, the edit (broken editorial grid), new-in rail,
+ * campaign banner, shop the look. Composition only; see docs/DESIGN_SYSTEM.md.
+ */
+import StoreLayout from '../components/layout/StoreLayout.astro';
+import RunwayHero from '../components/store/RunwayHero.astro';
+import Marquee from '../components/store/Marquee.astro';
+import ProductRail from '../components/store/ProductRail.astro';
+import site from '../../data/catalog/site.json';
+import { newArrivals, products, formatPrice } from '../lib/catalog.js';
 
-const featuredProducts = productsData.products.filter((product) => product.visible).slice(0, 4);
-const collections = [
-  { title: 'Textiles', note: 'Linen, cotton & quiet layers', href: '/shop?category=home-textiles', image: '/images/products/linen-curtain-ivory-1.webp', alt: 'Natural ivory linen curtain catching the light' },
-  { title: 'Dhurries', note: 'Woven slowly, made to live with', href: '/shop?category=rugs', image: '/images/products/dhurrie-beige-1.webp', alt: 'Handwoven beige cotton dhurrie' },
-  { title: 'Table pieces', note: 'For the everyday gathering', href: '/shop?category=tableware', image: '/images/products/dinner-plate-1.webp', alt: 'Hand-finished ceramic dinner plates' },
-  { title: 'Wood objects', note: 'The warmth of solid teak', href: '/shop?category=woodware', image: '/images/products/teak-tray-1.webp', alt: 'Handmade teak serving tray' },
-];
-const journal = [
-  { title: 'The feel of linen', category: 'Material notes', href: '/journal/caring-for-linen', image: '/images/products/linen-curtain-ivory-2.webp', alt: 'Soft folds of natural linen' },
-  { title: 'A rug with a story', category: 'From the loom', href: '/journal/the-dhurrie', image: '/images/products/dhurrie-charcoal-1.webp', alt: 'A close view of a woven dhurrie' },
-  { title: 'A table, together', category: 'At home', href: '/journal/the-winter-table', image: '/images/campaign/gifts-table.webp', alt: 'A table set for an intimate meal' },
+const newIn = newArrivals().slice(0, 6);
+const lookItems = ['W001', 'W003'].map((id) => products.find((p) => p.id === id)).filter(Boolean);
+
+const tiles = [
+  { span: 'as-tile-a', img: '/images/garments/w-dress-clay.jpg', kicker: 'The spring edit', title: 'Dresses & Kurtas', href: '/women/dresses', alt: 'Clay linen wrap dress' },
+  { span: 'as-tile-b', img: '/images/garments/m-shirt-slate.jpg', kicker: 'New in', title: 'Shirts & Kurtas', href: '/men/shirts', alt: 'Slate linen shirt' },
+  { span: 'as-tile-c', img: '/images/garments/w-cardigan-olive.jpg', kicker: 'Handloom', title: 'Knitwear', href: '/women/knitwear', alt: 'Olive wool cardigan' },
+  { span: 'as-tile-d', img: '/images/garments/w-coat-sand.jpg', kicker: 'Limited', title: 'Outerwear & Shawls', href: '/women/outerwear', alt: 'Sand quilted shawl coat' },
 ];
 ---
 
-<Layout title="AASRA — objects for living well" description="Thoughtful home textiles, table pieces and objects made with care in Pakistan.">
-  <section class="aasra-hero" aria-labelledby="home-title">
-    <div class="aasra-hero-media">
-      <img src="/images/hero.webp" alt="A warm, lived-in home at the close of day" class="aasra-hero-image" width="2000" height="1125" fetchpriority="high" />
-      <div class="aasra-hero-shade" aria-hidden="true"></div>
-    </div>
-    <div class="aasra-hero-copy">
-      <p class="aasra-eyebrow">AASRA · Made for the everyday</p>
-      <h1 id="home-title">A home, made<br /><em>more your own.</em></h1>
-      <p class="aasra-hero-description">Considered pieces, natural materials and the small rituals that make a place feel like yours.</p>
-      <div class="aasra-hero-actions">
-        <a class="aasra-button aasra-button-light" href="/shop">Explore the collection <span aria-hidden="true">↗</span></a>
-        <a class="aasra-quiet-link" href="/about">Meet AASRA</a>
-      </div>
-    </div>
-    <div class="aasra-hero-foot"><span>Objects with a sense of place</span><span>Scroll to explore ↓</span></div>
-  </section>
+<StoreLayout>
+  <RunwayHero />
+  <Marquee items={site.marquee} />
 
-  <section class="aasra-intro reveal" aria-label="Our approach">
-    <div class="container aasra-intro-grid">
-      <p class="aasra-eyebrow">Our point of view</p>
-      <p class="aasra-intro-statement">We believe the things we live with should feel <em>good to hold,</em> easy to use, and worth keeping.</p>
-      <span class="aasra-intro-mark" aria-hidden="true">A.</span>
+  <section class="as-section container" aria-labelledby="edit-title">
+    <div class="as-section-head as-reveal">
+      <div>
+        <p class="as-kicker">The edit</p>
+        <h2 class="as-h2" id="edit-title">Made for the season, not the cycle</h2>
+      </div>
+      <a class="as-link" href="/women">Shop all</a>
     </div>
-    <div class="container aasra-values" data-stagger>
-      <div class="aasra-value"><span>01</span><h2>Natural by nature</h2><p>Honest materials, chosen for the way they age and soften with time.</p></div>
-      <div class="aasra-value"><span>02</span><h2>Made with care</h2><p>Thoughtful details and the human touch behind every piece.</p></div>
-      <div class="aasra-value"><span>03</span><h2>Meant to be used</h2><p>Beautiful things belong in the rhythm of real, everyday life.</p></div>
+    <div class="as-edit-grid" data-stagger>
+      {tiles.map((t, i) => (
+        <a class:list={['as-edit-tile', t.span, 'as-reveal']} style={`--i:${i}`} href={t.href}>
+          <img src={t.img} alt={t.alt} loading="lazy" width="900" height="1125" />
+          <div class="as-edit-label">
+            <p class="as-kicker">{t.kicker}</p>
+            <h3>{t.title}</h3>
+            <span class="as-link as-link--light">Shop</span>
+          </div>
+        </a>
+      ))}
     </div>
   </section>
 
-  <section class="aasra-collections section" aria-labelledby="collections-title">
-    <div class="container">
-      <div class="aasra-section-heading reveal">
-        <div><p class="aasra-eyebrow">Find your familiar</p><h2 id="collections-title">Made for the spaces<br /><em>in between.</em></h2></div>
-        <a href="/shop" class="aasra-arrow-link">Browse everything <span aria-hidden="true">↗</span></a>
+  <ProductRail
+    kicker="Fresh off the loom"
+    title="New in"
+    products={newIn}
+    link={{ label: 'View all', href: '/women/new-in' }}
+  />
+
+  <section class="as-campaign" aria-label="The campaign">
+    <img src="/images/look/banner-runway.jpg" alt="Two models walking through a sunlit atelier" loading="lazy" width="2000" height="1125" />
+    <div class="as-campaign-copy as-reveal">
+      <p class="as-kicker">Spring / Summer campaign</p>
+      <h2 class="as-display-l">Made slowly.<br />Worn often.</h2>
+      <a class="as-link as-link--light" href="/women/new-in">Discover the collection</a>
+    </div>
+  </section>
+
+  <section class="as-section container" aria-labelledby="look-title">
+    <div class="as-section-head as-reveal">
+      <div>
+        <p class="as-kicker">Styled</p>
+        <h2 class="as-h2" id="look-title">Shop the look</h2>
       </div>
-      <div class="aasra-collection-grid" data-stagger>
-        {collections.map((item, index) => (
-          <a class:list={["aasra-collection-card", { "aasra-collection-card-offset": index === 1 || index === 3 }]} href={item.href}>
-            <span class="aasra-collection-photo"><img src={item.image} alt={item.alt} loading="lazy" width="700" height="875" /><span class="aasra-collection-arrow" aria-hidden="true">↗</span></span>
-            <span class="aasra-collection-meta"><span><strong>{item.title}</strong><small>{item.note}</small></span><span class="aasra-collection-index">0{index + 1}</span></span>
-          </a>
+    </div>
+    <div class="as-look as-reveal">
+      <div class="as-look-media">
+        <img src="/images/look/hero-women.jpg" alt="The ivory kurta styled with the olive cardigan" loading="lazy" width="1100" height="1375" />
+      </div>
+      <div>
+        <p class="as-kicker">Wear it together</p>
+        <h3 class="as-h2" style="margin:.5rem 0 1.5rem">Quiet layers, natural fibres</h3>
+        {lookItems.map((item) => (
+          <div class="as-look-item">
+            <img src={item.images[0]} alt={item.name} loading="lazy" width="96" height="128" />
+            <div>
+              <h4><a href={`/product/${item.slug}`}>{item.name}</a></h4>
+              <p class="as-price as-muted">{formatPrice(item.price_pkr)}</p>
+            </div>
+            <a class="as-btn as-btn--outline" href={`/product/${item.slug}`}>View</a>
+          </div>
         ))}
+        <a class="as-link" href="/women" style="margin-top:1.5rem">Explore the edit</a>
       </div>
     </div>
   </section>
-
-  <section class="aasra-featured section" aria-labelledby="featured-title">
-    <div class="container">
-      <div class="aasra-section-heading reveal">
-        <div><p class="aasra-eyebrow">A few good things</p><h2 id="featured-title">The pieces we reach for.</h2><p class="aasra-section-intro">A considered edit of useful, tactile objects for slower mornings and longer evenings.</p></div>
-        <a href="/new-arrivals" class="aasra-arrow-link">See what’s new <span aria-hidden="true">↗</span></a>
-      </div>
-      <div class="grid featured-grid aasra-product-grid" data-stagger>{featuredProducts.map((product) => <ProductCard product={product} />)}</div>
-    </div>
-  </section>
-
-  <section class="aasra-maker section" aria-labelledby="maker-title">
-    <div class="container aasra-maker-grid reveal">
-      <div class="aasra-maker-image"><img src="/images/campaign/story-artisan.webp" alt="A maker's hands guiding cotton across a wooden loom" loading="lazy" width="1100" height="1250" /><span class="aasra-image-note">Hands, time, and a little patience.</span></div>
-      <div class="aasra-maker-copy"><p class="aasra-eyebrow">Behind each detail</p><h2 id="maker-title">Made by people.<br /><em>Made to be lived with.</em></h2><p>Our collections begin with the makers, materials and traditions close to home. Each object carries the character of the hands that shaped it—never quite factory-perfect, always made with intention.</p><a href="/about" class="aasra-button">Our way of making <span aria-hidden="true">↗</span></a><div class="aasra-maker-caption"><span>01</span><span>Craft is not a finish. It is where we begin.</span></div></div>
-    </div>
-  </section>
-
-  <section class="aasra-story-band" aria-label="AASRA at home">
-    <img src="/images/campaign/banner-table.webp" alt="A table set with handmade ceramics and natural linen" loading="lazy" width="2000" height="900" />
-    <div class="aasra-story-band-content reveal"><p class="aasra-eyebrow">Make room for together</p><h2>Good things happen<br /><em>around the table.</em></h2><a class="aasra-button aasra-button-light" href="/shop?category=tableware">Discover table pieces <span aria-hidden="true">↗</span></a></div>
-  </section>
-
-  <section class="aasra-journal section" aria-labelledby="journal-title">
-    <div class="container">
-      <div class="aasra-section-heading reveal"><div><p class="aasra-eyebrow">Notes from home</p><h2 id="journal-title">The AASRA journal.</h2></div><a href="/journal" class="aasra-arrow-link">Read all stories <span aria-hidden="true">↗</span></a></div>
-      <div class="aasra-journal-grid" data-stagger>
-        {journal.map((story, index) => <a class="aasra-journal-card" href={story.href}><span class="aasra-journal-image"><img src={story.image} alt={story.alt} loading="lazy" width="800" height="620" /></span><span class="aasra-eyebrow">{story.category} · 0{index + 1}</span><strong>{story.title}</strong><span class="aasra-journal-read">Read story <span aria-hidden="true">↗</span></span></a>)}
-      </div>
-    </div>
-  </section>
-
-  <section class="aasra-newsletter section" aria-labelledby="newsletter-title">
-    <div class="container aasra-newsletter-inner reveal">
-      <p class="aasra-eyebrow">A little note from us</p><h2 id="newsletter-title">Good things, occasionally.</h2><p>New work, stories from the makers, and thoughtful ideas for home. Only when there’s something worth sharing.</p>
-      <form id="newsletter-form" class="aasra-newsletter-form">
-        <label class="sr-only" for="newsletter-email">Your email address</label><input id="newsletter-email" type="email" name="email" placeholder="Your email address" required autocomplete="email" />
-        <label class="aasra-newsletter-consent"><input type="checkbox" name="consent" required /> I agree to receive occasional AASRA updates.</label>
-        <button type="submit" aria-label="Subscribe to the AASRA newsletter">Join the list <span aria-hidden="true">↗</span></button>
-      </form>
-      <p id="newsletter-msg" class="aasra-newsletter-message" aria-live="polite"></p>
-    </div>
-  </section>
-
-  <script>
-    // @ts-nocheck -- browser-only event handlers use DOM APIs guarded at runtime.
-    document.getElementById('newsletter-form')?.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const form = e.target;
-      const msg = document.getElementById('newsletter-msg');
-      const btn = form.querySelector('button[type="submit"]');
-      const email = form.elements.email.value;
-      const consent = form.elements.consent.checked;
-      try {
-        btn.disabled = true;
-        btn.innerHTML = 'Joining…';
-        await window.__AASRA_CSRF?.ensure();
-        const res = await fetch('/api/newsletter', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', ...(window.__AASRA_CSRF?.header() || {}) },
-          body: JSON.stringify({ email, consent }),
-        });
-        const data = await res.json();
-        if (data.ok) {
-          msg.textContent = 'You’re on the list. Thank you.';
-          msg.dataset.state = 'success';
-          form.reset();
-        } else {
-          msg.textContent = data.error || 'Something went wrong. Please try again.';
-          msg.dataset.state = 'error';
-        }
-      } catch {
-        msg.textContent = 'Something went wrong. Please try again.';
-        msg.dataset.state = 'error';
-      } finally {
-        btn.disabled = false;
-        btn.innerHTML = 'Join the list <span aria-hidden="true">↗</span>';
-      }
-    });
-  </script>
-</Layout>
+</StoreLayout>

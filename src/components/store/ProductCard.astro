@@ -1,0 +1,69 @@
+---
+/**
+ * ProductCard — the single product card (design system §5).
+ * Hover: image zoom + quick-add size row slides up. Click size → cart.
+ */
+const { product } = Astro.props;
+const price = `PKR ${product.price_pkr.toLocaleString('en-PK')}`;
+const firstColor = product.colors[0];
+---
+
+<article class="as-card">
+  <a class="as-card-media" href={`/product/${product.slug}`} aria-label={product.name}>
+    {product.badge && (
+      <span class:list={['as-badge', { 'as-badge--clay': product.badge === 'LIMITED' }]}>{product.badge}</span>
+    )}
+    <img src={product.images[0]} alt={product.name} loading="lazy" width="600" height="800" />
+    <div class="as-card-quick">
+      <button type="button" class="as-btn as-btn--outline" data-quick-open>Quick add</button>
+      <div class="as-sizes" data-quick-sizes hidden>
+        {product.sizes.map((size) => {
+          const variant = product.variants.find((v) => v.size === size && v.color === firstColor.name);
+          return (
+            <button
+              type="button"
+              class="as-size"
+              data-quick-add
+              data-sku={variant?.sku}
+              data-name={product.name}
+              data-price={product.price_pkr}
+              data-image={product.images[0]}
+            >{size}</button>
+          );
+        })}
+      </div>
+    </div>
+  </a>
+  <div class="as-card-body">
+    <h3 class="as-card-name"><a href={`/product/${product.slug}`}>{product.name}</a></h3>
+    <div class="as-card-meta">
+      <span class="as-price">{price}</span>
+      <span class="as-card-colors" aria-label={`${product.colors.length} colours`}>
+        {product.colors.map((c) => <i style={`background:${c.hex}`} title={c.name}></i>)}
+      </span>
+    </div>
+  </div>
+</article>
+
+<script>
+  // Quick-add: reveal size row, add chosen size to the existing cart API.
+  document.addEventListener('click', (e) => {
+    const open = e.target.closest('[data-quick-open]');
+    if (open) {
+      e.preventDefault();
+      const wrap = open.closest('.as-card-quick');
+      open.hidden = true;
+      wrap.querySelector('[data-quick-sizes]').hidden = false;
+      return;
+    }
+    const add = e.target.closest('[data-quick-add]');
+    if (add) {
+      e.preventDefault();
+      const { sku, name, price, image } = add.dataset;
+      if (window.__aasra_addToCart) window.__aasra_addToCart(sku, name, Number(price), 1, image);
+      const original = add.textContent;
+      add.textContent = 'Added';
+      setTimeout(() => { add.textContent = original; }, 1200);
+    }
+  });
+</script>

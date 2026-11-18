@@ -1,0 +1,23 @@
+{
+  "category": "knitwear",
+  "label": "Knitwear",
+  "products": [
+    {
+      "id": "W003",
+      "slug": "handloom-wool-cardigan-olive",
+      "name": "Handloom Wool Cardigan — Olive",
+      "price_pkr": 26000,
+      "badge": "HANDLOOM",
+      "colors": [
+        { "name": "Olive", "hex": "#36433a" },
+        { "name": "Oat", "hex": "#d9cfbc" }
+      ],
+      "sizes": ["XS", "S", "M", "L", "XL"],
+      "images": ["/images/garments/w-cardigan-olive.jpg"],
+      "description": "An oversized cardigan woven on handlooms in the northern valleys — undyed olive wool, patch pockets, a collar to turn up.",
+      "details": ["Oversized, drop shoulder", "Two patch pockets", "Horn buttons", "Hand-finished ribbing"],
+      "fabric": "100% hand-spun wool",
+      "care": "Hand wash cold or dry clean. Dry flat."
+    }
+  ]
+}

@@ -1,0 +1,210 @@
+---
+/**
+ * SiteHeader — fixed header: WOMEN/MEN mega-nav, centered wordmark, search,
+ * account, wishlist, bag. Transparent over hero, solid after 40px scroll.
+ * Mobile: burger drawer with accordion sections.
+ */
+import site from '../../../data/catalog/site.json';
+
+const path = Astro.url.pathname;
+const megaFeature = {
+  img: '/images/look/banner-runway.jpg',
+  kicker: 'The campaign',
+  title: 'Spring / Summer, slowly made',
+  href: '/women/new-in',
+};
+---
+
+<header class="as-header" id="as-header">
+  <div class="container as-header-inner">
+    <nav class="as-nav-main" aria-label="Primary">
+      <button type="button" class="as-nav-btn" data-mega="women" aria-expanded="false">Women</button>
+      <button type="button" class="as-nav-btn" data-mega="men" aria-expanded="false">Men</button>
+      <a class="as-nav-btn" href="/women/new-in">New In</a>
+    </nav>
+
+    <a class="as-logo" href="/">AASRA</a>
+
+    <div class="as-nav-utils">
+      <button type="button" class="as-icon-btn" id="as-search-open" aria-label="Search">
+        <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7" /><path d="M20 20l-4-4" /></svg>
+      </button>
+      <a class="as-icon-btn" href="/order-lookup" aria-label="Account and orders">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4" /><path d="M4 21c1.5-4 5-6 8-6s6.5 2 8 6" /></svg>
+      </a>
+      <a class="as-icon-btn" href="/wishlist" aria-label="Wishlist">
+        <svg viewBox="0 0 24 24"><path d="M12 21S4 14.5 4 9a4.5 4.5 0 018-2.8A4.5 4.5 0 0120 9c0 5.5-8 12-8 12z" /></svg>
+      </a>
+      <a class="as-icon-btn" href="/cart" aria-label="Shopping bag">
+        <svg viewBox="0 0 24 24"><path d="M6 8h12l1 13H5L6 8z" /><path d="M9 8V6a3 3 0 016 0v2" /></svg>
+        <span class="as-bag-count" id="as-bag-count" hidden>0</span>
+      </a>
+      <button type="button" class="as-icon-btn as-burger" id="as-burger" aria-label="Open menu">
+        <svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16" /></svg>
+      </button>
+    </div>
+  </div>
+
+  {(['women', 'men'] as const).map((gender) => (
+    <div class="as-mega" id={`as-mega-${gender}`}>
+      <div class="container as-mega-inner">
+        <div class="as-mega-col">
+          <h3>{gender === 'women' ? 'Shop Women' : 'Shop Men'}</h3>
+          {site.nav[gender].map((l) => <a href={l.href}>{l.label}</a>)}
+        </div>
+        <div class="as-mega-col">
+          <h3>Explore</h3>
+          <a href="/women">Women</a>
+          <a href="/men">Men</a>
+          <a href="/journal">The Journal</a>
+          <a href="/about">Our Story</a>
+        </div>
+        <a class="as-mega-feature" href={megaFeature.href}>
+          <img src={megaFeature.img} alt="" loading="lazy" />
+          <p class="as-kicker">{megaFeature.kicker}</p>
+          <p class="as-serif" style="font-size:1.25rem">{megaFeature.title}</p>
+        </a>
+      </div>
+    </div>
+  ))}
+</header>
+
+<!-- mobile drawer -->
+<div class="as-drawer" id="as-drawer" aria-hidden="true">
+  <div class="as-drawer-head">
+    <span class="as-logo" style="color:var(--as-ink)">AASRA</span>
+    <button type="button" class="as-icon-btn" id="as-drawer-close" aria-label="Close menu">
+      <svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18" /></svg>
+    </button>
+  </div>
+  <nav aria-label="Mobile">
+    <ul>
+      <li>
+        <button type="button" class="as-drawer-link" data-acc>Women</button>
+        <div class="as-drawer-sub" hidden>
+          {site.nav.women.map((l) => <a href={l.href}>{l.label}</a>)}
+        </div>
+      </li>
+      <li>
+        <button type="button" class="as-drawer-link" data-acc>Men</button>
+        <div class="as-drawer-sub" hidden>
+          {site.nav.men.map((l) => <a href={l.href}>{l.label}</a>)}
+        </div>
+      </li>
+      <li><a class="as-drawer-link" href="/journal">The Journal</a></li>
+      <li><a class="as-drawer-link" href="/about">Our Story</a></li>
+      <li><a class="as-drawer-link" href="/order-lookup">Order Lookup</a></li>
+      <li><a class="as-drawer-link" href="/contact">Contact</a></li>
+    </ul>
+  </nav>
+</div>
+
+<!-- search overlay -->
+<div class="as-drawer" id="as-search" aria-hidden="true" style="height:auto;bottom:auto">
+  <div class="as-drawer-head">
+    <span class="as-kicker">Search</span>
+    <button type="button" class="as-icon-btn" id="as-search-close" aria-label="Close search">
+      <svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18" /></svg>
+    </button>
+  </div>
+  <input id="as-search-input" type="search" placeholder="Search for shirts, dresses, knitwear…"
+    style="border:none;border-bottom:1px solid var(--as-line);font-family:var(--as-display);font-size:1.6rem;padding:.6rem 0;background:transparent" />
+  <ul id="as-search-results" style="padding:var(--as-s5) 0"></ul>
+</div>
+
+<script>
+  // Header: solid on scroll, mega menus with hover intent, drawer, search, bag count.
+  const header = document.getElementById('as-header');
+  const onScroll = () => header.classList.toggle('is-solid', window.scrollY > 40 || header.classList.contains('is-open'));
+  window.addEventListener('scroll', onScroll, { passive: true });
+  onScroll();
+
+  // Mega menu: 180ms hover intent (design-system §5), click for keyboard users.
+  let megaTimer;
+  const megas = { women: document.getElementById('as-mega-women'), men: document.getElementById('as-mega-men') };
+  const closeMegas = () => {
+    Object.values(megas).forEach((m) => m.classList.remove('is-open'));
+    document.querySelectorAll('[data-mega]').forEach((b) => b.setAttribute('aria-expanded', 'false'));
+    header.classList.remove('is-open');
+    onScroll();
+  };
+  const openMega = (key) => {
+    closeMegas();
+    megas[key].classList.add('is-open');
+    document.querySelector(`[data-mega="${key}"]`).setAttribute('aria-expanded', 'true');
+    header.classList.add('is-open');
+    header.classList.add('is-solid');
+  };
+  document.querySelectorAll('[data-mega]').forEach((btn) => {
+    const key = btn.dataset.mega;
+    btn.addEventListener('mouseenter', () => { clearTimeout(megaTimer); megaTimer = setTimeout(() => openMega(key), 180); });
+    btn.addEventListener('mouseleave', () => { clearTimeout(megaTimer); megaTimer = setTimeout(closeMegas, 220); });
+    btn.addEventListener('click', () => (megas[key].classList.contains('is-open') ? closeMegas() : openMega(key)));
+    megas[key].addEventListener('mouseenter', () => clearTimeout(megaTimer));
+    megas[key].addEventListener('mouseleave', () => { megaTimer = setTimeout(closeMegas, 220); });
+  });
+  window.addEventListener('keydown', (e) => { if (e.key === 'Escape') { closeMegas(); closeAll(); } });
+
+  // Drawer
+  const drawer = document.getElementById('as-drawer');
+  const search = document.getElementById('as-search');
+  const closeAll = () => {
+    drawer.classList.remove('is-open'); drawer.setAttribute('aria-hidden', 'true');
+    search.classList.remove('is-open'); search.setAttribute('aria-hidden', 'true');
+  };
+  document.getElementById('as-burger')?.addEventListener('click', () => {
+    drawer.classList.add('is-open'); drawer.setAttribute('aria-hidden', 'false');
+  });
+  document.getElementById('as-drawer-close')?.addEventListener('click', closeAll);
+  document.querySelectorAll('[data-acc]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const sub = btn.nextElementSibling;
+      sub.hidden = !sub.hidden;
+    });
+  });
+
+  // Search overlay — lazy client-side product search from the generated catalog.
+  let index = null;
+  const results = document.getElementById('as-search-results');
+  const input = document.getElementById('as-search-input');
+  const loadIndex = async () => {
+    if (index) return index;
+    const res = await fetch('/data/products.json');
+    const data = await res.json();
+    index = data.products.filter((p) => p.visible);
+    return index;
+  };
+  const renderResults = (q) => {
+    const query = q.trim().toLowerCase();
+    if (!query) { results.innerHTML = ''; return; }
+    const hits = index.filter((p) => (p.name + ' ' + p.category + ' ' + p.gender).toLowerCase().includes(query)).slice(0, 6);
+    results.innerHTML = hits.length
+      ? hits.map((p) => `<li style="padding:.55rem 0;border-bottom:1px solid var(--as-line)">
+          <a href="/product/${p.slug}" class="as-serif" style="font-size:1.15rem">${p.name}</a>
+          <span class="as-price" style="float:right">PKR ${p.price_pkr.toLocaleString('en-PK')}</span>
+        </li>`).join('')
+      : '<li class="as-muted">No matches — try “linen”, “kurta” or “knitwear”.</li>';
+  };
+  document.getElementById('as-search-open')?.addEventListener('click', async () => {
+    closeAll();
+    search.classList.add('is-open'); search.setAttribute('aria-hidden', 'false');
+    await loadIndex();
+    input.focus();
+  });
+  document.getElementById('as-search-close')?.addEventListener('click', closeAll);
+  input?.addEventListener('input', () => renderResults(input.value));
+
+  // Bag count from the shared cart storage.
+  const syncBag = () => {
+    try {
+      const cart = JSON.parse(localStorage.getItem('aasra_cart_v1') || '[]');
+      const count = cart.reduce((n, item) => n + item.qty, 0);
+      const el = document.getElementById('as-bag-count');
+      el.hidden = count === 0;
+      el.textContent = count;
+    } catch { /* ignore */ }
+  };
+  syncBag();
+  window.addEventListener('storage', syncBag);
+  window.addEventListener('aasra:cart', syncBag);
+</script>

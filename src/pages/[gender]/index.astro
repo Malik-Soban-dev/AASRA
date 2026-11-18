@@ -1,0 +1,67 @@
+---
+/**
+ * Gender landing — /women, /men: campaign hero, sub-category tiles, new-in rail.
+ */
+import StoreLayout from '../../components/layout/StoreLayout.astro';
+import Marquee from '../../components/store/Marquee.astro';
+import ProductRail from '../../components/store/ProductRail.astro';
+import site from '../../../data/catalog/site.json';
+import { categories, newArrivals, categoryProducts, formatPrice } from '../../lib/catalog.js';
+
+export function getStaticPaths() {
+  return [{ params: { gender: 'women' } }, { params: { gender: 'men' } }];
+}
+
+const { gender } = Astro.params;
+const isWomen = gender === 'women';
+const heroImg = isWomen ? '/images/look/hero-women.jpg' : '/images/look/hero-men.jpg';
+const title = isWomen ? 'Women' : 'Men';
+const kicker = isWomen ? 'The handloom edit' : 'Quiet menswear';
+const cats = categories[gender].filter((c) => c.category !== 'new-in');
+const newIn = newArrivals(gender);
+const tiles = cats.map((c) => {
+  const first = categoryProducts(gender, c.category)[0];
+  return { ...c, img: first?.images[0] || heroImg, alt: first?.name || c.label };
+});
+---
+
+<StoreLayout title={`${title} — AASRA`}>
+  <section class="as-campaign" style="min-height:86vh" aria-label={`${title} collection`}>
+    <img src={heroImg} alt={`${title}, spring campaign`} fetchpriority="high" width="1600" height="1000" />
+    <div class="as-campaign-copy">
+      <p class="as-kicker">{kicker}</p>
+      <h1 class="as-display-xl" style="margin:.5rem 0 1.5rem">{title}</h1>
+      <a class="as-link as-link--light" href={`/${gender}/new-in`}>Shop new in</a>
+    </div>
+  </section>
+
+  <Marquee items={site.marquee} />
+
+  <section class="as-section container" aria-label="Categories">
+    <div class="as-section-head as-reveal">
+      <div>
+        <p class="as-kicker">Shop by category</p>
+        <h2 class="as-h2">Everything {title.toLowerCase()}, in its place</h2>
+      </div>
+    </div>
+    <div class="as-edit-grid" data-stagger>
+      {tiles.map((t, i) => (
+        <a class:list={['as-edit-tile', i === 0 ? 'as-tile-a' : i === 1 ? 'as-tile-b' : 'as-tile-c', 'as-reveal']} style={`--i:${i}`} href={t.href}>
+          <img src={t.img} alt={t.alt} loading="lazy" width="900" height="1125" />
+          <div class="as-edit-label">
+            <p class="as-kicker">{t.category === 'new-in' ? 'Just landed' : 'Collection'}</p>
+            <h3>{t.label}</h3>
+            <span class="as-link as-link--light">Shop</span>
+          </div>
+        </a>
+      ))}
+    </div>
+  </section>
+
+  <ProductRail
+    kicker="Just landed"
+    title={`New in ${title.toLowerCase()}`}
+    products={newIn}
+    link={{ label: 'View all', href: `/${gender}/new-in` }}
+  />
+</StoreLayout>

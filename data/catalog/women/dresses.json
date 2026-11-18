@@ -1,0 +1,40 @@
+{
+  "category": "dresses",
+  "label": "Dresses & Kurtas",
+  "products": [
+    {
+      "id": "W001",
+      "slug": "chanderi-silk-kurta-ivory",
+      "name": "Chanderi Silk Kurta — Ivory",
+      "price_pkr": 18900,
+      "badge": "NEW",
+      "colors": [
+        { "name": "Ivory", "hex": "#efe9dc" },
+        { "name": "Clay", "hex": "#a65e45" }
+      ],
+      "sizes": ["XS", "S", "M", "L", "XL"],
+      "images": ["/images/garments/w-kurta-ivory.jpg"],
+      "description": "A quietly luminous kurta in handloom chanderi silk, with tonal threadwork at the neckline. Cut for ease, finished by hand.",
+      "details": ["Relaxed straight fit", "Tonal neckline embroidery", "Side slits, mid-thigh length", "Matches the Chanderi Trouser"],
+      "fabric": "Handloom chanderi silk, mulmul cotton lining",
+      "care": "Dry clean only. Store folded, away from direct light."
+    },
+    {
+      "id": "W002",
+      "slug": "linen-wrap-dress-clay",
+      "name": "Linen Wrap Dress — Clay",
+      "price_pkr": 22500,
+      "badge": "NEW",
+      "colors": [
+        { "name": "Clay", "hex": "#a65e45" },
+        { "name": "Ink", "hex": "#2c2a26" }
+      ],
+      "sizes": ["XS", "S", "M", "L", "XL"],
+      "images": ["/images/garments/w-dress-clay.jpg"],
+      "description": "A wrap dress in washed linen, dyed with madder root to a soft clay tone. The belt ties at the side; the hem moves.",
+      "details": ["True wrap construction", "Self-fabric belt", "Midi length", "French seams inside"],
+      "fabric": "100% washed linen, 190 gsm",
+      "care": "Gentle wash cold, line dry, warm iron."
+    }
+  ]
+}

@@ -1,288 +1,810 @@
 {
-  "version": 1,
+  "version": 3,
   "currency": "PKR",
-  "updated_at": "2026-11-16T00:00:00Z",
+  "updated_at": "2026-11-18T22:09:52.534Z",
+  "categories": {
+    "women": [
+      {
+        "category": "new-in",
+        "label": "New In",
+        "href": "/women/new-in"
+      },
+      {
+        "category": "dresses",
+        "label": "Dresses & Kurtas",
+        "href": "/women/dresses"
+      },
+      {
+        "category": "knitwear",
+        "label": "Knitwear",
+        "href": "/women/knitwear"
+      },
+      {
+        "category": "outerwear",
+        "label": "Outerwear & Shawls",
+        "href": "/women/outerwear"
+      }
+    ],
+    "men": [
+      {
+        "category": "new-in",
+        "label": "New In",
+        "href": "/men/new-in"
+      },
+      {
+        "category": "knitwear",
+        "label": "Knitwear",
+        "href": "/men/knitwear"
+      },
+      {
+        "category": "shirts",
+        "label": "Shirts & Kurtas",
+        "href": "/men/shirts"
+      }
+    ]
+  },
   "products": [
     {
-      "id": "prod-001",
-      "slug": "linen-curtain-panel-ivory",
-      "name": "Linen Curtain Panel — Ivory",
-      "description": "Breathable natural linen curtain panel in ivory, finished with a clean hem. Sold per panel.",
-      "category": "home-textiles",
-      "price_pkr": 6500,
-      "images": [
-        "/images/products/linen-curtain-ivory-1.webp",
-        "/images/products/linen-curtain-ivory-2.webp"
-      ],
-      "variants": [
-        {
-          "sku": "LIN-IV-135X240",
-          "size": "135 x 240 cm",
-          "stock_key": "stock-LIN-IV-135X240"
-        },
-        {
-          "sku": "LIN-IV-135X270",
-          "size": "135 x 270 cm",
-          "stock_key": "stock-LIN-IV-135X270"
-        }
-      ],
-      "deposit_eligible": false,
-      "tags": [
-        "linen",
-        "curtain",
-        "ivory",
-        "home"
-      ],
-      "seo": {
-        "title": "Linen Curtain Panel — Ivory | AASRA",
-        "description": "Natural linen curtain panel in ivory. Breathable, clean hem. Shop home textiles online in Pakistan."
+      "id": "W001",
+      "slug": "chanderi-silk-kurta-ivory",
+      "name": "Chanderi Silk Kurta — Ivory",
+      "gender": "women",
+      "category": "dresses",
+      "category_label": "Dresses & Kurtas",
+      "subcategory": "dresses",
+      "price_pkr": 18900,
+      "compare_at_pkr": null,
+      "badge": "NEW",
+      "color": {
+        "name": "Ivory",
+        "hex": "#efe9dc"
       },
-      "visible": true
-    },
-    {
-      "id": "prod-002",
-      "slug": "linen-curtain-panel-slate",
-      "name": "Linen Curtain Panel — Slate",
-      "description": "Breathable natural linen curtain panel in slate grey, finished with a clean hem. Sold per panel.",
-      "category": "home-textiles",
-      "price_pkr": 6900,
-      "images": [
-        "/images/products/linen-curtain-slate-1.webp",
-        "/images/products/linen-curtain-slate-2.webp"
-      ],
-      "variants": [
+      "colors": [
         {
-          "sku": "LIN-SL-135X240",
-          "size": "135 x 240 cm",
-          "stock_key": "stock-LIN-SL-135X240"
+          "name": "Ivory",
+          "hex": "#efe9dc"
         },
         {
-          "sku": "LIN-SL-135X270",
-          "size": "135 x 270 cm",
-          "stock_key": "stock-LIN-SL-135X270"
+          "name": "Clay",
+          "hex": "#a65e45"
         }
       ],
-      "deposit_eligible": false,
-      "tags": [
-        "linen",
-        "curtain",
-        "slate",
-        "home"
+      "sizes": [
+        "XS",
+        "S",
+        "M",
+        "L",
+        "XL"
       ],
-      "seo": {
-        "title": "Linen Curtain Panel — Slate | AASRA",
-        "description": "Natural linen curtain panel in slate grey. Shop home textiles online in Pakistan."
-      },
-      "visible": true
-    },
-    {
-      "id": "prod-003",
-      "slug": "cotton-dhurrie-rug-beige",
-      "name": "Cotton Dhurrie Rug — Beige",
-      "description": "Handwoven cotton dhurrie rug in beige. Flat-weave, durable, suitable for living areas.",
-      "category": "rugs",
-      "price_pkr": 14500,
       "images": [
-        "/images/products/dhurrie-beige-1.webp",
-        "/images/products/dhurrie-beige-2.webp"
+        "/images/garments/w-kurta-ivory.jpg"
       ],
-      "variants": [
-        {
-          "sku": "DHR-BG-4X6",
-          "size": "4 x 6 ft",
-          "stock_key": "stock-DHR-BG-4X6"
-        },
-        {
-          "sku": "DHR-BG-6X9",
-          "size": "6 x 9 ft",
-          "stock_key": "stock-DHR-BG-6X9"
-        }
+      "description": "A quietly luminous kurta in handloom chanderi silk, with tonal threadwork at the neckline. Cut for ease, finished by hand.",
+      "details": [
+        "Relaxed straight fit",
+        "Tonal neckline embroidery",
+        "Side slits, mid-thigh length",
+        "Matches the Chanderi Trouser"
       ],
+      "fabric": "Handloom chanderi silk, mulmul cotton lining",
+      "care": "Dry clean only. Store folded, away from direct light.",
+      "visible": true,
       "deposit_eligible": true,
-      "tags": [
-        "cotton",
-        "dhurrie",
-        "rug",
-        "beige",
-        "handwoven"
-      ],
-      "seo": {
-        "title": "Cotton Dhurrie Rug — Beige | AASRA",
-        "description": "Handwoven cotton dhurrie rug in beige. Flat-weave, durable. Shop rugs online in Pakistan."
-      },
-      "visible": true,
-      "badge": "craft"
-    },
-    {
-      "id": "prod-004",
-      "slug": "cotton-dhurrie-rug-charcoal",
-      "name": "Cotton Dhurrie Rug — Charcoal",
-      "description": "Handwoven cotton dhurrie rug in charcoal grey. Flat-weave, durable, suitable for living areas.",
-      "category": "rugs",
-      "price_pkr": 15500,
-      "images": [
-        "/images/products/dhurrie-charcoal-1.webp",
-        "/images/products/dhurrie-charcoal-2.webp"
-      ],
       "variants": [
         {
-          "sku": "DHR-CH-4X6",
-          "size": "4 x 6 ft",
-          "stock_key": "stock-DHR-CH-4X6"
+          "sku": "AS-W001-IVO-XS",
+          "size": "XS",
+          "color": "Ivory",
+          "stock_key": "AS-W001-IVO-XS"
         },
         {
-          "sku": "DHR-CH-6X9",
-          "size": "6 x 9 ft",
-          "stock_key": "stock-DHR-CH-6X9"
+          "sku": "AS-W001-IVO-S",
+          "size": "S",
+          "color": "Ivory",
+          "stock_key": "AS-W001-IVO-S"
+        },
+        {
+          "sku": "AS-W001-IVO-M",
+          "size": "M",
+          "color": "Ivory",
+          "stock_key": "AS-W001-IVO-M"
+        },
+        {
+          "sku": "AS-W001-IVO-L",
+          "size": "L",
+          "color": "Ivory",
+          "stock_key": "AS-W001-IVO-L"
+        },
+        {
+          "sku": "AS-W001-IVO-XL",
+          "size": "XL",
+          "color": "Ivory",
+          "stock_key": "AS-W001-IVO-XL"
+        },
+        {
+          "sku": "AS-W001-CLA-XS",
+          "size": "XS",
+          "color": "Clay",
+          "stock_key": "AS-W001-CLA-XS"
+        },
+        {
+          "sku": "AS-W001-CLA-S",
+          "size": "S",
+          "color": "Clay",
+          "stock_key": "AS-W001-CLA-S"
+        },
+        {
+          "sku": "AS-W001-CLA-M",
+          "size": "M",
+          "color": "Clay",
+          "stock_key": "AS-W001-CLA-M"
+        },
+        {
+          "sku": "AS-W001-CLA-L",
+          "size": "L",
+          "color": "Clay",
+          "stock_key": "AS-W001-CLA-L"
+        },
+        {
+          "sku": "AS-W001-CLA-XL",
+          "size": "XL",
+          "color": "Clay",
+          "stock_key": "AS-W001-CLA-XL"
+        }
+      ]
+    },
+    {
+      "id": "W002",
+      "slug": "linen-wrap-dress-clay",
+      "name": "Linen Wrap Dress — Clay",
+      "gender": "women",
+      "category": "dresses",
+      "category_label": "Dresses & Kurtas",
+      "subcategory": "dresses",
+      "price_pkr": 22500,
+      "compare_at_pkr": null,
+      "badge": "NEW",
+      "color": {
+        "name": "Clay",
+        "hex": "#a65e45"
+      },
+      "colors": [
+        {
+          "name": "Clay",
+          "hex": "#a65e45"
+        },
+        {
+          "name": "Ink",
+          "hex": "#2c2a26"
         }
       ],
+      "sizes": [
+        "XS",
+        "S",
+        "M",
+        "L",
+        "XL"
+      ],
+      "images": [
+        "/images/garments/w-dress-clay.jpg"
+      ],
+      "description": "A wrap dress in washed linen, dyed with madder root to a soft clay tone. The belt ties at the side; the hem moves.",
+      "details": [
+        "True wrap construction",
+        "Self-fabric belt",
+        "Midi length",
+        "French seams inside"
+      ],
+      "fabric": "100% washed linen, 190 gsm",
+      "care": "Gentle wash cold, line dry, warm iron.",
+      "visible": true,
       "deposit_eligible": true,
-      "tags": [
-        "cotton",
-        "dhurrie",
-        "rug",
-        "charcoal",
-        "handwoven",
-        "winter"
-      ],
-      "seo": {
-        "title": "Cotton Dhurrie Rug — Charcoal | AASRA",
-        "description": "Handwoven cotton dhurrie rug in charcoal grey. Shop rugs online in Pakistan."
-      },
-      "visible": true,
-      "badge": "season"
-    },
-    {
-      "id": "prod-005",
-      "slug": "ceramics-dinner-plate-set",
-      "name": "Ceramics Dinner Plate Set — Set of 4",
-      "description": "Stoneware dinner plate set of four in a matte neutral glaze. Microwave and dishwasher safe.",
-      "category": "tableware",
-      "price_pkr": 8200,
-      "images": [
-        "/images/products/dinner-plate-1.webp",
-        "/images/products/dinner-plate-2.webp"
-      ],
       "variants": [
         {
-          "sku": "CER-DP-SET4",
-          "size": "26 cm diameter",
-          "stock_key": "stock-CER-DP-SET4"
-        }
-      ],
-      "deposit_eligible": false,
-      "tags": [
-        "ceramics",
-        "dinnerware",
-        "plate",
-        "stoneware",
-        "winter"
-      ],
-      "seo": {
-        "title": "Ceramics Dinner Plate Set — Set of 4 | AASRA",
-        "description": "Stoneware dinner plate set of four in matte neutral glaze. Shop tableware online in Pakistan."
-      },
-      "visible": true,
-      "badge": "signature"
-    },
-    {
-      "id": "prod-006",
-      "slug": "ceramics-serving-bowl-large",
-      "name": "Ceramics Serving Bowl — Large",
-      "description": "Large stoneware serving bowl in matte neutral glaze. Ideal for salads and shared dishes.",
-      "category": "tableware",
-      "price_pkr": 5400,
-      "images": [
-        "/images/products/serving-bowl-1.webp",
-        "/images/products/serving-bowl-2.webp"
-      ],
-      "variants": [
-        {
-          "sku": "CER-SB-L",
-          "size": "28 cm diameter",
-          "stock_key": "stock-CER-SB-L"
-        }
-      ],
-      "deposit_eligible": false,
-      "tags": [
-        "ceramics",
-        "serving",
-        "bowl",
-        "stoneware"
-      ],
-      "seo": {
-        "title": "Ceramics Serving Bowl — Large | AASRA",
-        "description": "Large stoneware serving bowl in matte neutral glaze. Shop tableware online in Pakistan."
-      },
-      "visible": true
-    },
-    {
-      "id": "prod-007",
-      "slug": "throw-cushion-linen-oatmeal",
-      "name": "Linen Throw Cushion — Oatmeal",
-      "description": "Linen throw cushion cover in oatmeal with a concealed zip. Insert not included.",
-      "category": "home-textiles",
-      "price_pkr": 3200,
-      "images": [
-        "/images/products/cushion-oatmeal-1.webp",
-        "/images/products/cushion-oatmeal-2.webp"
-      ],
-      "variants": [
-        {
-          "sku": "THR-OAT-18X18",
-          "size": "18 x 18 in",
-          "stock_key": "stock-THR-OAT-18X18"
+          "sku": "AS-W002-CLA-XS",
+          "size": "XS",
+          "color": "Clay",
+          "stock_key": "AS-W002-CLA-XS"
         },
         {
-          "sku": "THR-OAT-22X22",
-          "size": "22 x 22 in",
-          "stock_key": "stock-THR-OAT-22X22"
+          "sku": "AS-W002-CLA-S",
+          "size": "S",
+          "color": "Clay",
+          "stock_key": "AS-W002-CLA-S"
+        },
+        {
+          "sku": "AS-W002-CLA-M",
+          "size": "M",
+          "color": "Clay",
+          "stock_key": "AS-W002-CLA-M"
+        },
+        {
+          "sku": "AS-W002-CLA-L",
+          "size": "L",
+          "color": "Clay",
+          "stock_key": "AS-W002-CLA-L"
+        },
+        {
+          "sku": "AS-W002-CLA-XL",
+          "size": "XL",
+          "color": "Clay",
+          "stock_key": "AS-W002-CLA-XL"
+        },
+        {
+          "sku": "AS-W002-INK-XS",
+          "size": "XS",
+          "color": "Ink",
+          "stock_key": "AS-W002-INK-XS"
+        },
+        {
+          "sku": "AS-W002-INK-S",
+          "size": "S",
+          "color": "Ink",
+          "stock_key": "AS-W002-INK-S"
+        },
+        {
+          "sku": "AS-W002-INK-M",
+          "size": "M",
+          "color": "Ink",
+          "stock_key": "AS-W002-INK-M"
+        },
+        {
+          "sku": "AS-W002-INK-L",
+          "size": "L",
+          "color": "Ink",
+          "stock_key": "AS-W002-INK-L"
+        },
+        {
+          "sku": "AS-W002-INK-XL",
+          "size": "XL",
+          "color": "Ink",
+          "stock_key": "AS-W002-INK-XL"
         }
-      ],
-      "deposit_eligible": false,
-      "tags": [
-        "linen",
-        "cushion",
-        "throw",
-        "oatmeal"
-      ],
-      "seo": {
-        "title": "Linen Throw Cushion — Oatmeal | AASRA",
-        "description": "Linen throw cushion cover in oatmeal. Shop home textiles online in Pakistan."
-      },
-      "visible": true
+      ]
     },
     {
-      "id": "prod-008",
-      "slug": "wooden-tray-teak-medium",
-      "name": "Teak Wooden Tray — Medium",
-      "description": "Reclaimed teak wooden tray, medium size, hand-sanded finish. For serving or display.",
-      "category": "woodware",
-      "price_pkr": 7600,
-      "images": [
-        "/images/products/teak-tray-1.webp",
-        "/images/products/teak-tray-2.webp"
-      ],
-      "variants": [
+      "id": "W003",
+      "slug": "handloom-wool-cardigan-olive",
+      "name": "Handloom Wool Cardigan — Olive",
+      "gender": "women",
+      "category": "knitwear",
+      "category_label": "Knitwear",
+      "subcategory": "knitwear",
+      "price_pkr": 26000,
+      "compare_at_pkr": null,
+      "badge": "HANDLOOM",
+      "color": {
+        "name": "Olive",
+        "hex": "#36433a"
+      },
+      "colors": [
         {
-          "sku": "WD-TRY-MED",
-          "size": "45 x 30 cm",
-          "stock_key": "stock-WD-TRY-MED"
+          "name": "Olive",
+          "hex": "#36433a"
+        },
+        {
+          "name": "Oat",
+          "hex": "#d9cfbc"
         }
       ],
-      "deposit_eligible": false,
-      "tags": [
-        "teak",
-        "wood",
-        "tray",
-        "serving"
+      "sizes": [
+        "XS",
+        "S",
+        "M",
+        "L",
+        "XL"
       ],
-      "seo": {
-        "title": "Teak Wooden Tray — Medium | AASRA",
-        "description": "Reclaimed teak wooden tray, medium size. Shop woodware online in Pakistan."
-      },
+      "images": [
+        "/images/garments/w-cardigan-olive.jpg"
+      ],
+      "description": "An oversized cardigan woven on handlooms in the northern valleys — undyed olive wool, patch pockets, a collar to turn up.",
+      "details": [
+        "Oversized, drop shoulder",
+        "Two patch pockets",
+        "Horn buttons",
+        "Hand-finished ribbing"
+      ],
+      "fabric": "100% hand-spun wool",
+      "care": "Hand wash cold or dry clean. Dry flat.",
       "visible": true,
-      "badge": "limited"
+      "deposit_eligible": true,
+      "variants": [
+        {
+          "sku": "AS-W003-OLI-XS",
+          "size": "XS",
+          "color": "Olive",
+          "stock_key": "AS-W003-OLI-XS"
+        },
+        {
+          "sku": "AS-W003-OLI-S",
+          "size": "S",
+          "color": "Olive",
+          "stock_key": "AS-W003-OLI-S"
+        },
+        {
+          "sku": "AS-W003-OLI-M",
+          "size": "M",
+          "color": "Olive",
+          "stock_key": "AS-W003-OLI-M"
+        },
+        {
+          "sku": "AS-W003-OLI-L",
+          "size": "L",
+          "color": "Olive",
+          "stock_key": "AS-W003-OLI-L"
+        },
+        {
+          "sku": "AS-W003-OLI-XL",
+          "size": "XL",
+          "color": "Olive",
+          "stock_key": "AS-W003-OLI-XL"
+        },
+        {
+          "sku": "AS-W003-OAT-XS",
+          "size": "XS",
+          "color": "Oat",
+          "stock_key": "AS-W003-OAT-XS"
+        },
+        {
+          "sku": "AS-W003-OAT-S",
+          "size": "S",
+          "color": "Oat",
+          "stock_key": "AS-W003-OAT-S"
+        },
+        {
+          "sku": "AS-W003-OAT-M",
+          "size": "M",
+          "color": "Oat",
+          "stock_key": "AS-W003-OAT-M"
+        },
+        {
+          "sku": "AS-W003-OAT-L",
+          "size": "L",
+          "color": "Oat",
+          "stock_key": "AS-W003-OAT-L"
+        },
+        {
+          "sku": "AS-W003-OAT-XL",
+          "size": "XL",
+          "color": "Oat",
+          "stock_key": "AS-W003-OAT-XL"
+        }
+      ]
+    },
+    {
+      "id": "W004",
+      "slug": "quilted-shawl-coat-sand",
+      "name": "Quilted Shawl Coat — Sand",
+      "gender": "women",
+      "category": "outerwear",
+      "category_label": "Outerwear & Shawls",
+      "subcategory": "outerwear",
+      "price_pkr": 32000,
+      "compare_at_pkr": null,
+      "badge": "LIMITED",
+      "color": {
+        "name": "Sand",
+        "hex": "#d6c9b2"
+      },
+      "colors": [
+        {
+          "name": "Sand",
+          "hex": "#d6c9b2"
+        },
+        {
+          "name": "Charcoal",
+          "hex": "#3c3a36"
+        }
+      ],
+      "sizes": [
+        "XS",
+        "S",
+        "M",
+        "L",
+        "XL"
+      ],
+      "images": [
+        "/images/garments/w-coat-sand.jpg"
+      ],
+      "description": "Hand-stitched channel quilting over organic cotton wadding — a coat that behaves like a shawl. Each piece takes three days at the quilt frame.",
+      "details": [
+        "Shawl collar",
+        "Hand-stitched quilting",
+        "Two side pockets",
+        "Cotton binding at edges"
+      ],
+      "fabric": "Organic cotton shell and wadding",
+      "care": "Dry clean only.",
+      "visible": true,
+      "deposit_eligible": true,
+      "variants": [
+        {
+          "sku": "AS-W004-SAN-XS",
+          "size": "XS",
+          "color": "Sand",
+          "stock_key": "AS-W004-SAN-XS"
+        },
+        {
+          "sku": "AS-W004-SAN-S",
+          "size": "S",
+          "color": "Sand",
+          "stock_key": "AS-W004-SAN-S"
+        },
+        {
+          "sku": "AS-W004-SAN-M",
+          "size": "M",
+          "color": "Sand",
+          "stock_key": "AS-W004-SAN-M"
+        },
+        {
+          "sku": "AS-W004-SAN-L",
+          "size": "L",
+          "color": "Sand",
+          "stock_key": "AS-W004-SAN-L"
+        },
+        {
+          "sku": "AS-W004-SAN-XL",
+          "size": "XL",
+          "color": "Sand",
+          "stock_key": "AS-W004-SAN-XL"
+        },
+        {
+          "sku": "AS-W004-CHA-XS",
+          "size": "XS",
+          "color": "Charcoal",
+          "stock_key": "AS-W004-CHA-XS"
+        },
+        {
+          "sku": "AS-W004-CHA-S",
+          "size": "S",
+          "color": "Charcoal",
+          "stock_key": "AS-W004-CHA-S"
+        },
+        {
+          "sku": "AS-W004-CHA-M",
+          "size": "M",
+          "color": "Charcoal",
+          "stock_key": "AS-W004-CHA-M"
+        },
+        {
+          "sku": "AS-W004-CHA-L",
+          "size": "L",
+          "color": "Charcoal",
+          "stock_key": "AS-W004-CHA-L"
+        },
+        {
+          "sku": "AS-W004-CHA-XL",
+          "size": "XL",
+          "color": "Charcoal",
+          "stock_key": "AS-W004-CHA-XL"
+        }
+      ]
+    },
+    {
+      "id": "M003",
+      "slug": "merino-crewneck-charcoal",
+      "name": "Merino Crewneck — Charcoal",
+      "gender": "men",
+      "category": "knitwear",
+      "category_label": "Knitwear",
+      "subcategory": "knitwear",
+      "price_pkr": 19500,
+      "compare_at_pkr": null,
+      "badge": "NEW",
+      "color": {
+        "name": "Charcoal",
+        "hex": "#3c3a36"
+      },
+      "colors": [
+        {
+          "name": "Charcoal",
+          "hex": "#3c3a36"
+        },
+        {
+          "name": "Oat",
+          "hex": "#d9cfbc"
+        }
+      ],
+      "sizes": [
+        "S",
+        "M",
+        "L",
+        "XL",
+        "XXL"
+      ],
+      "images": [
+        "/images/garments/m-crew-charcoal.jpg"
+      ],
+      "description": "Fine-gauge merino, knitted in a family workshop in Lahore. Clean enough for the office, soft enough for Sundays.",
+      "details": [
+        "Regular fit",
+        "Fully fashioned shoulders",
+        "Ribbed cuffs and hem"
+      ],
+      "fabric": "100% extra-fine merino wool",
+      "care": "Hand wash cold or dry clean. Dry flat.",
+      "visible": true,
+      "deposit_eligible": true,
+      "variants": [
+        {
+          "sku": "AS-M003-CHA-S",
+          "size": "S",
+          "color": "Charcoal",
+          "stock_key": "AS-M003-CHA-S"
+        },
+        {
+          "sku": "AS-M003-CHA-M",
+          "size": "M",
+          "color": "Charcoal",
+          "stock_key": "AS-M003-CHA-M"
+        },
+        {
+          "sku": "AS-M003-CHA-L",
+          "size": "L",
+          "color": "Charcoal",
+          "stock_key": "AS-M003-CHA-L"
+        },
+        {
+          "sku": "AS-M003-CHA-XL",
+          "size": "XL",
+          "color": "Charcoal",
+          "stock_key": "AS-M003-CHA-XL"
+        },
+        {
+          "sku": "AS-M003-CHA-XXL",
+          "size": "XXL",
+          "color": "Charcoal",
+          "stock_key": "AS-M003-CHA-XXL"
+        },
+        {
+          "sku": "AS-M003-OAT-S",
+          "size": "S",
+          "color": "Oat",
+          "stock_key": "AS-M003-OAT-S"
+        },
+        {
+          "sku": "AS-M003-OAT-M",
+          "size": "M",
+          "color": "Oat",
+          "stock_key": "AS-M003-OAT-M"
+        },
+        {
+          "sku": "AS-M003-OAT-L",
+          "size": "L",
+          "color": "Oat",
+          "stock_key": "AS-M003-OAT-L"
+        },
+        {
+          "sku": "AS-M003-OAT-XL",
+          "size": "XL",
+          "color": "Oat",
+          "stock_key": "AS-M003-OAT-XL"
+        },
+        {
+          "sku": "AS-M003-OAT-XXL",
+          "size": "XXL",
+          "color": "Oat",
+          "stock_key": "AS-M003-OAT-XXL"
+        }
+      ]
+    },
+    {
+      "id": "M001",
+      "slug": "linen-shirt-slate",
+      "name": "Linen Shirt — Slate",
+      "gender": "men",
+      "category": "shirts",
+      "category_label": "Shirts & Kurtas",
+      "subcategory": "shirts",
+      "price_pkr": 12400,
+      "compare_at_pkr": null,
+      "badge": "NEW",
+      "color": {
+        "name": "Slate",
+        "hex": "#5d6a72"
+      },
+      "colors": [
+        {
+          "name": "Slate",
+          "hex": "#5d6a72"
+        },
+        {
+          "name": "Ivory",
+          "hex": "#efe9dc"
+        }
+      ],
+      "sizes": [
+        "S",
+        "M",
+        "L",
+        "XL",
+        "XXL"
+      ],
+      "images": [
+        "/images/garments/m-shirt-slate.jpg"
+      ],
+      "description": "Our everyday shirt, cut generous in washed European linen. It softens with every wash and keeps its line.",
+      "details": [
+        "Relaxed fit",
+        "Corozo buttons",
+        "Single chest pocket",
+        "Curved hem"
+      ],
+      "fabric": "100% washed linen, 160 gsm",
+      "care": "Gentle wash cold, line dry, warm iron.",
+      "visible": true,
+      "deposit_eligible": false,
+      "variants": [
+        {
+          "sku": "AS-M001-SLA-S",
+          "size": "S",
+          "color": "Slate",
+          "stock_key": "AS-M001-SLA-S"
+        },
+        {
+          "sku": "AS-M001-SLA-M",
+          "size": "M",
+          "color": "Slate",
+          "stock_key": "AS-M001-SLA-M"
+        },
+        {
+          "sku": "AS-M001-SLA-L",
+          "size": "L",
+          "color": "Slate",
+          "stock_key": "AS-M001-SLA-L"
+        },
+        {
+          "sku": "AS-M001-SLA-XL",
+          "size": "XL",
+          "color": "Slate",
+          "stock_key": "AS-M001-SLA-XL"
+        },
+        {
+          "sku": "AS-M001-SLA-XXL",
+          "size": "XXL",
+          "color": "Slate",
+          "stock_key": "AS-M001-SLA-XXL"
+        },
+        {
+          "sku": "AS-M001-IVO-S",
+          "size": "S",
+          "color": "Ivory",
+          "stock_key": "AS-M001-IVO-S"
+        },
+        {
+          "sku": "AS-M001-IVO-M",
+          "size": "M",
+          "color": "Ivory",
+          "stock_key": "AS-M001-IVO-M"
+        },
+        {
+          "sku": "AS-M001-IVO-L",
+          "size": "L",
+          "color": "Ivory",
+          "stock_key": "AS-M001-IVO-L"
+        },
+        {
+          "sku": "AS-M001-IVO-XL",
+          "size": "XL",
+          "color": "Ivory",
+          "stock_key": "AS-M001-IVO-XL"
+        },
+        {
+          "sku": "AS-M001-IVO-XXL",
+          "size": "XXL",
+          "color": "Ivory",
+          "stock_key": "AS-M001-IVO-XXL"
+        }
+      ]
+    },
+    {
+      "id": "M002",
+      "slug": "kurta-shirt-indigo",
+      "name": "Kurta Shirt — Indigo",
+      "gender": "men",
+      "category": "shirts",
+      "category_label": "Shirts & Kurtas",
+      "subcategory": "shirts",
+      "price_pkr": 13900,
+      "compare_at_pkr": null,
+      "badge": "HANDLOOM",
+      "color": {
+        "name": "Indigo",
+        "hex": "#37415c"
+      },
+      "colors": [
+        {
+          "name": "Indigo",
+          "hex": "#37415c"
+        },
+        {
+          "name": "Sand",
+          "hex": "#d6c9b2"
+        }
+      ],
+      "sizes": [
+        "S",
+        "M",
+        "L",
+        "XL",
+        "XXL"
+      ],
+      "images": [
+        "/images/garments/m-kurta-indigo.jpg"
+      ],
+      "description": "A short kurta in handloom cotton-linen, indigo-dyed in small vats. Mandarin collar, wooden buttons, slub texture that catches the light.",
+      "details": [
+        "Mandarin collar",
+        "Wooden buttons",
+        "Side vents",
+        "Mid-hip length"
+      ],
+      "fabric": "Handloom cotton-linen, natural indigo",
+      "care": "Wash separately first two washes. Line dry in shade.",
+      "visible": true,
+      "deposit_eligible": false,
+      "variants": [
+        {
+          "sku": "AS-M002-IND-S",
+          "size": "S",
+          "color": "Indigo",
+          "stock_key": "AS-M002-IND-S"
+        },
+        {
+          "sku": "AS-M002-IND-M",
+          "size": "M",
+          "color": "Indigo",
+          "stock_key": "AS-M002-IND-M"
+        },
+        {
+          "sku": "AS-M002-IND-L",
+          "size": "L",
+          "color": "Indigo",
+          "stock_key": "AS-M002-IND-L"
+        },
+        {
+          "sku": "AS-M002-IND-XL",
+          "size": "XL",
+          "color": "Indigo",
+          "stock_key": "AS-M002-IND-XL"
+        },
+        {
+          "sku": "AS-M002-IND-XXL",
+          "size": "XXL",
+          "color": "Indigo",
+          "stock_key": "AS-M002-IND-XXL"
+        },
+        {
+          "sku": "AS-M002-SAN-S",
+          "size": "S",
+          "color": "Sand",
+          "stock_key": "AS-M002-SAN-S"
+        },
+        {
+          "sku": "AS-M002-SAN-M",
+          "size": "M",
+          "color": "Sand",
+          "stock_key": "AS-M002-SAN-M"
+        },
+        {
+          "sku": "AS-M002-SAN-L",
+          "size": "L",
+          "color": "Sand",
+          "stock_key": "AS-M002-SAN-L"
+        },
+        {
+          "sku": "AS-M002-SAN-XL",
+          "size": "XL",
+          "color": "Sand",
+          "stock_key": "AS-M002-SAN-XL"
+        },
+        {
+          "sku": "AS-M002-SAN-XXL",
+          "size": "XXL",
+          "color": "Sand",
+          "stock_key": "AS-M002-SAN-XXL"
+        }
+      ]
     }
   ]
 }

@@ -1,0 +1,140 @@
+---
+/**
+ * StoreLayout — storefront layout (design system + tokens + cart shim).
+ * Fonts: Google Fonts CDN with system fallbacks (CDN policy, ARCHITECTURE.md).
+ */
+import SiteHeader from '../store/SiteHeader.astro';
+import SiteFooter from '../store/SiteFooter.astro';
+import '../../styles/tokens.css';
+import '../../styles/store.css';
+
+const {
+  title = 'AASRA — Slow made, in Pakistan',
+  description = 'Handloom clothing for women and men, made slowly in Pakistan.',
+} = Astro.props;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..700;1,9..144,300..700&family=Inter:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  </head>
+  <body>
+    <SiteHeader />
+    <main id="main">
+      <slot />
+    </main>
+    <SiteFooter />
+
+    <script>
+      // CSRF shim — same contract as the legacy Layout (__AASRA_CSRF).
+      (() => {
+        const COOKIE_NAME = 'csrf_token';
+        const getCookie = (name) => {
+          const v = document.cookie.match('(?:^|;\\s*)' + name + '=([^;]*)');
+          return v ? v[1] : '';
+        };
+        const setCookie = (name, value) => {
+          document.cookie = name + '=' + value + '; Path=/; SameSite=Strict; Secure';
+        };
+        window.__AASRA_CSRF = {
+          token: getCookie(COOKIE_NAME),
+          async ensure() {
+            if (this.token) return this.token;
+            try {
+              const res = await fetch('/api/csrf-token', { credentials: 'same-origin' });
+              if (res.ok) {
+                const data = await res.json();
+                if (data.csrf_token) {
+                  this.token = data.csrf_token;
+                  setCookie(COOKIE_NAME, data.csrf_token);
+                }
+              }
+            } catch (e) {}
+            return this.token;
+          },
+          header() {
+            return { 'X-CSRF-Token': this.token || '' };
+          },
+        };
+      })();
+    </script>
+    <script>
+      // Cart shim — same contract as the legacy CartDrawer:
+      // localStorage aasra_cart_v1 = [{ sku, name, price, qty, image }]
+      (() => {
+        const KEY = 'aasra_cart_v1';
+        const read = () => { try { return JSON.parse(localStorage.getItem(KEY) || '[]'); } catch { return []; } };
+        const write = (cart) => {
+          localStorage.setItem(KEY, JSON.stringify(cart));
+          window.dispatchEvent(new Event('aasra:cart'));
+        };
+        window.__aasra_addToCart = (sku, name, price, qty = 1, image = '') => {
+          const cart = read();
+          const hit = cart.find((i) => i.sku === sku);
+          if (hit) hit.qty += qty; else cart.push({ sku, name, price, qty, image });
+          write(cart);
+        };
+        window.addEventListener('aasra:cart:clear', () => write([]));
+      })();
+
+      // Reveal on scroll (design system §6), staggered via [data-stagger].
+      (() => {
+        const targets = document.querySelectorAll('.as-reveal');
+        if (!('IntersectionObserver' in window)) {
+          targets.forEach((t) => t.classList.add('is-in'));
+          return;
+        }
+        const io = new IntersectionObserver((entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              entry.target.classList.add('is-in');
+              io.unobserve(entry.target);
+            }
+          });
+        }, { threshold: 0.12, rootMargin: '0px 0px -6% 0px' });
+        targets.forEach((t) => io.observe(t));
+        document.querySelectorAll('[data-stagger]').forEach((group) => {
+          [...group.children].forEach((child, i) => child.style.setProperty('--i', i));
+        });
+      })();
+
+      // Cursor parallax for hero panels (±10px) and scroll parallax for campaign banners.
+      (() => {
+        if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+        document.querySelectorAll('.as-hero-panel').forEach((panel) => {
+          const img = panel.querySelector('img');
+          panel.addEventListener('mousemove', (e) => {
+            const r = panel.getBoundingClientRect();
+            const x = (e.clientX - r.left) / r.width - 0.5;
+            const y = (e.clientY - r.top) / r.height - 0.5;
+            img.style.translate = `${x * -12}px ${y * -12}px`;
+          });
+          panel.addEventListener('mouseleave', () => { img.style.translate = '0 0'; });
+        });
+        const campaigns = document.querySelectorAll('.as-campaign > img');
+        if (campaigns.length) {
+          const onScroll = () => {
+            campaigns.forEach((img) => {
+              const r = img.parentElement.getBoundingClientRect();
+              const progress = (r.top + r.height / 2 - innerHeight / 2) / innerHeight;
+              img.style.transform = `translateY(${progress * -40}px)`;
+            });
+          };
+          window.addEventListener('scroll', onScroll, { passive: true });
+          onScroll();
+        }
+      })();
+    </script>
+  </body>
+</html>

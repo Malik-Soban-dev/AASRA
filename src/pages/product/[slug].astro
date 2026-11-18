@@ -1,374 +1,186 @@
 ---
-import Layout from '../../components/Layout.astro';
-import ProductCard from '../../components/ProductCard.astro';
-import { formatPKR, depositAmount, balanceAmount, getBadge } from '../../lib/products.js';
-import productsData from '../../../data/products.json';
+/**
+ * PDP — gallery (thumbs + zoom), colour/size selection, add to bag,
+ * accordions, "wear it with" rail. Sticky add bar on mobile.
+ */
+import StoreLayout from '../../components/layout/StoreLayout.astro';
+import ProductRail from '../../components/store/ProductRail.astro';
+import { products, productBySlug, wearItWith, formatPrice, categoryLabel } from '../../lib/catalog.js';
 
 export function getStaticPaths() {
-  return productsData.products
-    .filter((p) => p.visible)
-    .map((p) => ({ params: { slug: p.slug } }));
+  return products.filter((p) => p.visible).map((p) => ({ params: { slug: p.slug } }));
 }
 
-const slug = Astro.params.slug;
-const product = productsData.products.find((p) => p.slug === slug);
-
-if (!product) {
-  return Astro.redirect('/404');
-}
-
-const firstImage = product.images[0] || '/images/placeholder.svg';
-const defaultVariant = product.variants[0];
-const DEPOSIT_PERCENT = 30; // VERIFY: must match backend DEFAULT_DEPOSIT_PERCENT
-const estimatedDeposit = product.deposit_eligible ? depositAmount(product.price_pkr, DEPOSIT_PERCENT) : 0;
-const estimatedBalance = product.deposit_eligible ? balanceAmount(product.price_pkr, estimatedDeposit) : 0;
-const badge = getBadge(product);
-// Complementary-category recs for "Complete the look" (dual-rec pattern, BC deep-dive §13.6)
-const COMPLEMENTS = {
-  'home-textiles': ['rugs', 'tableware'],
-  rugs: ['home-textiles', 'woodware'],
-  tableware: ['woodware', 'home-textiles'],
-  woodware: ['tableware', 'home-textiles'],
-};
-const completeLook = productsData.products
-  .filter((p) => p.visible && p.id !== product.id && (COMPLEMENTS[product.category] || []).includes(p.category))
-  .slice(0, 4);
+const { slug } = Astro.params;
+const product = productBySlug(slug);
+if (!product) return Astro.redirect('/404');
+const related = wearItWith(product);
+const price = formatPrice(product.price_pkr);
+const firstColor = product.colors[0];
+const images = product.images.length > 1 ? product.images : [product.images[0], product.images[0]];
 ---
 
-<Layout title={product.name} description={product.seo?.description || product.description}>
+<StoreLayout title={`${product.name} — AASRA`}>
+  <div class="container">
+    <nav class="as-breadcrumb" aria-label="Breadcrumb">
+      <a href="/">Home</a><span>/</span>
+      <a href={`/${product.gender}`}>{product.gender === 'women' ? 'Women' : 'Men'}</a><span>/</span>
+      <a href={`/${product.gender}/${product.category}`}>{categoryLabel(product.gender, product.category)}</a><span>/</span>
+      <span aria-current="page">{product.name}</span>
+    </nav>
 
-  <section class="section">
-    <div class="container">
-      <div style="display:flex; gap:2rem; align-items:flex-start;">
-        <!-- Product gallery -->
-        <div class="product-gallery">
-          <div class="pdp-gallery-stack">
-            <img id="main-img" src={firstImage} alt={product.name} loading="eager" width="900" height="1125" />
-          </div>
-          <div class="thumbs" role="group" aria-label="Product images">
-            {product.images.map((img, index) => (
-              <button class:list={["thumb", { selected: index === 0 }]} type="button" data-img={img} aria-label={`View image ${index + 1}`} aria-pressed={index === 0}>
-                <img src={img} alt="" loading="lazy" width="90" height="90" />
-              </button>
+    <div class="as-pdp">
+      <div class="as-pdp-gallery">
+        <div class="as-thumbs" role="tablist" aria-label="Product images">
+          {images.map((img, i) => (
+            <button type="button" class:list={['as-thumb', { 'is-active': i === 0 }]} data-full={img} aria-label={`View ${i + 1}`}>
+              <img src={img} alt="" loading="lazy" width="76" height="101" />
+            </button>
+          ))}
+        </div>
+        <div class="as-pdp-main">
+          {product.badge && <span class:list={['as-badge', { 'as-badge--clay': product.badge === 'LIMITED' }]}>{product.badge}</span>}
+          <img id="as-pdp-main-img" src={images[0]} alt={product.name} width="900" height="1200" fetchpriority="high" />
+        </div>
+      </div>
+
+      <div class="as-pdp-info">
+        <p class="as-kicker">{product.fabric || 'Natural fibres'}</p>
+        <h1 class="as-display-l">{product.name}</h1>
+        <p class="as-pdp-price">{price}</p>
+        <p class="as-muted" style="margin-top:var(--as-s4);max-width:44ch">{product.description}</p>
+
+        <div class="as-pdp-attr">
+          <span class="as-kicker">Colour — <span id="as-color-name">{firstColor.name}</span></span>
+          <div class="as-swatches">
+            {product.colors.map((c, i) => (
+              <button type="button" class:list={['as-swatch', { 'is-active': i === 0 }]}
+                style={`background:${c.hex}`} data-color={c.name} aria-label={`Colour: ${c.name}`}></button>
             ))}
           </div>
         </div>
 
-        <!-- Product information -->
-        <div class="product-meta pdp-info">
-          <div class="kicker" style="margin-bottom:0.5rem;">
-            {product.category.charAt(0).toUpperCase() + product.category.slice(1)}
+        <div class="as-pdp-attr">
+          <span class="as-kicker">Select your size</span>
+          <div class="as-sizes" id="as-size-row">
+            {product.sizes.map((size) => {
+              const variant = product.variants.find((v) => v.size === size && v.color === firstColor.name);
+              return (
+                <button type="button" class="as-size" data-size={size} data-sku={variant?.sku}>{size}</button>
+              );
+            })}
           </div>
-          {badge && (
-            <div class="product-badge product-badge--pdp" data-badge={badge.type}>{badge.label}</div>
-          )}
-          <h1 class="product-title">{product.name}</h1>
-          <div class="product-price-display">{formatPKR(product.price_pkr)}</div>
-          <div class="product-color-display">
-            {defaultVariant?.size ? defaultVariant.size : ''}
-            {product.variants.length > 1 ? ` · ${product.variants.length} variants` : ''}
-          </div>
-
-          <p style="font-size:0.85rem; color:var(--muted); margin-bottom:1.5rem;">
-            {product.description}
+          <p class="as-muted" style="margin-top:var(--as-s3);font-size:.8rem">
+            True to size. Between sizes? Take the larger. <a href="/size-guide" style="text-decoration:underline">Size guide</a>
           </p>
+        </div>
 
-          <!-- Size selector -->
-          <div class="size-group">
-            <span class="size-label">Select your size</span>
-            <div class="size-options" id="size-options">
-              {product.variants.map((v) => (
-                <button
-                  class="size-btn"
-                  data-sku={v.sku}
-                  data-size={v.size}
-                >
-                  {v.size}
-                  <span class="size-state" data-state-sku={v.sku}></span>
-                </button>
-              ))}
-            </div>
-            <div class="size-request" id="size-request" hidden></div>
-          </div>
+        <div class="as-pdp-actions">
+          <button type="button" class="as-btn as-btn--solid as-btn--block" id="as-add-btn" disabled>Select a size</button>
+          <a class="as-link" href="/shipping" style="justify-self:center">Shipping & returns</a>
+        </div>
 
-          <!-- Deposit note -->
-          {product.deposit_eligible && (
-            <div class="deposit-note">
-              <strong>Pay in instalments:</strong> Deposit {DEPOSIT_PERCENT}% = {formatPKR(estimatedDeposit)}, balance {formatPKR(estimatedBalance)} due online before shipping.
-            </div>
+        <div class="as-accordion">
+          {product.details?.length > 0 && (
+            <details class="as-accordion-item" open>
+              <summary>Details</summary>
+              <ul class="as-accordion-body">
+                {product.details.map((d) => <li>{d}</li>)}
+              </ul>
+            </details>
           )}
-
-          <div class="actions">
-            <div class="qty-selector">
-              <button type="button" id="qty-minus">−</button>
-              <input type="number" id="qty" value="1" min="1" max="10" />
-              <button type="button" id="qty-plus">+</button>
-            </div>
-            <button id="add-to-cart" class="btn btn-primary btn-full" data-name={product.name} data-price={product.price_pkr} data-sku={defaultVariant.sku} data-image={product.images[0]}>Add to cart</button>
-            <button id="wishlist-toggle" class="btn btn-full" data-default-sku={defaultVariant?.sku || product.id} style="margin-top:0.5rem;">⤖ Add to wishlist</button>
-          </div>
-
-          <div class="stock-note" id="stock-note">Availability confirmed when your order is reviewed.</div>
-
-          <div style="display:flex; justify-content:space-between; margin-top:0.9rem;">
-            <a href="/size-guide" class="text-link">Size Guide</a>
-            <a href="/contact" class="text-link">May we help you?</a>
-          </div>
-
-          <div class="service-links" style="justify-content:flex-start;">
-            <a href="mailto:orders@aasra.shop" target="_blank" rel="noopener">Email us about this piece</a>
-            <a href="/order-lookup">Track your order</a>
-            <a href="/boutiques">Find in boutique</a>
-          </div>
-
-          <!-- Product information accordions -->
-          <details class="accordion" open style="margin-top:1.8rem;">
-            <summary>Description</summary>
-            <div class="accordion-body">
-              <p>{product.description}</p>
-              <p style="margin-top:0.5rem;"><strong>Care:</strong> Handle with care. Spot clean where possible.</p>
-              <p style="margin-top:0.5rem;">Category: {product.category.charAt(0).toUpperCase() + product.category.slice(1).replace('-', ' ')}</p>
+          <details class="as-accordion-item">
+            <summary>Fabric & care</summary>
+            <div class="as-accordion-body">
+              <p>{product.fabric}</p>
+              <p style="margin-top:.5rem">{product.care}</p>
             </div>
           </details>
-          <details class="accordion">
-            <summary>Packaging</summary>
-            <div class="accordion-body">
-              <p>Each piece arrives in protective, considered packaging. Gift wrapping in natural linen with a handwritten note is available on request — mention it in the order notes at checkout.</p>
-            </div>
-          </details>
-          <details class="accordion">
-            <summary>Shipping &amp; returns</summary>
-            <div class="accordion-body">
-              <p>Shipping calculated at checkout by city. Complimentary shipping on orders above Rs 20,000.</p>
-              <p>Returns accepted within 7 days of delivery, unused and in original packaging. See the <a href="/return-policy">Return &amp; Refund Policy</a>.</p>
-            </div>
-          </details>
-          <details class="accordion">
-            <summary>Payment &amp; deposit</summary>
-            <div class="accordion-body">
-              <p><strong>No Cash on Delivery.</strong> Online checkout is not available until gateway setup is complete. Please contact us for current ordering options. See the <a href="/deposit-policy">Deposit Policy</a>.</p>
+          <details class="as-accordion-item">
+            <summary>Shipping & returns</summary>
+            <div class="as-accordion-body">
+              <p>Dispatched within 2–4 working days from Lahore. Complimentary shipping over PKR 10,000.</p>
+              <p style="margin-top:.5rem">Easy exchanges within 14 days. See <a href="/return-policy" style="text-decoration:underline">returns policy</a>.</p>
             </div>
           </details>
         </div>
       </div>
     </div>
-  </section>
-
-  <div class="pdp-sticky-bar" id="pdp-sticky-bar" aria-hidden="true">
-    <span>{product.name}<small>{formatPKR(product.price_pkr)}</small></span>
-    <button type="button" class="btn btn-primary" id="sticky-add-to-cart">Add to selection</button>
   </div>
 
-  <!-- Personal styling help -->
-  <section class="section-tight advisor-band">
-    <div class="container">
-      <div class="split-grid">
-        <div>
-          <img src="/images/campaign/gifts-home.webp" alt="Style advisors" loading="lazy" width="900" height="1125" style="width:100%; aspect-ratio:16/10; object-fit:cover; display:block;" />
-        </div>
-        <div style="display:flex; flex-direction:column; justify-content:center; text-align:center; gap:1rem;">
-          <h3 style="font-size:1.6rem;">Meet our style advisors</h3>
-          <p style="color:var(--muted); line-height:1.85; max-width:46ch; margin:0 auto;">
-            We are available to help you with styling suggestions and inspiration tailored
-            for you — in the Karachi studio, or by video call.
-          </p>
-          <div class="hero-links" style="justify-content:center;">
-            <a href="/appointment" style="color:var(--text); border-bottom-color:var(--text);">Book an appointment</a>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
+  <ProductRail
+    kicker="Styled with"
+    title="Wear it with"
+    products={related}
+    link={{ label: 'Shop all', href: `/${product.gender}` }}
+  />
 
-  <!-- Share this product -->
-  <section class="section-tight" style="text-align:center; border-top:1px solid var(--border);">
-    <div class="container">
-      <div class="kicker" style="margin-bottom:1.2rem;">Share</div>
-      <div class="share-row">
-        <a id="share-wa" href="#" target="_blank" rel="noopener">Email</a>
-        <a id="share-mail" href="#">Email</a>
-        <button type="button" id="share-copy">Copy link</button>
-      </div>
+  <div class="as-stickybar is-on" id="as-stickybar">
+    <div>
+      <p class="as-serif" style="font-size:.95rem">{product.name}</p>
+      <p class="as-price">{price}</p>
     </div>
-  </section>
+    <button type="button" class="as-btn as-btn--solid" id="as-sticky-add" disabled>Select a size</button>
+  </div>
 
-  <script is:inline>
-    // @ts-nocheck -- browser-only event handlers use DOM APIs guarded at runtime.
-    (function () {
-      var url = window.location.href;
-      var title = document.title;
-      var wa = document.getElementById('share-wa');
-      var mail = document.getElementById('share-mail');
-      var copy = document.getElementById('share-copy');
-      if (wa) wa.href = 'https://wa.me/?text=' + encodeURIComponent(title + ' — ' + url);
-      if (mail) mail.href = 'mailto:?subject=' + encodeURIComponent(title) + '&body=' + encodeURIComponent(url);
-      if (copy) copy.addEventListener('click', function () {
-        navigator.clipboard?.writeText(url).then(function () {
-          copy.textContent = 'Copied';
-          setTimeout(function () { copy.textContent = 'Copy link'; }, 1600);
+  <script define:vars={{ productData: product }}>
+    // Gallery thumbs, colour/size selection, add to bag via the shared cart API.
+    const mainImg = document.getElementById('as-pdp-main-img');
+    document.querySelectorAll('.as-thumb').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.as-thumb').forEach((b) => b.classList.remove('is-active'));
+        btn.classList.add('is-active');
+        mainImg.src = btn.dataset.full;
+      });
+    });
+
+    let color = productData.colors[0].name;
+    let size = null;
+    const addBtn = document.getElementById('as-add-btn');
+    const stickyAdd = document.getElementById('as-sticky-add');
+    const skuFor = () => productData.variants.find((v) => v.size === size && v.color === color)?.sku;
+
+    const refresh = () => {
+      const label = size ? `Add to bag — ${size}` : 'Select a size';
+      addBtn.textContent = label;
+      stickyAdd.textContent = size ? 'Add to bag' : 'Select a size';
+      addBtn.disabled = !size;
+      stickyAdd.disabled = !size;
+    };
+
+    document.querySelectorAll('.as-swatch').forEach((sw) => {
+      sw.addEventListener('click', () => {
+        color = sw.dataset.color;
+        document.getElementById('as-color-name').textContent = color;
+        document.querySelectorAll('.as-swatch').forEach((s) => s.classList.remove('is-active'));
+        sw.classList.add('is-active');
+        // Refresh SKU mapping for the new colour.
+        document.querySelectorAll('#as-size-row .as-size').forEach((btn) => {
+          const variant = productData.variants.find((v) => v.size === btn.dataset.size && v.color === color);
+          btn.dataset.sku = variant?.sku;
         });
       });
-    })();
-  </script>
+    });
 
-  <!-- Cross-sell: same-category recs + "Complete the look" (dual-rec pattern) -->
-  <section class="cross-sell">
-    <div class="container">
-      <h3>You may also be interested in</h3>
-      <div class="grid">
-        {productsData.products
-          .filter((p) => p.visible && p.id !== product.id && p.category === product.category)
-          .slice(0, 4)
-          .map((p) => <ProductCard product={p} />)}
-      </div>
-      {completeLook.length > 0 && (
-        <div class="complete-the-look">
-          <h3>Complete the look</h3>
-          <div class="grid">
-            {completeLook.map((p) => <ProductCard product={p} />)}
-          </div>
-        </div>
-      )}
-    </div>
-  </section>
-
-  <script is:inline>
-    // Stock states for the size selector — "Only one left" / "No longer available" / "Request size".
-    // /api/stock returns stock:null when D1 is not bound; then the generic note stays.
-    (function () {
-      var buttons = Array.prototype.slice.call(document.querySelectorAll('.size-btn[data-sku]'));
-      if (!buttons.length || typeof fetch !== 'function') return;
-      var skus = buttons.map(function (b) { return b.getAttribute('data-sku'); });
-      fetch('/api/stock?skus=' + encodeURIComponent(skus.join(',')))
-        .then(function (r) { return r.ok ? r.json() : null; })
-        .then(function (data) {
-          if (!data || !data.ok || !data.stock) return;
-          var missing = [];
-          buttons.forEach(function (btn) {
-            var qty = data.stock[btn.getAttribute('data-sku')];
-            if (typeof qty !== 'number') return;
-            var state = btn.querySelector('.size-state');
-            if (qty <= 0) {
-              btn.disabled = true;
-              btn.classList.add('is-unavailable');
-              if (state) state.textContent = 'No longer available';
-              missing.push(btn.getAttribute('data-size'));
-            } else if (qty === 1) {
-              btn.classList.add('is-low');
-              if (state) state.textContent = 'Only one left';
-            }
-          });
-          if (missing.length) {
-            var req = document.getElementById('size-request');
-            if (req) {
-              var subject = document.title + ' — size request';
-              var body = 'Hello AASRA,\n\nI would like to request: ' + missing.join(', ') + '\n(' + window.location.href + ')\n';
-              req.innerHTML = '<a href="mailto:orders@aasra.shop?subject=' + encodeURIComponent(subject) +
-                '&body=' + encodeURIComponent(body) + '">Request size: ' + missing.join(', ') +
-                '</a> — we will confirm availability by email.';
-              req.hidden = false;
-            }
-          }
-          var note = document.getElementById('stock-note');
-          if (note) note.textContent = 'Live availability is shown next to each size.';
-        })
-        .catch(function () { /* keep the generic availability note */ });
-    })();
-  </script>
-
-  <script>
-    // @ts-nocheck -- browser-only event handlers use DOM APIs guarded at runtime.
-    // Gallery thumb click
-    const mainImg = document.getElementById('main-img');
-    const thumbs = document.querySelectorAll('.thumb');
-    thumbs.forEach((t) => {
-      t.addEventListener('click', () => {
-        thumbs.forEach((x) => { x.classList.remove('selected'); x.setAttribute('aria-pressed', 'false'); });
-        t.classList.add('selected');
-        t.setAttribute('aria-pressed', 'true');
-        mainImg.classList.remove('zoomed');
-        mainImg.src = t.getAttribute('data-img');
+    document.querySelectorAll('#as-size-row .as-size').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        size = btn.dataset.size;
+        document.querySelectorAll('#as-size-row .as-size').forEach((b) => b.classList.remove('is-active'));
+        btn.classList.add('is-active');
+        refresh();
       });
     });
 
-    // Tap/click the primary image to toggle a simple detail zoom.
-    mainImg?.addEventListener('click', () => mainImg.classList.toggle('zoomed'));
-    const stickyBar = document.getElementById('pdp-sticky-bar');
-    const primaryAdd = document.getElementById('add-to-cart');
-    const stickyAdd = document.getElementById('sticky-add-to-cart');
-    stickyAdd?.addEventListener('click', () => primaryAdd?.click());
-    if (primaryAdd && stickyBar && 'IntersectionObserver' in window) {
-      const stickyObserver = new IntersectionObserver(([entry]) => {
-        const show = !entry.isIntersecting && window.scrollY > 240;
-        stickyBar.classList.toggle('visible', show);
-        stickyBar.setAttribute('aria-hidden', String(!show));
-      });
-      stickyObserver.observe(primaryAdd);
-    }
-
-    // Size selection
-    const sizeBtns = document.querySelectorAll('.size-btn');
-    let selectedSku = sizeBtns[0]?.getAttribute('data-sku') || '';
-    sizeBtns.forEach((b) => {
-      b.addEventListener('click', () => {
-        sizeBtns.forEach((x) => x.classList.remove('selected'));
-        b.classList.add('selected');
-        selectedSku = b.getAttribute('data-sku');
-      });
-    });
-
-    // Qty controls
-    const qtyInput = document.getElementById('qty');
-    document.getElementById('qty-minus')?.addEventListener('click', () => {
-      const v = Math.max(1, parseInt(qtyInput.value) - 1);
-      qtyInput.value = v;
-    });
-    document.getElementById('qty-plus')?.addEventListener('click', () => {
-      const v = Math.min(10, parseInt(qtyInput.value) + 1);
-      qtyInput.value = v;
-    });
-
-    // Add to cart (reads from data attributes, safe against special chars)
-    const addBtn = document.getElementById('add-to-cart');
-    addBtn?.addEventListener('click', () => {
-      const qty = parseInt(qtyInput.value) || 1;
-      const sku = selectedSku || addBtn.getAttribute('data-sku');
-      const name = addBtn.getAttribute('data-name');
-      const price = parseInt(addBtn.getAttribute('data-price')) || 0;
+    const addToBag = () => {
+      const sku = skuFor();
       if (!sku) return;
-      const btn = document.getElementById('add-to-cart');
-      const original = btn.textContent;
-      btn.textContent = 'Added';
-      btn.style.opacity = '0.7';
-      setTimeout(() => { btn.textContent = original; btn.style.opacity = '1'; }, 1000);
-      window.__aasra_addToCart(sku, name, price, qty, addBtn.getAttribute('data-image') || '');
-    });
-
-    // Wishlist toggle (localStorage)
-    const wishBtn = document.getElementById('wishlist-toggle');
-    const WL_KEY = window.__AASRA_WISHLIST_KEY || 'aasra_wishlist_v1';
-    function isWishlisted(sku) {
-      try { return JSON.parse(localStorage.getItem(WL_KEY) || '[]').includes(sku); } catch { return false; }
-    }
-    function toggleWishlist(sku) {
-      try {
-        const wl = JSON.parse(localStorage.getItem(WL_KEY) || '[]');
-        if (wl.includes(sku)) {
-          const idx = wl.indexOf(sku);
-          wl.splice(idx, 1);
-        } else {
-          wl.push(sku);
-        }
-        localStorage.setItem(WL_KEY, JSON.stringify(wl));
-      } catch (e) {}
-    }
-    const defaultSku = wishBtn?.dataset.defaultSku || '';
-    if (wishBtn) {
-      if (isWishlisted(defaultSku)) wishBtn.textContent = '✔ In wishlist';
-      wishBtn.addEventListener('click', () => {
-        toggleWishlist(defaultSku);
-        wishBtn.textContent = isWishlisted(defaultSku) ? '✔ In wishlist' : '⤖ Add to wishlist';
-      });
-    }
+      window.__aasra_addToCart?.(sku, productData.name, productData.price_pkr, 1, productData.images[0]);
+      addBtn.textContent = 'Added — view bag';
+      addBtn.onclick = () => { window.location.href = '/cart'; };
+      stickyAdd.textContent = 'Added';
+    };
+    addBtn.addEventListener('click', addToBag);
+    stickyAdd.addEventListener('click', addToBag);
+    refresh();
   </script>
-</Layout>
+</StoreLayout>

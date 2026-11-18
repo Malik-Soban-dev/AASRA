@@ -1,0 +1,56 @@
+/* ==========================================================================
+   tokens.css — the only place raw visual values are allowed to exist.
+   Source of truth: docs/DESIGN_SYSTEM.md
+   ========================================================================== */
+
+:root {
+  /* Color */
+  --as-paper: #f7f5ef;
+  --as-canvas: #ffffff;
+  --as-ink: #23211d;
+  --as-graphite: #6f6a60;
+  --as-line: #e3ddd2;
+  --as-sand: #eee7da;
+  --as-clay: #a65e45;
+  --as-olive: #36433a;
+  --as-error: #8c2f2f;
+
+  /* Type */
+  --as-display: 'Fraunces', Georgia, 'Times New Roman', serif;
+  --as-ui: 'Inter', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  --as-t-display-xl: clamp(3.5rem, 9vw, 7.5rem);
+  --as-t-display-l: clamp(2.25rem, 4.5vw, 4rem);
+  --as-t-h2: clamp(1.6rem, 2.5vw, 2.25rem);
+  --as-t-body: 0.95rem;
+  --as-t-label: 0.7rem;
+  --as-t-micro: 0.625rem;
+  --as-track-label: 0.22em;
+  --as-track-micro: 0.18em;
+
+  /* Space (4px base) */
+  --as-s1: 4px;  --as-s2: 8px;  --as-s3: 12px; --as-s4: 16px;
+  --as-s5: 24px; --as-s6: 32px; --as-s7: 48px; --as-s8: 64px;
+  --as-s9: 96px; --as-s10: 128px;
+  --as-section: 128px;
+  --as-gutter: 2.5rem;
+  --as-container: 1440px;
+
+  /* Geometry */
+  --as-radius: 0px;
+  --as-radius-pill: 999px;
+  --as-border: 1px solid var(--as-line);
+
+  /* Motion */
+  --as-ease: cubic-bezier(.2, .7, .2, 1);
+  --as-spring: cubic-bezier(.34, 1.56, .64, 1);
+  --as-fast: 200ms;
+  --as-med: 400ms;
+  --as-slow: 700ms;
+}
+
+@media (max-width: 760px) {
+  :root {
+    --as-gutter: 1.25rem;
+    --as-section: 64px;
+  }
+}

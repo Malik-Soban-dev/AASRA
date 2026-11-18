@@ -1,0 +1,23 @@
+{
+  "category": "knitwear",
+  "label": "Knitwear",
+  "products": [
+    {
+      "id": "M003",
+      "slug": "merino-crewneck-charcoal",
+      "name": "Merino Crewneck — Charcoal",
+      "price_pkr": 19500,
+      "badge": "NEW",
+      "colors": [
+        { "name": "Charcoal", "hex": "#3c3a36" },
+        { "name": "Oat", "hex": "#d9cfbc" }
+      ],
+      "sizes": ["S", "M", "L", "XL", "XXL"],
+      "images": ["/images/garments/m-crew-charcoal.jpg"],
+      "description": "Fine-gauge merino, knitted in a family workshop in Lahore. Clean enough for the office, soft enough for Sundays.",
+      "details": ["Regular fit", "Fully fashioned shoulders", "Ribbed cuffs and hem"],
+      "fabric": "100% extra-fine merino wool",
+      "care": "Hand wash cold or dry clean. Dry flat."
+    }
+  ]
+}

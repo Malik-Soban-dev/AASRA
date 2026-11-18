@@ -1,0 +1,43 @@
+---
+/**
+ * ProductRail — horizontal scroll-snap rail with arrow controls (design system §5).
+ * Usage: <ProductRail title="New in" products={...} link={{label, href}} />
+ */
+import ProductCard from './ProductCard.astro';
+const { title, kicker, products = [], link } = Astro.props;
+---
+
+<section class="as-section container">
+  <div class="as-section-head as-reveal">
+    <div>
+      {kicker && <p class="as-kicker">{kicker}</p>}
+      <h2 class="as-h2">{title}</h2>
+    </div>
+    <div class="as-rail-nav">
+      {link && <a class="as-link" href={link.href}>{link.label}</a>}
+      <button type="button" class="as-rail-btn" data-rail-prev aria-label="Previous">
+        <svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7" /></svg>
+      </button>
+      <button type="button" class="as-rail-btn" data-rail-next aria-label="Next">
+        <svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7" /></svg>
+      </button>
+    </div>
+  </div>
+  <div class="as-rail">
+    <div class="as-rail-track" data-rail data-stagger>
+      {products.map((p, i) => (
+        <div class="as-reveal" style={`--i:${i}`}><ProductCard product={p} /></div>
+      ))}
+    </div>
+  </div>
+</section>
+
+<script>
+  document.querySelectorAll('.as-rail-nav').forEach((nav) => {
+    const section = nav.closest('.as-section');
+    const track = section.querySelector('[data-rail]');
+    const step = () => track.firstElementChild.getBoundingClientRect().width + 24;
+    nav.querySelector('[data-rail-prev]')?.addEventListener('click', () => track.scrollBy({ left: -step(), behavior: 'smooth' }));
+    nav.querySelector('[data-rail-next]')?.addEventListener('click', () => track.scrollBy({ left: step(), behavior: 'smooth' }));
+  });
+</script>

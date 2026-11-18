@@ -1,0 +1,57 @@
+---
+/**
+ * SiteFooter — olive footer: 4 link columns + newsletter + giant wordmark.
+ */
+import site from '../../../data/catalog/site.json';
+const { columns, legal } = site.footer;
+---
+
+<footer class="as-footer">
+  <div class="container">
+    <div class="as-footer-cols">
+      {columns.map((col) => (
+        <div>
+          <h3>{col.title}</h3>
+          {col.links.map((l) => <a href={l.href}>{l.label}</a>)}
+        </div>
+      ))}
+      <div>
+        <h3>Stay in touch</h3>
+        <p style="opacity:.85;font-size:.9rem">New work and small drops, a few times a year.</p>
+        <form class="as-newsletter" id="as-newsletter">
+          <label class="sr-only" for="as-newsletter-email">Email address</label>
+          <input id="as-newsletter-email" type="email" name="email" placeholder="Email address" required autocomplete="email" />
+          <button type="submit">Join</button>
+        </form>
+        <p id="as-newsletter-msg" class="as-kicker" style="margin-top:12px;color:rgba(247,245,239,.7)" aria-live="polite"></p>
+      </div>
+    </div>
+    <div class="as-footer-legal">
+      <span>{legal}</span>
+      <span>Pakistan · PKR</span>
+      <span><a href="/privacy">Privacy</a> · <a href="/terms">Terms</a> · <a href="/shipping">Shipping</a></span>
+    </div>
+    <div class="as-footer-mark">AASRA</div>
+  </div>
+</footer>
+
+<script>
+  document.getElementById('as-newsletter')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const form = e.target;
+    const msg = document.getElementById('as-newsletter-msg');
+    try {
+      await window.__AASRA_CSRF?.ensure();
+      const res = await fetch('/api/newsletter', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', ...(window.__AASRA_CSRF?.header() || {}) },
+        body: JSON.stringify({ email: form.elements.email.value, consent: true }),
+      });
+      const data = await res.json();
+      msg.textContent = data.ok ? 'Thank you — you are on the list.' : (data.error || 'Something went wrong.');
+      if (data.ok) form.reset();
+    } catch {
+      msg.textContent = 'Something went wrong. Please try again.';
+    }
+  });
+</script>
