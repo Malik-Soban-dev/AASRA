@@ -92,7 +92,7 @@ export async function createCheckoutSession(env, params) {
     body: JSON.stringify({
       order: { reference: params.reference || params.orderId },
       invoice: { amount: amountPaisa, currency: params.currency || 'PKR' },
-      redirect_url: `${cfg.returnUrl}/api/safepay/return`,
+      redirect_url: `${cfg.returnUrl}/api/safepay-return`,
       cancel_url: `${cfg.returnUrl}/payment-cancelled?order=${encodeURIComponent(params.orderId)}`,
       webhook: true,
     }),

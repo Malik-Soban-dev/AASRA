@@ -45,10 +45,14 @@ export async function onRequest(context) {
 
   // --- Origin validation for state-changing requests ---
   // Webhook is exempt (it's authenticated by HMAC signature, not browser
-  // origin — gateway servers POST without an Origin header).
+  // origin — gateway servers POST without an Origin header). The Safepay
+  // signed return (/api/safepay-return) is exempt for the same reason: it's
+  // a server-to-server POST authenticated by HMAC signature inside the
+  // function, and it carries no Origin header or cookies.
   const isWebhook = request.url.includes('/api/webhook');
+  const isSafepayReturn = request.url.includes('/api/safepay-return');
   const isStateChanging = ['POST', 'PUT', 'PATCH', 'DELETE'].includes(method);
-  if (isStateChanging && !isWebhook && !allowAll) {
+  if (isStateChanging && !isWebhook && !isSafepayReturn && !allowAll) {
     if (!origin || !allowedOrigins.includes(origin)) {
       return new Response(JSON.stringify({ ok: false, error: 'origin not allowed' }), {
         status: 403,
@@ -58,8 +62,9 @@ export async function onRequest(context) {
   }
 
   // --- CSRF protection (double-submit cookie) ---
-  // Webhook is exempt (it's authenticated by signature, not cookies).
-  if (isStateChanging && !isWebhook && !allowAll) {
+  // Webhook and the Safepay signed return are exempt (both are authenticated
+  // by HMAC signature, not cookies).
+  if (isStateChanging && !isWebhook && !isSafepayReturn && !allowAll) {
     const cookieHeader = request.headers.get('Cookie') || '';
     const cookieMatch = cookieHeader.match(/(?:^|;\s*)csrf_token=([^;]+)/);
     const cookieToken = cookieMatch ? cookieMatch[1] : '';
