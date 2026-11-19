@@ -5,27 +5,24 @@
  */
 import StoreLayout from '../components/layout/StoreLayout.astro';
 import RunwayHero from '../components/store/RunwayHero.astro';
-import Marquee from '../components/store/Marquee.astro';
 import ProductRail from '../components/store/ProductRail.astro';
-import site from '../../data/catalog/site.json';
 import { newArrivals, products, formatPrice } from '../lib/catalog.js';
 
 const newIn = newArrivals().slice(0, 6);
 const lookItems = ['W001', 'W003'].map((id) => products.find((p) => p.id === id)).filter(Boolean);
 
 const tiles = [
-  { span: 'as-tile-a', img: '/images/garments/w-dress-clay.jpg', kicker: 'The spring edit', title: 'Dresses & Kurtas', href: '/women/dresses', alt: 'Clay linen wrap dress' },
-  { span: 'as-tile-b', img: '/images/garments/m-shirt-slate.jpg', kicker: 'New in', title: 'Shirts & Kurtas', href: '/men/shirts', alt: 'Slate linen shirt' },
-  { span: 'as-tile-c', img: '/images/garments/w-cardigan-olive.jpg', kicker: 'Handloom', title: 'Knitwear', href: '/women/knitwear', alt: 'Olive wool cardigan' },
-  { span: 'as-tile-d', img: '/images/garments/w-coat-sand.jpg', kicker: 'Limited', title: 'Outerwear & Shawls', href: '/women/outerwear', alt: 'Sand quilted shawl coat' },
+  { img: '/images/garments/w-dress-clay.jpg', kicker: 'The spring edit', title: 'Dresses & Kurtas', href: '/women/dresses', alt: 'Clay linen wrap dress' },
+  { img: '/images/garments/m-shirt-slate.jpg', kicker: 'New in', title: 'Shirts & Kurtas', href: '/men/shirts', alt: 'Slate linen shirt' },
+  { img: '/images/garments/w-cardigan-olive.jpg', kicker: 'Handloom', title: 'Knitwear', href: '/women/knitwear', alt: 'Olive wool cardigan' },
+  { img: '/images/garments/w-coat-sand.jpg', kicker: 'Limited', title: 'Outerwear & Shawls', href: '/women/outerwear', alt: 'Sand quilted shawl coat' },
 ];
 ---
 
-<StoreLayout>
+<StoreLayout snap>
   <RunwayHero />
-  <Marquee items={site.marquee} />
 
-  <section class="as-section container" aria-labelledby="edit-title">
+  <section class="as-section container as-snap-section" aria-labelledby="edit-title">
     <div class="as-section-head as-reveal">
       <div>
         <p class="as-kicker">The edit</p>
@@ -33,9 +30,9 @@ const tiles = [
       </div>
       <a class="as-link" href="/women">Shop all</a>
     </div>
-    <div class="as-edit-grid" data-stagger>
+    <div class="as-edit-row" data-stagger>
       {tiles.map((t, i) => (
-        <a class:list={['as-edit-tile', t.span, 'as-reveal']} style={`--i:${i}`} href={t.href}>
+        <a class:list={['as-edit-tile', 'as-reveal']} style={`--i:${i}`} href={t.href}>
           <img src={t.img} alt={t.alt} loading="lazy" width="900" height="1125" />
           <div class="as-edit-label">
             <p class="as-kicker">{t.kicker}</p>
@@ -48,13 +45,14 @@ const tiles = [
   </section>
 
   <ProductRail
+    class="as-snap-section"
     kicker="Fresh off the loom"
     title="New in"
     products={newIn}
     link={{ label: 'View all', href: '/women/new-in' }}
   />
 
-  <section class="as-campaign" aria-label="The campaign">
+  <section class="as-campaign as-snap-section" aria-label="The campaign">
     <img src="/images/look/banner-runway.jpg" alt="Two models walking through a sunlit atelier" loading="lazy" width="2000" height="1125" />
     <div class="as-campaign-copy as-reveal">
       <p class="as-kicker">Spring / Summer campaign</p>
@@ -63,7 +61,7 @@ const tiles = [
     </div>
   </section>
 
-  <section class="as-section container" aria-labelledby="look-title">
+  <section class="as-section container as-snap-section" aria-labelledby="look-title">
     <div class="as-section-head as-reveal">
       <div>
         <p class="as-kicker">Styled</p>

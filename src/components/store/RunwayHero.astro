@@ -1,22 +1,35 @@
 ---
 /**
- * RunwayHero — the signature home hero (design system §6): split model panels
- * with cursor-parallax + hover expansion, kinetic staggered headline, two CTAs.
+ * RunwayHero — one unified cinematic hero (user direction):
+ * crossfading campaign slides with slow Ken Burns ("runway" motion), kinetic
+ * staggered headline, two CTAs, caption + slide indicators, marquee at the
+ * base. Auto-advances slowly; static first frame under reduced motion.
  */
+import Marquee from './Marquee.astro';
 import site from '../../../data/catalog/site.json';
+
 const { hero } = site;
 const words = [hero.line1, hero.line2].join(' ').split(' ');
+const slides = [
+  { img: '/images/look/banner-runway.jpg', caption: 'The campaign — Spring / Summer' },
+  { img: '/images/look/hero-women.jpg', caption: 'The handloom edit — Women' },
+  { img: '/images/look/hero-men.jpg', caption: 'Quiet menswear — Men' },
+];
 ---
 
-<section class="as-hero" aria-label="Spring Summer — the handloom edit">
-  <a class="as-hero-panel" href={hero.women.href} aria-label={hero.women.label}>
-    <img src="/images/look/hero-women.jpg" alt="Woman in ivory handloom kurta, spring campaign" fetchpriority="high" width="1600" height="1000" />
-    <span class="as-hero-tag as-kicker" style="color:var(--as-paper)">{hero.women.label}</span>
-  </a>
-  <a class="as-hero-panel" href={hero.men.href} aria-label={hero.men.label}>
-    <img src="/images/look/hero-men.jpg" alt="Man in slate linen shirt, spring campaign" fetchpriority="high" width="1600" height="1000" />
-    <span class="as-hero-tag as-kicker" style="color:var(--as-paper)">{hero.men.label}</span>
-  </a>
+<section class="as-hero as-snap-section" data-hero aria-label="Spring Summer — the handloom edit">
+  <div class="as-hero-media" data-hero-media>
+    {slides.map((s, i) => (
+      <img
+        class:list={['as-hero-slide', { 'is-active': i === 0 }]}
+        src={s.img}
+        alt={i === 0 ? 'Two models in handloom linen on a sunlit runway' : ''}
+        fetchpriority={i === 0 ? 'high' : 'auto'}
+        width="2000" height="1125"
+      />
+    ))}
+    <div class="as-hero-grade" aria-hidden="true"></div>
+  </div>
 
   <div class="as-hero-copy">
     <p class="as-kicker">{hero.kicker}</p>
@@ -29,10 +42,72 @@ const words = [hero.line1, hero.line2].join(' ').split(' ');
       ))}
     </h1>
     <div class="as-hero-actions">
-      <a class="as-link as-link--light" href={hero.women.href}>{hero.women.label}</a>
-      <a class="as-link as-link--light" href={hero.men.href}>{hero.men.label}</a>
+      <a class="as-btn as-btn--light" href={hero.women.href}>{hero.women.label}</a>
+      <a class="as-btn as-btn--light" href={hero.men.href}>{hero.men.label}</a>
     </div>
   </div>
 
-  <p class="as-hero-scroll">Scroll</p>
+  <div class="as-hero-foot">
+    <p class="as-hero-caption" data-hero-caption>{slides[0].caption}</p>
+    <div class="as-hero-cue" aria-hidden="true">
+      <span class="as-hero-cue-line"></span>
+      <span>Scroll</span>
+    </div>
+    <div class="as-hero-dots" role="tablist" aria-label="Campaign slides">
+      {slides.map((s, i) => (
+        <button
+          type="button"
+          class:list={['as-hero-dot', { 'is-active': i === 0 }]}
+          data-slide={i}
+          data-caption={s.caption}
+          aria-label={`Show ${s.caption}`}
+        ></button>
+      ))}
+    </div>
+  </div>
+
+  <div class="as-marquee-wrap"><Marquee items={site.marquee} /></div>
 </section>
+
+<script>
+  // Hero slideshow: slow auto-advance (6s), manual dots, caption swap.
+  // Reduced motion: first slide stays, no animation.
+  (() => {
+    const hero = document.querySelector('[data-hero]');
+    if (!hero) return;
+    const slides = [...hero.querySelectorAll('.as-hero-slide')];
+    const dots = [...hero.querySelectorAll('.as-hero-dot')];
+    const caption = hero.querySelector('[data-hero-caption]');
+    const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    let current = 0;
+    let timer;
+
+    const show = (index) => {
+      current = (index + slides.length) % slides.length;
+      slides.forEach((s, i) => s.classList.toggle('is-active', i === current));
+      dots.forEach((d, i) => d.classList.toggle('is-active', i === current));
+      caption.textContent = dots[current].dataset.caption;
+    };
+    const start = () => {
+      if (reduce) return;
+      clearInterval(timer);
+      timer = setInterval(() => show(current + 1), 6000);
+    };
+    dots.forEach((dot) => {
+      dot.addEventListener('click', () => { show(Number(dot.dataset.slide)); start(); });
+    });
+    start();
+
+    // Subtle cursor parallax on the media (±8px), design-system hero pattern.
+    if (!reduce && matchMedia('(hover:hover)').matches) {
+      const media = hero.querySelector('[data-hero-media]');
+      hero.addEventListener('mousemove', (e) => {
+        const r = hero.getBoundingClientRect();
+        const x = (e.clientX - r.left) / r.width - 0.5;
+        const y = (e.clientY - r.top) / r.height - 0.5;
+        media.style.translate = `${x * -14}px ${y * -10}px`;
+      });
+      hero.addEventListener('mouseleave', () => { media.style.translate = '0 0'; });
+    }
+  })();
+</script>

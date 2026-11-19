@@ -4,10 +4,10 @@
  * Usage: <ProductRail title="New in" products={...} link={{label, href}} />
  */
 import ProductCard from './ProductCard.astro';
-const { title, kicker, products = [], link } = Astro.props;
+const { title, kicker, products = [], link, class: cls } = Astro.props;
 ---
 
-<section class="as-section container">
+<section class:list={['as-section container', cls]}>
   <div class="as-section-head as-reveal">
     <div>
       {kicker && <p class="as-kicker">{kicker}</p>}
