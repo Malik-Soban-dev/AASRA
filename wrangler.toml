@@ -36,10 +36,12 @@ TAX_REGISTRATION_NO = ""                            # Set verified tax registrat
 # EMAIL_PROVIDER = "resend"                         # Only set after provider implementation + credentials are ready
 EMAIL_FROM = "orders@aasra.shop"
 EMAIL_FROM_NAME = "AASRA"
-SAFEPAY_ENABLED = "false"                           # Enable only after merchant onboarding and contract verification
-SAFEPAY_PROTOCOL_VERIFIED = "false"                # Must remain false until Safepay confirms API + webhook contract
-# Configure SAFEPAY_CHECKOUT_ENDPOINT only from Safepay merchant documentation.
-# Required secrets: SAFEPAY_SECRET_KEY, SAFEPAY_WEBHOOK_SECRET, TURNSTILE_SECRET_KEY
+SAFEPAY_ENABLED = "true"                            # Hosted checkout; degrades to 503 if SAFEPAY_SECRET_KEY is absent
+SAFEPAY_PROTOCOL_VERIFIED = "true"                  # Contract verified against Safepay docs 2026-11 + scripts/safepay-smoke.js
+SAFEPAY_BASE_URL = "https://sandbox.api.getsafepay.com"   # sandbox — switch to https://api.getsafepay.com for live
+SAFEPAY_CHECKOUT_URL = "https://sandbox.getsafepay.com"   # sandbox — switch to https://getsafepay.com for live
+# Required secrets: SAFEPAY_SECRET_KEY, TURNSTILE_SECRET_KEY
+# Optional secrets: SAFEPAY_WEBHOOK_SECRET (webhook verification), SAFEPAY_V1_SECRET
 # Required public variable: TURNSTILE_SITE_KEY
 PAYFAST_ENABLED = "false"
 

@@ -1,0 +1,13 @@
+# Safepay sandbox credentials — local development only.
+# Copy this file to `.dev.vars` (gitignored — NEVER commit real keys).
+# Production: set the same names as Worker secrets, e.g.
+#   wrangler secret put SAFEPAY_SECRET_KEY
+# (or Cloudflare dashboard → Workers → aasra → Settings → Variables and Secrets)
+SAFEPAY_ENABLED="true"
+SAFEPAY_PROTOCOL_VERIFIED="true"
+SAFEPAY_SECRET_KEY="pk_test_or_sk_test_REPLACE_ME"
+SAFEPAY_V1_SECRET="REPLACE_ME_if_dashboard_shows_a_separate_v1_secret"
+SAFEPAY_WEBHOOK_SECRET="REPLACE_ME_from_Developer_Endpoints_page"
+# Sandbox hosts are the defaults; uncomment for production:
+# SAFEPAY_BASE_URL="https://api.getsafepay.com"
+# SAFEPAY_CHECKOUT_URL="https://getsafepay.com"

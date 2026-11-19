@@ -18,7 +18,7 @@ import {
   validateCart,
   sanitizeString,
 } from '../functions/lib/validation.js';
-import { verifyWebhookSignature, createCheckoutSession } from '../functions/lib/gateway.js';
+import { verifyWebhookSignature, verifyRedirectSignature, createCheckoutSession } from '../functions/lib/gateway.js';
 import { buildInvoiceHtml } from '../functions/lib/invoice.js';
 import {
   orderReceivedEmail,
@@ -458,6 +458,51 @@ t('wrapEmail produces full HTML layout', () => {
   assert.ok(e.html.includes('Test body'), 'contains body');
   assert.ok(e.html.includes('orders@example.com'), 'contains from email');
   assert.ok(e.html.includes('mailto:'), 'contains an email contact link');
+});
+
+// ============================================================
+// Safepay signature verification (contract lock, 2026-11)
+// ============================================================
+import { createHmac } from 'node:crypto';
+
+t('webhook signature: HMAC-SHA512 over raw body verifies', async () => {
+  const env = { SAFEPAY_WEBHOOK_SECRET: 'whsec_test_123' };
+  const body = JSON.stringify({ event: 'payment:created', data: { tracker: 't1' } });
+  const sig = createHmac('sha512', 'whsec_test_123').update(body).digest('hex');
+  assert.strictEqual(await verifyWebhookSignature(env, body, sig), true, 'valid sha512 sig accepted');
+  assert.strictEqual(await verifyWebhookSignature(env, body, 'deadbeef'), false, 'wrong sig rejected');
+  assert.strictEqual(await verifyWebhookSignature(env, body, null), false, 'missing sig rejected');
+  // raw-body rule: same JSON with different whitespace must NOT verify
+  assert.strictEqual(await verifyWebhookSignature(env, body + ' ', sig), false, 'raw body is exact');
+});
+
+t('webhook signature: SHA-256 variant accepted (endpoint configs vary)', async () => {
+  const env = { SAFEPAY_WEBHOOK_SECRET: 'whsec_test_123' };
+  const body = '{"a":1}';
+  const sig = createHmac('sha256', 'whsec_test_123').update(body).digest('hex');
+  assert.strictEqual(await verifyWebhookSignature(env, body, sig), true);
+});
+
+t('webhook signature: fails closed without a configured secret', async () => {
+  const sig = createHmac('sha512', 'x').update('body').digest('hex');
+  assert.strictEqual(await verifyWebhookSignature({}, 'body', sig), false, 'no secret -> reject');
+  assert.strictEqual(await verifyWebhookSignature({ SAFEPAY_WEBHOOK_SECRET: '' }, 'body', sig), false);
+});
+
+t('redirect signature: HMAC-SHA256 hex of tracker with v1 secret verifies', async () => {
+  const env = { SAFEPAY_V1_SECRET: 'v1_secret', SAFEPAY_SECRET_KEY: 'sk_test' };
+  const tracker = '123456789abcdef';
+  const sig = createHmac('sha256', 'v1_secret').update(tracker).digest('hex');
+  assert.strictEqual(await verifyRedirectSignature(env, tracker, sig), true, 'valid sig accepted');
+  assert.strictEqual(await verifyRedirectSignature(env, tracker, 'ff'.repeat(32)), false, 'wrong sig rejected');
+  assert.strictEqual(await verifyRedirectSignature(env, tracker, 'not-hex-at-all'), false, 'malformed sig rejected');
+  // falls back to the secret key when no separate v1 secret is configured
+  const sig2 = createHmac('sha256', 'sk_test').update(tracker).digest('hex');
+  assert.strictEqual(
+    await verifyRedirectSignature({ SAFEPAY_SECRET_KEY: 'sk_test' }, tracker, sig2),
+    true,
+    'secret-key fallback verifies'
+  );
 });
 
 // ============================================================
