@@ -78,12 +78,20 @@ style, one card style, one input style. No one-off components.
 
 - Easings: `--as-ease: cubic-bezier(.2,.7,.2,1)` (default), `--as-spring: cubic-bezier(.34,1.56,.64,1)` (interactive pops).
 - Durations: 200ms (hover) · 400ms (panels) · 700ms (reveals).
+- **Full-screen section scroll (home):** native CSS scroll-snap (`y mandatory`),
+  one screen per section (`as-snap-section`). Never JS scroll-hijacking. Snap is
+  disabled below 860px and under `prefers-reduced-motion`.
+- **Hero (home):** one unified cinematic hero — campaign slideshow with slow
+  Ken Burns (auto-advance ≥6s, manual dots, static first frame under reduced
+  motion), kinetic word-rise headline, cursor parallax on the media (±12px),
+  marquee grounded at the base.
 - Patterns (max **one signature interaction per section**):
   - Reveal: fade + 24px rise, staggered 60ms (IntersectionObserver).
-  - Hero: cursor-parallax on images (±10px), staggered word reveal on the headline.
+  - Scroll-settle: images ease out of a 1.08 zoom as their section arrives.
   - Marquee: infinite CSS translate, pause on hover.
   - Cards: image scale 1.04 on hover, quick-add slides up from image bottom.
   - Header: transparent over hero → solid paper after 40px scroll.
+  - Scroll progress: 2px clay line fixed at the top of the viewport.
 - `prefers-reduced-motion: reduce` disables all of it (final state shown).
 - Never: bounce on text, parallax on every section, loading curtains, scroll-jacking.
 
@@ -118,5 +126,7 @@ style, one card style, one input style. No one-off components.
    edit the owning file instead.
 5. No ad-hoc values: every value comes from these tokens.
 6. No more than two typefaces; no text-shadows except on image overlays.
-7. No carousel autoplay; no infinite scroll; no dark patterns.
+7. No autoplay product carousels; hero campaign slideshows may auto-advance
+   slowly (≥6s) with manual controls and a reduced-motion static fallback.
+   No infinite scroll; no dark patterns.
 8. Nothing ships that research didn't support and this document doesn't define.
