@@ -557,15 +557,38 @@ ul, ol { list-style: none; }
    ========================================================================== */
 html.as-snap {
   scroll-snap-type: y mandatory;
+  scroll-behavior: smooth;
 }
+/* One section = exactly one screen: fixed height, content fitted inside,
+   never over the screen. `scroll-snap-stop: always` = one gesture steps one
+   section (true section-to-section); smooth behavior animates the step. */
 .as-snap-section {
   scroll-snap-align: start;
-  min-height: 100vh;
+  scroll-snap-stop: always;
+  height: 100dvh;
+  max-height: 100dvh;
+  overflow: hidden;
+  box-sizing: border-box;
+  padding-block: 96px var(--as-s6);
   display: flex;
   flex-direction: column;
   justify-content: center;
 }
-html.as-snap .as-campaign { min-height: 100vh; }
+
+/* Content fitted to the screen so nothing overflows a snap section */
+html.as-snap .as-section-head { margin-bottom: var(--as-s5); }
+html.as-snap .as-edit-row .as-edit-tile {
+  aspect-ratio: auto;
+  height: min(50vh, 500px);
+}
+html.as-snap .as-card-media {
+  aspect-ratio: auto;
+  height: min(44vh, 420px);
+}
+html.as-snap .as-look-media {
+  aspect-ratio: auto;
+  height: min(58vh, 580px);
+}
 
 /* Scroll progress line (clay, under the fixed header) */
 .as-progress {
