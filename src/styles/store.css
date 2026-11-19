@@ -296,7 +296,7 @@ ul, ol { list-style: none; }
 /* ---------- product card & rail ---------- */
 .as-card { position: relative; }
 .as-card-media {
-  position: relative; aspect-ratio: 3 / 4; overflow: hidden; background: var(--as-sand);
+  display: block; position: relative; aspect-ratio: 3 / 4; overflow: hidden; background: var(--as-sand);
 }
 .as-card-media img {
   width: 100%; height: 100%; object-fit: cover;
@@ -317,6 +317,10 @@ ul, ol { list-style: none; }
   transition: transform var(--as-med) var(--as-ease);
 }
 .as-card:hover .as-card-quick { transform: none; }
+/* Touch screens have no hover: keep quick-add visible so phone shoppers can add to bag. */
+@media (hover: none) {
+  .as-card-quick { transform: none; }
+}
 .as-card-quick .as-btn { background: var(--as-paper); border-color: var(--as-paper); min-height: 42px; padding: 0.7rem 1rem; }
 .as-card-quick .as-btn:hover { background: var(--as-ink); border-color: var(--as-ink); color: var(--as-paper); }
 .as-card-body { padding: var(--as-s4) 0 0; }
@@ -434,6 +438,9 @@ ul, ol { list-style: none; }
 }
 .as-swatch.is-active { border-color: var(--as-ink); }
 .as-sizes { display: flex; flex-wrap: wrap; gap: var(--as-s2); }
+/* Quick-add sizes sit over the photo: give them a solid paper ground so they stay legible. */
+.as-card-quick .as-size { background: var(--as-paper); border-color: var(--as-paper); color: var(--as-ink); }
+.as-card-quick .as-size:hover { background: var(--as-ink); border-color: var(--as-ink); color: var(--as-paper); }
 .as-size {
   min-width: 48px; min-height: 48px; padding: 0 0.85em;
   border: 1px solid var(--as-line); border-radius: var(--as-radius);
@@ -537,6 +544,8 @@ ul, ol { list-style: none; }
   .as-stickybar.is-on { display: flex; align-items: center; justify-content: space-between; gap: var(--as-s4); }
   .as-hero-actions { flex-direction: column; gap: var(--as-s4); }
   .as-section-head { flex-direction: column; align-items: flex-start; gap: var(--as-s4); }
+  .as-edit-label { left: var(--as-s4); right: var(--as-s4); bottom: var(--as-s4); }
+  .as-edit-label h3 { font-size: 1.35rem; overflow-wrap: break-word; }
 }
 
 /* ---------- reduced motion ---------- */
