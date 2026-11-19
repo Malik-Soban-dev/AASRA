@@ -92,7 +92,7 @@ function transitionOrder(order, kind) {
 
 /**
  * Shared, idempotent payment settlement — used by the webhook AND by the
- * HMAC-signed server-to-server payment return (/api/safepay/return).
+ * HMAC-signed server-to-server payment return (/api/safepay-return).
  * Every caller must have authenticated the payload before invoking this.
  *
  * @returns {{status: number, body: object}}

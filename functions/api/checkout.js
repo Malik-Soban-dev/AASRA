@@ -206,7 +206,7 @@ export async function onRequestPost(context) {
   }
   // Safepay: hosted checkout needs the secret key + verified protocol. The
   // webhook secret is optional here — the signed server-to-server return
-  // (/api/safepay/return) settles payments, and webhooks fail closed without
+  // (/api/safepay-return) settles payments, and webhooks fail closed without
   // their shared secret.
   if (env.SAFEPAY_ENABLED !== 'true' || !env.SAFEPAY_SECRET_KEY || env.SAFEPAY_PROTOCOL_VERIFIED !== 'true') {
     return errorResponse('checkout_unavailable:safepay_not_fully_configured', 503, 'payment_not_configured');

@@ -1,5 +1,5 @@
 /**
- * POST /api/safepay/return  — Safepay's signed server-to-server payment return.
+ * POST /api/safepay-return  — Safepay's signed server-to-server payment return.
  *
  * After payment, Safepay POSTs { tracker, token, orderId, ref, sig } where
  * sig = HMAC-SHA256 hex of the tracker token keyed with the v1 secret

@@ -36,7 +36,7 @@ const reference = `SMOKE-${Date.now().toString(36).toUpperCase()}`;
 const payload = {
   order: { reference },
   invoice: { amount: Math.round(amountPkr * 100), currency: 'PKR' },
-  redirect_url: 'https://aasra.shop/api/safepay/return',
+  redirect_url: 'https://aasra.shop/api/safepay-return',
   cancel_url: 'https://aasra.shop/payment-cancelled',
   webhook: true,
 };
