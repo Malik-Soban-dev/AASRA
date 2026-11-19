@@ -208,7 +208,7 @@ export async function onRequestPost(context) {
   // webhook secret is optional here — the signed server-to-server return
   // (/api/safepay-return) settles payments, and webhooks fail closed without
   // their shared secret.
-  if (env.SAFEPAY_ENABLED !== 'true' || !env.SAFEPAY_SECRET_KEY || env.SAFEPAY_PROTOCOL_VERIFIED !== 'true') {
+  if (env.SAFEPAY_ENABLED !== 'true' || !env.SAFEPAY_SECRET_KEY || !env.SAFEPAY_API_KEY || env.SAFEPAY_PROTOCOL_VERIFIED !== 'true') {
     return errorResponse('checkout_unavailable:safepay_not_fully_configured', 503, 'payment_not_configured');
   }
 
