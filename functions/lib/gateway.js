@@ -1,35 +1,52 @@
 /**
  * Payment gateway adapter for AASRA — Safepay (hosted checkout only).
  *
- * Protocol verified against Safepay's merchant documentation (2026-11):
- *  - Sessions are "trackers": POST {base}/tracker/v1/ authenticated with the
- *    X-SFPY-MERCHANT-SECRET header (the secret key). Card data NEVER touches
- *    this Worker — customers pay on Safepay's hosted checkout page.
- *  - Amounts are sent in the LOWEST denomination (paisa = PKR × 100).
- *  - Hosted checkout URL: {checkoutHost}/checkout?token={tracker}.
- *  - After payment, Safepay makes a server-to-server POST to redirect_url with
- *    { tracker, token, orderId, ref, sig } where sig = HMAC-SHA256 hex of the
- *    tracker token keyed with the v1 secret. The browser redirect is
- *    informational; only a verified signature settles an order.
- *  - Webhooks carry X-SFPY-SIGNATURE over the raw body (HMAC-SHA512 or
- *    HMAC-SHA256 depending on endpoint configuration; both are accepted,
- *    keyed by the webhook shared secret, compared constant-time).
+ * Protocol verified against Safepay's official Python SDK
+ * (getsafepay/safepay-python, client.py — the Express Checkout flow):
  *
- * Sandbox: sandbox.api.getsafepay.com / sandbox.getsafepay.com
- * Live:    api.getsafepay.com / getsafepay.com  (set SAFEPAY_BASE_URL +
- *          SAFEPAY_CHECKOUT_URL for production; keep sandbox for testing).
+ *  1. Create a payment session (tracker):
+ *       POST {base}/order/payments/v3/
+ *       Headers: X-SFPY-MERCHANT-SECRET: {secret key}
+ *       Body: { merchant_api_key: "sec_..." (public key), intent: "CYBERSOURCE",
+ *               mode: "payment", currency: "PKR", amount: <paisa>,
+ *               include_fees: false, metadata: { order_id } }
+ *       Response: data.tracker.token  ("track_...")
+ *  2. Create a short-lived auth token (TBT):
+ *       POST {base}/client/passport/v1/token   (same secret header)
+ *       Response: data = "<token string>"
+ *  3. Hosted checkout URL (no network call):
+ *       {checkoutBase}/embedded/?tbt=...&tracker=...&environment=sandbox
+ *         &source=hosted&redirect_url=...&cancel_url=...&order_id=...
+ *
+ * Card data NEVER touches this Worker — customers pay on Safepay's hosted
+ * checkout page. Amounts are sent in the LOWEST denomination (paisa).
+ *
+ * After payment, Safepay POSTs server-to-server to redirect_url with
+ * { tracker, sig, ... } where sig = HMAC-SHA256 hex of the tracker token
+ * keyed with the v1 secret. Only a verified signature settles an order.
+ * Webhooks carry X-SFPY-SIGNATURE = HMAC-SHA512 hex of the raw body keyed
+ * by the webhook shared secret (SHA-256 variant also accepted).
+ *
+ * Sandbox:  API + checkout both on sandbox.api.getsafepay.com
+ * Live:     API api.getsafepay.com, checkout getsafepay.com
+ *           (set SAFEPAY_BASE_URL / SAFEPAY_CHECKOUT_URL for production).
  */
 
 // ---- Configuration (set via wrangler secrets / env vars) ----
 export function gatewayConfig(env) {
   const baseUrl = env.SAFEPAY_BASE_URL || 'https://sandbox.api.getsafepay.com';
+  const isSandbox = baseUrl.includes('sandbox');
   return {
     provider: env.PAYFAST_ENABLED === 'true' ? 'payfast' : 'safepay',
     enabled: env.SAFEPAY_ENABLED === 'true',
     baseUrl,
-    checkoutHost: env.SAFEPAY_CHECKOUT_URL || 'https://sandbox.getsafepay.com',
-    trackerEndpoint: env.SAFEPAY_CHECKOUT_ENDPOINT || `${baseUrl}/tracker/v1/`,
+    // Sandbox serves API + checkout from the same host; live splits them.
+    checkoutHost: env.SAFEPAY_CHECKOUT_URL || (isSandbox ? baseUrl : 'https://getsafepay.com'),
+    environment: env.SAFEPAY_ENVIRONMENT || (isSandbox ? 'sandbox' : 'production'),
     protocolVerified: env.SAFEPAY_PROTOCOL_VERIFIED === 'true',
+    // Public key ("sec_...") — sent as merchant_api_key when creating sessions.
+    apiKey: env.SAFEPAY_API_KEY || '',
+    // Secret key — sent as X-SFPY-MERCHANT-SECRET on every API call.
     secretKey: env.SAFEPAY_SECRET_KEY || '',
     // The "v1 secret" signs the payment-return POST. Older accounts use the
     // secret key for this; a dedicated SAFEPAY_V1_SECRET takes precedence.
@@ -64,8 +81,26 @@ function timingSafeEqual(a, b) {
   return diff === 0;
 }
 
+async function safepayPost(cfg, path, body) {
+  const response = await fetch(`${cfg.baseUrl}${path}`, {
+    method: 'POST',
+    headers: {
+      'X-SFPY-MERCHANT-SECRET': cfg.secretKey,
+      'Content-Type': 'application/json',
+      Accept: 'application/json',
+    },
+    body: body === undefined ? undefined : JSON.stringify(body),
+  });
+  if (!response.ok) throw new Error(`safepay_api_http_${response.status}`);
+  const json = await response.json();
+  if (!json || typeof json !== 'object' || !('data' in json)) {
+    throw new Error('safepay_response_unexpected');
+  }
+  return json.data;
+}
+
 /**
- * Create a hosted checkout session (Safepay tracker).
+ * Create a hosted checkout session (Safepay Express Checkout).
  * Returns { provider, checkoutUrl, trackerToken, amount, currency, expiresAt }.
  * @param {object} env
  * @param {object} params { orderId, amountPkr, currency, customerEmail, customerPhone, reference, description, kind }
@@ -74,52 +109,58 @@ export async function createCheckoutSession(env, params) {
   const cfg = gatewayConfig(env);
   // Never manufacture a tracker or a same-site URL: that would look like a
   // successful payment session even though no gateway was contacted.
-  if (!cfg.enabled || !cfg.secretKey) throw new Error('safepay_not_configured');
+  if (!cfg.enabled || !cfg.secretKey || !cfg.apiKey) throw new Error('safepay_not_configured');
   if (!cfg.protocolVerified) throw new Error('safepay_protocol_not_verified');
-  assertHttps(cfg.trackerEndpoint, 'safepay_checkout_endpoint');
-  const checkoutHost = assertHttps(cfg.checkoutHost, 'safepay_checkout_url');
+  assertHttps(cfg.baseUrl, 'safepay_api_url');
+  assertHttps(cfg.checkoutHost, 'safepay_checkout_url');
 
   const amountPaisa = Math.round(Number(params.amountPkr) * 100);
   if (!Number.isFinite(amountPaisa) || amountPaisa <= 0) throw new Error('safepay_amount_invalid');
+  const currency = params.currency || 'PKR';
+  const orderId = String(params.orderId);
 
-  const response = await fetch(cfg.trackerEndpoint, {
-    method: 'POST',
-    headers: {
-      'X-SFPY-MERCHANT-SECRET': cfg.secretKey,
-      'Content-Type': 'application/json',
-      Accept: 'application/json',
-    },
-    body: JSON.stringify({
-      order: { reference: params.reference || params.orderId },
-      invoice: { amount: amountPaisa, currency: params.currency || 'PKR' },
-      redirect_url: `${cfg.returnUrl}/api/safepay-return`,
-      cancel_url: `${cfg.returnUrl}/payment-cancelled?order=${encodeURIComponent(params.orderId)}`,
-      webhook: true,
-    }),
+  // 1. Payment session (tracker).
+  const session = await safepayPost(cfg, '/order/payments/v3/', {
+    merchant_api_key: cfg.apiKey,
+    intent: 'CYBERSOURCE',
+    mode: 'payment',
+    currency,
+    amount: amountPaisa,
+    include_fees: false,
+    metadata: { order_id: orderId },
   });
-  if (!response.ok) throw new Error(`safepay_session_http_${response.status}`);
-  const data = await response.json();
-  const body = data.data || data;
-  const trackerToken = body.token || body.tracker || body.tracker_token;
+  const trackerToken = session && session.tracker && session.tracker.token;
   if (!trackerToken) throw new Error('safepay_response_missing_tracker');
 
-  const hostedUrl = new URL('/checkout', cfg.checkoutHost);
-  hostedUrl.searchParams.set('token', String(trackerToken));
+  // 2. Short-lived auth token (TBT) for the hosted page.
+  const tbt = await safepayPost(cfg, '/client/passport/v1/token');
+  if (typeof tbt !== 'string' || !tbt) throw new Error('safepay_response_missing_auth_token');
+
+  // 3. Hosted checkout URL (pure string building — no network call).
+  const hostedUrl = new URL('/embedded/', cfg.checkoutHost);
+  hostedUrl.searchParams.set('tbt', tbt);
+  hostedUrl.searchParams.set('tracker', String(trackerToken));
+  hostedUrl.searchParams.set('environment', cfg.environment);
+  hostedUrl.searchParams.set('source', 'hosted');
+  hostedUrl.searchParams.set('redirect_url', `${cfg.returnUrl}/api/safepay-return`);
+  hostedUrl.searchParams.set('cancel_url', `${cfg.returnUrl}/payment-cancelled?order=${encodeURIComponent(orderId)}`);
+  hostedUrl.searchParams.set('order_id', orderId);
+
   return {
     provider: 'safepay',
     checkoutUrl: hostedUrl.toString(),
     trackerToken: String(trackerToken),
     amount: Math.round(Number(params.amountPkr)),
-    currency: params.currency || 'PKR',
-    expiresAt: body.expires_at || null,
+    currency,
+    expiresAt: (session.tracker && session.tracker.expires_at) || null,
   };
 }
 
 /**
  * Verify a webhook signature (X-SFPY-SIGNATURE over the raw request body).
- * Safepay endpoints sign with HMAC-SHA512 or HMAC-SHA256 depending on
- * configuration; both are checked against the webhook shared secret and
- * compared constant-time.
+ * Safepay signs with HMAC-SHA512; the SHA-256 variant is also accepted for
+ * endpoints configured differently. Both are checked against the webhook
+ * shared secret and compared constant-time.
  */
 export async function verifyWebhookSignature(env, rawBody, signature) {
   const cfg = gatewayConfig(env);

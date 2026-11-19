@@ -1,10 +1,17 @@
 #!/usr/bin/env node
 /**
- * safepay-smoke.js — create a real sandbox tracker and print the hosted
- * checkout URL. Proves the integration end-to-end before any customer sees it.
+ * safepay-smoke.js — run Safepay's real Express Checkout flow in the sandbox
+ * and print the hosted checkout URL. Proves the integration end-to-end
+ * before any customer sees it.
+ *
+ * Mirrors Safepay's official SDK (getsafepay/safepay-python client.py):
+ *   1. POST /order/payments/v3/        -> tracker token
+ *   2. POST /client/passport/v1/token  -> auth token (TBT)
+ *   3. Build {checkout}/embedded/?tbt=...&tracker=...&environment=...
  *
  * Usage:  node scripts/safepay-smoke.js [amountPkr]
  * Keys:   from env, or from .dev.vars (gitignored) in the repo root.
+ *         Needs SAFEPAY_API_KEY (sec_...) + SAFEPAY_SECRET_KEY.
  */
 import { readFileSync, existsSync } from 'node:fs';
 import { join, dirname } from 'node:path';
@@ -23,45 +30,64 @@ if (existsSync(devVars)) {
 }
 
 const baseUrl = env.SAFEPAY_BASE_URL || 'https://sandbox.api.getsafepay.com';
-const checkoutHost = env.SAFEPAY_CHECKOUT_URL || 'https://sandbox.getsafepay.com';
+const checkoutBase = env.SAFEPAY_CHECKOUT_URL || baseUrl;
+const environment = env.SAFEPAY_ENVIRONMENT || (baseUrl.includes('sandbox') ? 'sandbox' : 'production');
+const apiKey = env.SAFEPAY_API_KEY;
 const secret = env.SAFEPAY_SECRET_KEY;
 const amountPkr = Number(process.argv[2] || 100);
 
-if (!secret || secret.includes('REPLACE_ME')) {
-  console.error('SAFEPAY_SECRET_KEY missing — copy .dev.vars.example to .dev.vars and fill in your sandbox keys.');
+if (!secret || secret.includes('REPLACE_ME') || !apiKey || apiKey.includes('REPLACE_ME')) {
+  console.error('SAFEPAY_API_KEY / SAFEPAY_SECRET_KEY missing — copy .dev.vars.example to .dev.vars and fill in your sandbox keys.');
   process.exit(1);
 }
 
-const reference = `SMOKE-${Date.now().toString(36).toUpperCase()}`;
-const payload = {
-  order: { reference },
-  invoice: { amount: Math.round(amountPkr * 100), currency: 'PKR' },
-  redirect_url: 'https://aasra.shop/api/safepay-return',
-  cancel_url: 'https://aasra.shop/payment-cancelled',
-  webhook: true,
-};
-
-console.log(`POST ${baseUrl}/tracker/v1/  reference=${reference} amount=${amountPkr} PKR (${payload.invoice.amount} paisa)`);
-const res = await fetch(`${baseUrl}/tracker/v1/`, {
-  method: 'POST',
-  headers: {
-    'X-SFPY-MERCHANT-SECRET': secret,
-    'Content-Type': 'application/json',
-    Accept: 'application/json',
-  },
-  body: JSON.stringify(payload),
-});
-const text = await res.text();
-console.log(`HTTP ${res.status}`);
-try {
-  const data = JSON.parse(text);
-  console.log(JSON.stringify(data, null, 2));
-  const token = (data.data && (data.data.token || data.data.tracker)) || data.token || data.tracker;
-  if (token) {
-    console.log(`\nHosted checkout URL:\n${checkoutHost}/checkout?token=${token}`);
-    console.log('\nOpen it in a browser — the sandbox checkout should render with test payment methods.');
+async function safepayPost(path, body) {
+  const res = await fetch(`${baseUrl}${path}`, {
+    method: 'POST',
+    headers: {
+      'X-SFPY-MERCHANT-SECRET': secret,
+      'Content-Type': 'application/json',
+      Accept: 'application/json',
+    },
+    body: body === undefined ? undefined : JSON.stringify(body),
+  });
+  const text = await res.text();
+  console.log(`POST ${path} -> HTTP ${res.status}`);
+  if (!res.ok) {
+    console.log(text);
+    process.exit(1);
   }
-} catch {
-  console.log(text);
+  return JSON.parse(text).data;
 }
-process.exit(res.ok ? 0 : 1);
+
+const orderId = `SMOKE-${Date.now().toString(36).toUpperCase()}`;
+const amountPaisa = Math.round(amountPkr * 100);
+
+console.log(`1) Creating payment session: ${amountPkr} PKR (${amountPaisa} paisa), order ${orderId}`);
+const session = await safepayPost('/order/payments/v3/', {
+  merchant_api_key: apiKey,
+  intent: 'CYBERSOURCE',
+  mode: 'payment',
+  currency: 'PKR',
+  amount: amountPaisa,
+  include_fees: false,
+  metadata: { order_id: orderId },
+});
+const tracker = session.tracker.token;
+console.log(`   tracker: ${tracker} (state: ${session.tracker.state})`);
+
+console.log('2) Creating auth token (TBT)...');
+const tbt = await safepayPost('/client/passport/v1/token');
+console.log(`   tbt: ${String(tbt).slice(0, 24)}...`);
+
+const url = new URL('/embedded/', checkoutBase);
+url.searchParams.set('tbt', tbt);
+url.searchParams.set('tracker', tracker);
+url.searchParams.set('environment', environment);
+url.searchParams.set('source', 'hosted');
+url.searchParams.set('redirect_url', 'https://aasra.shop/api/safepay-return');
+url.searchParams.set('cancel_url', 'https://aasra.shop/payment-cancelled');
+url.searchParams.set('order_id', orderId);
+
+console.log(`\nHosted checkout URL:\n${url.toString()}`);
+console.log('\nOpen it in a browser — the sandbox checkout should render with test payment methods.');
