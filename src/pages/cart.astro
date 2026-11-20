@@ -1,78 +1,136 @@
 ---
-import Layout from '../components/Layout.astro';
-import { formatPKR } from '../lib/products.js';
+import StoreLayout from '../components/layout/StoreLayout.astro';
+import '../styles/store-commerce.css';
+import shipping from '../../data/shipping-rates.json';
+
+const threshold = shipping.free_shipping_threshold_pkr;
+const fees = shipping.rates.map((r) => r.fee_pkr);
+const minFee = Math.min(...fees);
+const maxFee = Math.max(...fees);
 ---
 
-<Layout title="Cart — AASRA" description="Review your cart before checkout.">
+<StoreLayout title="Your bag — AASRA" description="Review your bag before checkout. Free shipping above PKR 20,000.">
+  <section class="as-cc">
+    <div class="as-cc-wrap">
+      <p class="as-kicker">Your bag</p>
+      <h1 class="as-display-l as-cc-title">Bag</h1>
 
-  <section class="section">
-    <div class="container">
-      <h1>Your cart</h1>
-
-      <div id="cart-content">
-        <div class="cart-empty">Your cart is empty.</div>
-      </div>
-
-      <div id="cart-summary" style="margin-top:2rem; display:none;">
-        <div style="border:1px solid var(--border); padding:1.5rem; max-width:460px;">
-          <div style="display:flex; justify-content:space-between; margin-bottom:0.5rem; font-size:0.85rem; color:var(--muted);">
-            <span>Subtotal</span> <span id="summary-subtotal">0 PKR</span>
+      <div class="as-cc-grid">
+        <div class="as-cc-main">
+          <div id="cart-content" aria-live="polite">
+            <p class="as-cc-empty">Your bag is empty. <a href="/shop">Continue shopping</a></p>
           </div>
-          <div style="display:flex; justify-content:space-between; margin-bottom:0.5rem; font-size:0.85rem; color:var(--muted);">
-            <span>Shipping</span> <span id="summary-shipping">calculated at checkout</span>
-          </div>
-          <div style="display:flex; justify-content:space-between; margin-bottom:1rem; font-size:1rem; font-weight:600; border-top:1px solid var(--border); padding-top:0.75rem;">
-            <span>Total</span> <span id="summary-total">0 PKR</span>
-          </div>
-          <p style="font-size:0.75rem; color:var(--muted); margin-bottom:1rem;">Shipping and any deposit/balance split are confirmed at checkout.</p>
-          <a href="/checkout" class="btn btn-primary btn-full">Proceed to checkout</a>
         </div>
+
+        <aside class="as-cc-summary" id="cart-summary" data-threshold={threshold} data-min-fee={minFee} data-max-fee={maxFee} hidden aria-label="Order summary">
+          <div class="as-ship" id="ship-meter">
+            <p class="as-ship-text" id="ship-text"></p>
+            <div class="as-ship-bar" aria-hidden="true"><span id="ship-bar"></span></div>
+          </div>
+
+          <dl class="as-sumrow-list" style="margin:0">
+            <div class="as-sumrow"><dt>Subtotal</dt><dd id="summary-subtotal">PKR 0</dd></div>
+            <div class="as-sumrow"><dt>Shipping</dt><dd id="summary-shipping">Calculated at checkout</dd></div>
+            <div class="as-sumrow as-sumrow--total"><dt>Estimated total</dt><dd id="summary-total">PKR 0</dd></div>
+          </dl>
+
+          <a class="as-btn as-btn--solid" href="/checkout">Checkout</a>
+
+          <ul class="as-assure">
+            <li>Guest checkout. No account needed.</li>
+            <li>Returns within 7 days. <a href="/return-policy">Read the return policy</a></li>
+            <li>Final-sale items are marked on their product page.</li>
+          </ul>
+        </aside>
       </div>
     </div>
   </section>
 
   <script>
-    // @ts-nocheck -- browser-only event handlers use DOM APIs guarded at runtime.
-    const CART_KEY = window.__AASRA_CART_KEY || 'aasra_cart_v1';
-    function loadCart() {
-      try { return JSON.parse(localStorage.getItem(CART_KEY) || '[]'); } catch { return []; }
+    const CART_KEY = 'aasra_cart_v1';
+    const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
+    const fmt = (n) => 'PKR ' + Math.round(n).toLocaleString('en-PK');
+    const read = () => { try { return JSON.parse(localStorage.getItem(CART_KEY) || '[]'); } catch { return []; } };
+    const write = (cart) => { localStorage.setItem(CART_KEY, JSON.stringify(cart)); window.dispatchEvent(new Event('aasra:cart')); };
+
+    const content = document.getElementById('cart-content');
+    const summary = document.getElementById('cart-summary');
+    const threshold = Number(summary.dataset.threshold);
+    const minFee = Number(summary.dataset.minFee);
+    const maxFee = Number(summary.dataset.maxFee);
+
+    function renderMeter(subtotal) {
+      const text = document.getElementById('ship-text');
+      const bar = document.getElementById('ship-bar');
+      const remaining = threshold - subtotal;
+      if (remaining > 0) {
+        text.textContent = `Add ${fmt(remaining)} more for free shipping.`;
+        bar.style.width = Math.min(100, (subtotal / threshold) * 100) + '%';
+        bar.classList.remove('is-done');
+      } else {
+        text.textContent = 'You have unlocked free shipping.';
+        bar.style.width = '100%';
+        bar.classList.add('is-done');
+      }
     }
+
     function render() {
-      const cart = loadCart();
-      const content = document.getElementById('cart-content');
-      const summary = document.getElementById('cart-summary');
-      const empty = content.querySelector('.cart-empty');
+      const cart = read();
       if (cart.length === 0) {
-        content.innerHTML = '<div class="cart-empty">Your cart is empty.</div>';
-        summary.style.display = 'none';
+        content.innerHTML = '<p class="as-cc-empty">Your bag is empty. <a href="/shop">Continue shopping</a></p>';
+        summary.hidden = true;
         return;
       }
-      if (empty) empty.remove();
-      summary.style.display = 'block';
+      summary.hidden = false;
       let subtotal = 0;
       content.innerHTML = cart.map((item, i) => {
-        const line = (item.price || 0) * (item.qty || 1);
+        const qty = Math.max(1, Number(item.qty) || 1);
+        const price = Number(item.price) || 0;
+        const line = price * qty;
         subtotal += line;
         return `
-          <div class="cart-item">
-            <img src="${String(item.image || '/images/placeholder.svg').replace(/"/g, '&quot;')}" alt="${String(item.name).replace(/"/g, '&quot;')}" class="cart-item-img" loading="lazy" />
-            <div class="cart-item-info">
-              <div class="cart-item-name">${String(item.name)}</div>
-              <div class="cart-item-sku">SKU: ${String(item.sku)}</div>
-              <div class="cart-item-price">${(item.price || 0).toLocaleString()} PKR × ${item.qty}</div>
+          <article class="as-line">
+            <img class="as-line-img" src="${esc(item.image || '/images/placeholder.svg')}" alt="" loading="lazy" width="96" height="120" />
+            <div>
+              <h2 class="as-line-name">${esc(item.name)}</h2>
+              <p class="as-line-meta">SKU ${esc(item.sku)} · ${fmt(price)} each</p>
+              <div class="as-line-foot">
+                <div class="as-stepper" role="group" aria-label="Quantity for ${esc(item.name)}">
+                  <button type="button" data-act="dec" data-i="${i}" aria-label="Decrease quantity">−</button>
+                  <output aria-live="polite">${qty}</output>
+                  <button type="button" data-act="inc" data-i="${i}" aria-label="Increase quantity">+</button>
+                </div>
+                <span class="as-line-total">${fmt(line)}</span>
+              </div>
+              <button type="button" class="as-linkbtn" data-act="rm" data-i="${i}">Remove ${esc(item.name)}</button>
             </div>
-            <div style="display:flex; align:center; gap:0.4rem;">
-              <button onclick="window.__aasra_updateQty(${i}, -1)" class="size-btn" style="padding:0.2rem 0.5rem; font-size:0.75rem;">−</button>
-              <button onclick="window.__aasra_updateQty(${i}, 1)" class="size-btn" style="padding:0.2rem 0.5rem; font-size:0.75rem;">+</button>
-              <button onclick="window.__aasra_remove(${i})" class="size-btn" style="padding:0.2rem 0.5rem; font-size:0.75rem; color:#b00020; border-color:#b00020;">Remove</button>
-            </div>
-          </div>
-        `;
+          </article>`;
       }).join('');
-      document.getElementById('summary-subtotal').textContent = subtotal.toLocaleString() + ' PKR';
-      document.getElementById('summary-total').textContent = subtotal.toLocaleString() + ' PKR';
+      document.getElementById('summary-subtotal').textContent = fmt(subtotal);
+      document.getElementById('summary-total').textContent = fmt(subtotal) + (subtotal >= threshold ? '' : ' + shipping');
+      document.getElementById('summary-shipping').textContent =
+        subtotal >= threshold ? 'Free' : `PKR ${minFee.toLocaleString('en-PK')}–${maxFee.toLocaleString('en-PK')} by city`;
+      renderMeter(subtotal);
     }
-    render();
+
+    content.addEventListener('click', (e) => {
+      const btn = e.target.closest('button[data-act]');
+      if (!btn) return;
+      const cart = read();
+      const i = Number(btn.dataset.i);
+      if (!cart[i]) return;
+      if (btn.dataset.act === 'inc') cart[i].qty = (Number(cart[i].qty) || 1) + 1;
+      if (btn.dataset.act === 'dec') cart[i].qty = Math.max(1, (Number(cart[i].qty) || 1) - 1);
+      if (btn.dataset.act === 'rm') cart.splice(i, 1);
+      write(cart);
+      render();
+      // Keep focus on a sensible control after re-render.
+      const next = content.querySelector(`button[data-act="${btn.dataset.act === 'rm' ? 'rm' : 'inc'}"][data-i="${Math.min(i, cart.length - 1)}"]`);
+      if (next && btn.dataset.act !== 'rm') next.focus();
+    });
+
     window.addEventListener('storage', render);
+    window.addEventListener('aasra:cart', render);
+    render();
   </script>
-</Layout>
+</StoreLayout>

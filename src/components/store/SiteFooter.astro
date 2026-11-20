@@ -11,12 +11,12 @@ const { columns, legal } = site.footer;
     <div class="as-footer-cols">
       {columns.map((col) => (
         <div>
-          <h3>{col.title}</h3>
+          <h2>{col.title}</h2>
           {col.links.map((l) => <a href={l.href}>{l.label}</a>)}
         </div>
       ))}
       <div>
-        <h3>Stay in touch</h3>
+        <h2>Stay in touch</h2>
         <p style="opacity:.85;font-size:.9rem">New work and small drops, a few times a year.</p>
         <form class="as-newsletter" id="as-newsletter">
           <label class="sr-only" for="as-newsletter-email">Email address</label>

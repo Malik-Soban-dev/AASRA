@@ -70,7 +70,7 @@ const megaFeature = {
 </header>
 
 <!-- mobile drawer -->
-<div class="as-drawer" id="as-drawer" aria-hidden="true">
+<div class="as-drawer" id="as-drawer" aria-hidden="true" inert>
   <div class="as-drawer-head">
     <span class="as-logo" style="color:var(--as-ink)">AASRA</span>
     <button type="button" class="as-icon-btn" id="as-drawer-close" aria-label="Close menu">
@@ -100,7 +100,7 @@ const megaFeature = {
 </div>
 
 <!-- search overlay -->
-<div class="as-drawer" id="as-search" aria-hidden="true" style="height:auto;bottom:auto">
+<div class="as-drawer" id="as-search" aria-hidden="true" inert style="height:auto;bottom:auto">
   <div class="as-drawer-head">
     <span class="as-kicker">Search</span>
     <button type="button" class="as-icon-btn" id="as-search-close" aria-label="Close search">
@@ -115,7 +115,8 @@ const megaFeature = {
 <script>
   // Header: solid on scroll, mega menus with hover intent, drawer, search, bag count.
   const header = document.getElementById('as-header');
-  const onScroll = () => header.classList.toggle('is-solid', window.scrollY > 40 || header.classList.contains('is-open'));
+  const hasHero = !!document.querySelector('[data-hero]');
+  const onScroll = () => header.classList.toggle('is-solid', !hasHero || window.scrollY > 40 || header.classList.contains('is-open'));
   window.addEventListener('scroll', onScroll, { passive: true });
   onScroll();
 
@@ -149,11 +150,11 @@ const megaFeature = {
   const drawer = document.getElementById('as-drawer');
   const search = document.getElementById('as-search');
   const closeAll = () => {
-    drawer.classList.remove('is-open'); drawer.setAttribute('aria-hidden', 'true');
-    search.classList.remove('is-open'); search.setAttribute('aria-hidden', 'true');
+    drawer.classList.remove('is-open'); drawer.setAttribute('aria-hidden', 'true'); drawer.inert = true;
+    search.classList.remove('is-open'); search.setAttribute('aria-hidden', 'true'); search.inert = true;
   };
   document.getElementById('as-burger')?.addEventListener('click', () => {
-    drawer.classList.add('is-open'); drawer.setAttribute('aria-hidden', 'false');
+    drawer.classList.add('is-open'); drawer.setAttribute('aria-hidden', 'false'); drawer.inert = false;
   });
   document.getElementById('as-drawer-close')?.addEventListener('click', closeAll);
   document.querySelectorAll('[data-acc]').forEach((btn) => {
@@ -187,7 +188,7 @@ const megaFeature = {
   };
   document.getElementById('as-search-open')?.addEventListener('click', async () => {
     closeAll();
-    search.classList.add('is-open'); search.setAttribute('aria-hidden', 'false');
+    search.classList.add('is-open'); search.setAttribute('aria-hidden', 'false'); search.inert = false;
     await loadIndex();
     input.focus();
   });

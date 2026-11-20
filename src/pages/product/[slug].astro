@@ -6,6 +6,7 @@
 import StoreLayout from '../../components/layout/StoreLayout.astro';
 import ProductRail from '../../components/store/ProductRail.astro';
 import { products, productBySlug, wearItWith, formatPrice, categoryLabel } from '../../lib/catalog.js';
+import shippingRates from '../../../data/shipping-rates.json';
 
 export function getStaticPaths() {
   return products.filter((p) => p.visible).map((p) => ({ params: { slug: p.slug } }));
@@ -31,7 +32,7 @@ const images = product.images.length > 1 ? product.images : [product.images[0], 
 
     <div class="as-pdp">
       <div class="as-pdp-gallery">
-        <div class="as-thumbs" role="tablist" aria-label="Product images">
+        <div class="as-thumbs" role="group" aria-label="Product images">
           {images.map((img, i) => (
             <button type="button" class:list={['as-thumb', { 'is-active': i === 0 }]} data-full={img} aria-label={`View ${i + 1}`}>
               <img src={img} alt="" loading="lazy" width="76" height="101" />
@@ -78,6 +79,11 @@ const images = product.images.length > 1 ? product.images : [product.images[0], 
         <div class="as-pdp-actions">
           <button type="button" class="as-btn as-btn--solid as-btn--block" id="as-add-btn" disabled>Select a size</button>
           <a class="as-link" href="/shipping" style="justify-self:center">Shipping & returns</a>
+          <ul class="as-pdp-reassure" aria-label="Shipping and returns at a glance">
+            <li>Complimentary shipping on orders above Rs {shippingRates.free_shipping_threshold_pkr.toLocaleString()}</li>
+            <li>Returns accepted within 7 days of delivery</li>
+            <li>Final-sale items are marked on the product page</li>
+          </ul>
         </div>
 
         <div class="as-accordion">
