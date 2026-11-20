@@ -100,6 +100,14 @@ Ranked by evidence strength and effort. Items marked ✅ are in this pass.
 
 ## 7. Sources
 
+### 7.1 Primary sources (checked by link, Nov 2026)
+
+- Baymard Institute, Checkout UX 2026 (3 Nov 2026): 59% of desktop and 59% of mobile sites "mediocre or worse"; 60% of apps. Also: 56% ask for account creation before the confirmation step. https://baymard.com/research-articles/current-state-of-checkout-ux
+- Baymard Institute, Product Page UX 2026 (18 Mar 2026): 57% use dropdowns for size; 37% lack an in-scale image; 42% of users judge size from images. Full benchmark percentages (52% / 62% / 64%) are quoted in secondary coverage and should be re-read on the Baymard page before citing. https://baymard.com/research-articles/current-state-ecommerce-product-page-ux
+- Medill Spiegel Research Center, "How Online Reviews Influence Sales" (first published 2017): five reviews give 270% greater purchase likelihood than none; conversion lift 190% for lower-priced and 380% for higher-priced products; purchase likelihood peaks at ratings of 4.0–4.7; verified-buyer badge improves purchase odds by 15%; the benefit of more reviews diminishes after the first five. https://spiegel.medill.northwestern.edu/how-online-reviews-influence-sales/
+
+### 7.2 Secondary sources
+
 - Baymard Institute, "Checkout UX 2026: 10 Pitfalls and Best Practices" (updated 3 Nov 2026): https://baymard.com/research-articles/current-state-of-checkout-ux
 - Toimi, "Top 10 Best E-commerce Website Designs 2026": https://toimi.pro/blog/best-ecommerce-website-designs/
 - VNTANA, "9 Product Page Conversion Optimization Strategies for 2026": https://www.vntana.com/blog/product-page-conversion-optimization/
@@ -107,7 +115,7 @@ Ranked by evidence strength and effort. Items marked ✅ are in this pass.
 - Convertibles, "Ecommerce Conversion Rate by Industry (2026)": https://convertibles.dev/blogs/optimization/increase-ecommerce-conversion-rate
 - Redefine Web, "Top Ecommerce Web Design Trends 2026 for DTC": https://redefineweb.com/blog/top-ecommerce-web-design-trends-2026-dtc-conversions/
 - Suplex, "Ecommerce Website Design for Luxury Brands: 2026": https://suplex.design/blog/ecommerce-website-design-for-luxury-brands
-- Astro Medusa Starter (Bystrol): https://github.com/Bystrol/astro-medusa-starter
+- Astro Medusa Starter (digity-studio, MIT; formerly listed under Bystrol, which redirects here): https://github.com/digity-studio/astro-medusa-starter
 - Next.js Commerce / Medusa / Saleor / Spree / Vendure roundup (YNS, Sep 2026): https://yournextstore.com/blog/best-nextjs-ecommerce-templates
 - Free Astro ecommerce themes review (Nov 2026): https://getastrothemes.com/blog/astro-ecommerce-templates/
 - r/astrojs, "Astro JS for e-commerce" (Jan 2026): https://www.reddit.com/r/astrojs/comments/1qh0hif/astro_js_for_ecommerce/
@@ -121,7 +129,7 @@ Ranked by evidence strength and effort. Items marked ✅ are in this pass.
 
 ### 8.1 Corrections
 - Checkout "mediocre or worse": 59% desktop and mobile (Baymard, primary, Nov 2026). Earlier notes quoting 64% are stale.
-- Review peak rating: the paper I cited is not verified. Use the ranges from secondary sources (4.0–4.7 stars) and treat the peak as approximate.
+- Review peak rating: the Spiegel page states 4.0–4.7 stars (not 4.2–4.7). Use 4.0–4.7 and cite the Spiegel page in section 7.1.
 - The 270% reviews figure is from the Spiegel report for one high-end gift retailer. It is not a general rule.
 
 ### 8.2 Product page (Baymard, primary, Mar 2026)
