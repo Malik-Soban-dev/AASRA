@@ -111,3 +111,56 @@ Ranked by evidence strength and effort. Items marked ✅ are in this pass.
 - Next.js Commerce / Medusa / Saleor / Spree / Vendure roundup (YNS, Sep 2026): https://yournextstore.com/blog/best-nextjs-ecommerce-templates
 - Free Astro ecommerce themes review (Nov 2026): https://getastrothemes.com/blog/astro-ecommerce-templates/
 - r/astrojs, "Astro JS for e-commerce" (Jan 2026): https://www.reddit.com/r/astrojs/comments/1qh0hif/astro_js_for_ecommerce/
+
+---
+
+## 8. Second pass (2026-11-19): expanded evidence and corrections
+
+**Scope of this pass:** 12 web searches and 7 page fetches across both passes (about 19 research calls in total). Primary sources read in full: Baymard checkout 2026 and Baymard product-page 2026 (both baymard.com), Spiegel Research Center report (PDF snippets and the International Journal of Advertising abstract), and live homepages for Gymshark, Aesop and Everlane (November 2026 snapshots). This is still a small sample. It is not a survey of "millions of websites." A systematic study would need automated crawling of several hundred stores.
+
+### 8.1 Corrections to the first pass
+- Checkout "mediocre or worse": 59% on desktop and on mobile (Baymard, Nov 2026). Earlier notes said 64%; that figure belongs to Baymard's homepage/navigation benchmark, not checkout.
+- Review peak rating: the International Journal of Advertising paper abstract says purchase probability rises to about **4.2–4.5 stars**, then falls. Blogs quote **4.0–4.7**. Use 4.2–4.5 as the paper's figure.
+- The 270% reviews figure is from the Spiegel report (purchase likelihood for a product with five reviews vs none, from one high-end gift retailer). It is not a general rule. The 380% vs 190% split by price comes from the same report, as quoted by secondary sources.
+
+### 8.2 Product page (Baymard, primary, 2026)
+- Product page UX: only 48% of leading desktop sites and 38% of mobile sites rate "decent" or better. 52% desktop, 62% mobile and 64% apps are "mediocre or worse."
+- 57% of sites use dropdowns, not buttons, for size selection.
+- 37% of sites have no "in scale" image. 42% of users judge size from images.
+- 44% do not show or link to the return policy on the product page. 60% of shoppers look for it there.
+- 67% do not show an estimated total order cost (including shipping) on the product page.
+- 89% never respond to negative reviews. Baymard says responding is perceived as good customer care.
+- Implication for AASRA: our PDP fix (shipping threshold and returns beside the buy button) addresses two of the most common gaps. Next candidates: size buttons (we already use buttons), an in-scale reference image, and a "total with shipping" estimate.
+
+### 8.3 Live store observations (homepages only, Nov 2026 snapshots)
+- **Everlane:** the cart drawer shows "$75.00 away from free shipping," then "You've received free shipping!" It is a live example of the threshold progress bar. The cart also shows "Free Shipping | Free Returns" and an Express checkout option. A "Black Friday: 40% off everything" banner links to exclusions.
+- **Gymshark:** the announcement bar stacks offers (free shipping over $75, 10% off on email sign-up, $10 off referrals, extra 12% for students). Product cards show star ratings and strikethrough prices.
+- **Aesop:** the hero carries one clear offer with a code and an end date (15% off through 11/22, exclusions apply). Gift kits show "Old price / New price," "Limited release," and "One size only." The editorial voice is strong.
+- Common pattern: free-shipping thresholds are visible in the header or cart. Offers are stated with exclusions. Product cards carry price and rating directly.
+- Limitation: three homepages, one snapshot each. These are observations, not a benchmark.
+
+### 8.4 Conversion benchmarks: sources disagree
+Fashion/apparel conversion rates in 2026 sources range from about **1.0% to 3.1%**. Examples:
+- Dynamic Yield (blended): ~2.8%
+- Shopify median, fashion (Littledata): 1.0%, with the top 20% at 1.9%
+- Shopify 12-month industry average, fashion (as quoted by Propel): 3.06%
+- Propel: 1.45%
+- Other vendor tables: 2.1%
+
+Device split is also contradictory. Some sources show mobile well below desktop, others show near parity on Shopify (Littledata, Oct 2026: mobile 1.5%, desktop 1.4%). Reliable finding: mobile add-to-cart is lower (5.4% vs 9.8% on desktop, Littledata), and mobile checkout completion is higher (63% vs 35%, Littledata). **Conclusion:** do not set AASRA targets from a single external benchmark. Measure our own baseline first.
+
+### 8.5 Platform and marketplace claims (low confidence)
+- Shopify Editions 2026 (Spring and Fall): Catalog-syndicated data is reported to convert about 2x in AI chats; agentic checkout is live; Shopify removed bot traffic from sessions, which lifts reported conversion rate without any change in sales. All of these are Shopify-reported and not independently audited.
+- Social commerce: "tagged posts increase sales by 37%," "tagged Reels convert 55–61% better," and "shoppable video lifts site conversion 17–33%." These figures recirculate across many vendor blogs with no primary source. Treat them as unverified.
+- Dark UI for premium categories and minimal one-page checkout: only vendor and agency claims found. No independent data.
+
+### 8.6 Updated priorities for AASRA (adds to section 5)
+1. Add an in-scale reference image (a model or object next to the product). Baymard says 37% of sites lack one, and users rely on images for size.
+2. Add a "free shipping progress" line to the cart, using the threshold we already have (PKR 20,000). Everlane's live example supports this.
+3. Put a clear returns summary in the cart and checkout, not only on the PDP.
+4. Show shipping cost estimate before the final checkout step. Baymard: 40% of checkout abandonments cite extra costs.
+5. Respond publicly to negative reviews once reviews exist (Baymard: 89% of sites don't).
+
+### 8.7 What "millions of websites" would take
+- A crawl of 200–500 fashion and apparel stores, collecting PDP and cart features (size controls, in-scale images, return policy placement, shipping display, sticky add-to-cart, rating display), plus page speed.
+- I have a working headless Chromium in the sandbox. Whether it can reach arbitrary third-party sites is untested. `fetch_page` can read public pages, so a crawl would have to run through that tool. This should be confirmed before committing to the plan.
