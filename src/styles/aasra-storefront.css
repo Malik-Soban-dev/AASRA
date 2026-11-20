@@ -328,7 +328,7 @@ body { background: var(--aasra-paper); color: var(--aasra-ink); }
    ========================================================================== */
 :root {
   --aasra-olive: #3a382f;   /* green accent -> warm charcoal */
-  --aasra-clay: #8f867a;    /* terracotta accent -> warm taupe */
+  --aasra-clay: #6b655a;    /* terracotta accent -> warm taupe (AA on paper) */
 }
 
 .aasra-eyebrow { color: var(--muted); font-weight: 400; letter-spacing: .22em; }
