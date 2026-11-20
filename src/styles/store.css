@@ -452,6 +452,10 @@ ul, ol { list-style: none; }
 .as-size.is-active { background: var(--as-ink); color: var(--as-paper); border-color: var(--as-ink); }
 .as-size.is-unavailable { opacity: 0.35; text-decoration: line-through; cursor: not-allowed; }
 .as-pdp-actions { margin: var(--as-s6) 0 var(--as-s4); display: grid; gap: var(--as-s3); }
+/* Cost and returns sit next to the buy button: hidden fees and unclear returns are top abandonment reasons. */
+.as-pdp-reassure { list-style: none; margin: 0; padding: var(--as-s3) 0 0; border-top: 1px solid var(--as-line); display: grid; gap: 0.45rem; font-size: 0.82rem; color: var(--as-graphite); }
+.as-pdp-reassure li { position: relative; padding-left: 1.2rem; }
+.as-pdp-reassure li::before { content: ""; position: absolute; left: 0; top: 0.55em; width: 6px; height: 6px; border-radius: 50%; background: var(--as-clay); }
 .as-accordion { border-top: 1px solid var(--as-line); margin-top: var(--as-s6); }
 .as-accordion-item { border-bottom: 1px solid var(--as-line); }
 .as-accordion-item summary {
