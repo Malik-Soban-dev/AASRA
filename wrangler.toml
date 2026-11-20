@@ -77,3 +77,27 @@ crons = ["0 9 * * *"]
 # - GET /api/order-lookup: 10 requests per minute per IP
 # - GET /api/invoice: 10 requests per minute per IP
 # - POST /api/webhook: 60 requests per minute per IP (gateway webhooks)
+
+# --- Branch previews (Workers Builds runs `wrangler preview` on non-production branches) ---
+# Wrangler requires this block; without it the branch build fails after the
+# app build succeeds. Previews use no payment keys: Safepay and PayFast are off,
+# so a preview can never reach the sandbox or live gateway.
+[previews.vars]
+PUBLIC_BASE_URL = "https://aasra.shanzeeey.workers.dev"
+ALLOWED_ORIGIN = "https://aasra.shanzeeey.workers.dev"
+DEFAULT_DEPOSIT_PERCENT = "30"
+BALANCE_REMINDER_DAYS = "3,1"
+BALANCE_CANCEL_AFTER_DAYS = "7"
+TAX_RATE_PCT = "0"
+BUSINESS_NAME = "AASRA"
+BUSINESS_ADDRESS = ""
+BUSINESS_EMAIL = "orders@aasra.shop"
+TAX_REGISTRATION_NO = ""
+EMAIL_FROM = "orders@aasra.shop"
+EMAIL_FROM_NAME = "AASRA"
+SAFEPAY_ENABLED = "false"
+SAFEPAY_PROTOCOL_VERIFIED = "false"
+SAFEPAY_BASE_URL = "https://sandbox.api.getsafepay.com"
+SAFEPAY_CHECKOUT_URL = "https://sandbox.api.getsafepay.com"
+SAFEPAY_API_KEY = ""
+PAYFAST_ENABLED = "false"
