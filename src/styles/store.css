@@ -310,7 +310,7 @@ ul, ol { list-style: none; }
   letter-spacing: var(--as-track-micro); text-transform: uppercase;
   padding: 0.35em 0.8em;
 }
-.as-badge--clay { background: var(--as-clay); color: var(--as-paper); }
+.as-badge--clay { background: var(--as-clay-ink); color: var(--as-paper); }
 .as-card-quick {
   position: absolute; z-index: 2; left: var(--as-s3); right: var(--as-s3); bottom: var(--as-s3);
   transform: translateY(calc(100% + var(--as-s3)));
@@ -482,7 +482,7 @@ ul, ol { list-style: none; }
   display: grid; grid-template-columns: repeat(4, 1fr) 1.2fr; gap: var(--as-s7);
   padding-bottom: var(--as-s8); border-bottom: 1px solid rgba(247, 245, 239, 0.18);
 }
-.as-footer h3 {
+.as-footer h2 {
   font-family: var(--as-ui); font-size: var(--as-t-micro); font-weight: 600;
   letter-spacing: var(--as-track-micro); text-transform: uppercase;
   color: rgba(247, 245, 239, 0.6); margin-bottom: var(--as-s4);
@@ -653,3 +653,28 @@ html.as-snap .as-look-media {
   .as-edit-tile img, .as-look-media img { transform: none; transition: none; }
   .as-footer-mark { opacity: 1; transform: none; }
 }
+
+/* ---------- touch targets & focus (accessibility pass, 2026-11) ----------
+   Bar: 44px for controls and list rows; 24px minimum for inline text links (WCAG 2.2 AA 2.5.8). */
+.as-link { min-height: 44px; display: inline-flex; align-items: center; }
+.as-chip { min-height: 44px; }
+.as-mega-col a { min-height: 44px; display: flex; align-items: center; }
+.as-footer-cols a { min-height: 44px; display: flex; align-items: center; }
+.as-card-quick .as-btn { min-height: 44px; }
+.as-hero-dot {
+  width: 44px; height: 44px; padding: 21px 4px;
+  background-clip: content-box;
+}
+.as-rail-btn { min-width: 44px; min-height: 44px; }
+.as-check input, .as-choice input { width: 24px; height: 24px; }
+.as-check a, .as-assure a { display: inline-block; line-height: 24px; min-height: 24px; }
+:focus-visible { outline: 2px solid var(--as-ink); outline-offset: 3px; }
+.as-newsletter input, .as-newsletter button { min-height: 44px; }
+.as-nav-btn { min-width: 44px; }
+.as-footer-legal a, .as-card-name a { display: inline-block; line-height: 24px; min-height: 24px; }
+.as-newsletter button { min-width: 44px; }
+.as-breadcrumb a, .as-pdp a:not(.as-link):not(.as-btn) { display: inline-block; line-height: 24px; min-height: 24px; }
+.as-card .as-card-name a { display: inline-block; line-height: 24px; min-height: 24px; }
+.as-pdp summary, .as-accordion summary { min-height: 44px; display: flex; align-items: center; cursor: pointer; }
+h4 > a[href^="/product/"] { display: inline-block; line-height: 24px; min-height: 24px; }
+.as-chip { min-width: 44px; justify-content: center; }

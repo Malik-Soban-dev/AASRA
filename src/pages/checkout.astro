@@ -1,104 +1,130 @@
 ---
-import Layout from '../components/Layout.astro';
-
+import StoreLayout from '../components/layout/StoreLayout.astro';
+import '../styles/store-commerce.css';
+import shipping from '../../data/shipping-rates.json';
 
 // Turnstile sitekey — configure in Cloudflare dashboard, set via env or replace placeholder.
 // VERIFY: get a real Turnstile sitekey from Cloudflare and set TURNSTILE_SITEKEY.
 const TURNSTILE_SITEKEY = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY || '';
+const threshold = shipping.free_shipping_threshold_pkr;
+const cities = shipping.rates.map((r) => r.city);
 ---
 
-<Layout title="Checkout — AASRA" description="Complete your order. Pay in full or deposit + balance online. PKR.">
+<StoreLayout title="Checkout — AASRA" description="Complete your order. Guest checkout, no account needed. Pay in full or deposit and balance. PKR.">
+  <section class="as-cc">
+    <div class="as-cc-wrap">
+      <p class="as-kicker">Checkout</p>
+      <h1 class="as-display-l as-cc-title">Checkout</h1>
 
-  <section class="section">
-    <div class="container">
-      <h1>Checkout</h1>
+      <div class="as-cc-grid">
+        <div class="as-cc-main">
+          <p class="as-cc-lede">Guest checkout: no account needed. We confirm prices and stock on the server before you pay.</p>
 
-      <div id="checkout-error" class="alert alert-error" style="display:none;"></div>
-      <div id="checkout-success" class="alert alert-success" style="display:none;"></div>
+          <div id="checkout-error" class="as-msg as-msg--error" role="alert" hidden></div>
+          <div id="checkout-success" class="as-msg as-msg--ok" role="status" hidden></div>
 
-      <form id="checkout-form" style="max-width:640px;">
-        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:1rem;">
-          <div class="form-group">
-            <label class="form-label">Full name</label>
-            <input type="text" name="name" class="form-input" required placeholder="Muhammad Ali" />
-          </div>
-          <div class="form-group">
-            <label class="form-label">Email</label>
-            <input type="email" name="email" class="form-input" required placeholder="you@example.com" />
-          </div>
-          <div class="form-group" style="grid-column:1/-1;">
-            <label class="form-label">Pakistani mobile number</label>
-            <input type="tel" name="phone" class="form-input" required placeholder="03001234567" />
-            <span style="font-size:0.7rem; color:var(--muted);">e.g. 03001234567 or +923001234567</span>
-          </div>
-          <div class="form-group" style="grid-column:1/-1;">
-            <label class="form-label">City</label>
-            <input type="text" name="city" class="form-input" required placeholder="Lahore" />
-          </div>
-          <div class="form-group" style="grid-column:1/-1;">
-            <label class="form-label">Full address</label>
-            <input type="text" name="address" class="form-input" required placeholder="House, street, area" />
-          </div>
-          <div class="form-group" style="grid-column:1/-1;">
-            <label class="form-label">Notes (optional)</label>
-            <textarea name="notes" class="form-input" rows="2" placeholder="Delivery instructions"></textarea>
-          </div>
-        </div>
+          <form id="checkout-form" class="as-form" autocomplete="on">
+            <fieldset class="as-fieldset">
+              <legend>Contact</legend>
+              <div class="as-fields">
+                <div class="as-field">
+                  <label class="as-label" for="f-name">Full name</label>
+                  <input class="as-input" id="f-name" type="text" name="name" required autocomplete="name" placeholder="Muhammad Ali" />
+                </div>
+                <div class="as-field">
+                  <label class="as-label" for="f-email">Email</label>
+                  <input class="as-input" id="f-email" type="email" name="email" required autocomplete="email" inputmode="email" placeholder="you@example.com" />
+                </div>
+                <div class="as-field as-field--full">
+                  <label class="as-label" for="f-phone">Pakistani mobile number</label>
+                  <input class="as-input" id="f-phone" type="tel" name="phone" required autocomplete="tel" inputmode="tel" placeholder="03001234567" />
+                  <p class="as-hint">For delivery updates. e.g. 03001234567 or +923001234567</p>
+                </div>
+              </div>
+            </fieldset>
 
-        <hr style="border:none; border-top:1px solid var(--border); margin:1.5rem 0;" />
+            <fieldset class="as-fieldset">
+              <legend>Delivery</legend>
+              <div class="as-fields">
+                <div class="as-field">
+                  <label class="as-label" for="f-city">City</label>
+                  <input class="as-input" id="f-city" type="text" name="city" required autocomplete="address-level2" list="city-list" placeholder="Lahore" />
+                  <datalist id="city-list">
+                    {cities.map((c) => <option value={c} />)}
+                  </datalist>
+                </div>
+                <div class="as-field">
+                  <label class="as-label" for="f-notes">Delivery notes <span class="as-hint">(optional)</span></label>
+                  <input class="as-input" id="f-notes" type="text" name="notes" autocomplete="off" placeholder="Gate code, landmark" />
+                </div>
+                <div class="as-field as-field--full">
+                  <label class="as-label" for="f-address">Full address</label>
+                  <input class="as-input" id="f-address" type="text" name="address" required autocomplete="street-address" placeholder="House, street, area" />
+                </div>
+              </div>
+            </fieldset>
 
-        <div class="form-group">
-          <label class="form-label">Payment option</label>
-          <div style="display:flex; gap:1rem; flex-wrap:wrap;">
-            <label style="display:flex; align-items:center; gap:0.5rem; font-size:0.9rem; cursor:pointer;">
-              <input type="radio" name="payment_type" value="full" checked />
-              Pay in full online
+            <fieldset class="as-fieldset">
+              <legend>Payment</legend>
+              <div class="as-choices">
+                <label class="as-choice">
+                  <input type="radio" name="payment_type" value="full" checked />
+                  <span><strong>Pay in full</strong><span class="as-hint">Pay the whole order online now.</span></span>
+                </label>
+                <label class="as-choice">
+                  <input type="radio" name="payment_type" value="deposit" />
+                  <span><strong>Deposit + balance</strong><span class="as-hint">30% now, balance online before shipping.</span></span>
+                </label>
+              </div>
+              <p id="deposit-info" class="as-hint" style="margin-top:var(--as-s3)">Deposit: 30%. Balance is due online before shipping. Cash on delivery is not accepted.</p>
+            </fieldset>
+
+            <div class="as-field">
+              <label class="as-label" for="f-coupon">Coupon code <span class="as-hint">(optional)</span></label>
+              <input class="as-input" id="f-coupon" type="text" name="coupon" autocomplete="off" placeholder="SAVE10" />
+            </div>
+
+            <label class="as-check">
+              <input type="checkbox" name="terms" id="terms" required />
+              <span>I agree to the <a href="/terms">Terms of Service</a>, <a href="/return-policy">Return and Refund Policy</a>, and <a href="/deposit-policy">Deposit and Cancellation Policy</a>.</span>
             </label>
-            <label style="display:flex; align-items:center; gap:0.5rem; font-size:0.9rem; cursor:pointer;">
-              <input type="radio" name="payment_type" value="deposit" />
-              Pay deposit + balance online
-            </label>
+
+            <div>
+              {TURNSTILE_SITEKEY ? (
+                <div class="cf-turnstile" data-sitekey={TURNSTILE_SITEKEY}></div>
+              ) : (
+                <p class="as-msg as-msg--error" role="status">Secure checkout is not configured yet. Please contact AASRA for assistance.</p>
+              )}
+            </div>
+
+            <button type="submit" class="as-btn as-btn--solid as-submit" id="checkout-btn">Continue to secure payment</button>
+            <p class="as-hint">Prices and stock are confirmed before payment.</p>
+          </form>
+        </div>
+
+        <aside class="as-cc-summary" aria-label="Order summary">
+          <h2>Your order</h2>
+          <ul class="as-cc-lines-compact" id="checkout-lines"><li><span>Your bag is empty</span><span></span></li></ul>
+          <dl style="margin:0">
+            <div class="as-sumrow"><dt>Subtotal</dt><dd id="co-subtotal">PKR 0</dd></div>
+            <div class="as-sumrow"><dt>Shipping</dt><dd id="co-shipping">Calculated at checkout</dd></div>
+            <div class="as-sumrow as-sumrow--total"><dt>Total</dt><dd id="co-total">PKR 0</dd></div>
+          </dl>
+          <div class="as-ship" style="margin-top:var(--as-s4)">
+            <p class="as-ship-text" id="co-ship-text"></p>
+            <div class="as-ship-bar" aria-hidden="true"><span id="co-ship-bar"></span></div>
           </div>
-          <p id="deposit-info" style="font-size:0.8rem; color:var(--muted); margin-top:0.5rem;">
-            Deposit: 30% · Balance due online before shipping.
-          </p>
-        </div>
-
-        <div class="form-group">
-          <label class="form-label">Coupon code (optional)</label>
-          <input type="text" name="coupon" class="form-input" placeholder="SAVE10" />
-        </div>
-
-        <div class="checkbox-group">
-          <input type="checkbox" name="terms" id="terms" required />
-          <label for="terms">
-            I agree to the <a href="/terms">Terms of Service</a>, <a href="/return-policy">Return &amp; Refund Policy</a>, and <a href="/deposit-policy">Deposit &amp; Cancellation Policy</a>.
-          </label>
-        </div>
-
-        <!-- Turnstile widget -->
-        <div class="form-group" style="margin-top:1rem;">
-          {TURNSTILE_SITEKEY ? (
-            <div class="cf-turnstile" data-sitekey={TURNSTILE_SITEKEY}></div>
-          ) : (
-            <p class="alert alert-error" role="status">Secure checkout is not configured yet. Please contact AASRA for assistance.</p>
-          )}
-        </div>
-
-        <button type="submit" class="btn btn-primary btn-full" id="checkout-btn">
-          Continue to payment
-        </button>
-
-        <p id="cart-hint" style="margin-top:1rem; font-size:0.8rem; color:var(--muted);">
-          Your cart is revalidated server-side. Prices and stock are confirmed before payment.
-        </p>
-      </form>
+          <ul class="as-assure">
+            <li>Returns within 7 days. <a href="/return-policy">Read the return policy</a></li>
+            <li>Final-sale items are marked on their product page.</li>
+          </ul>
+        </aside>
+      </div>
     </div>
   </section>
 
-  <script>
-    // @ts-nocheck -- browser-only event handlers use DOM APIs guarded at runtime.
-    // Load Turnstile script
+  <script define:vars={{ threshold }}>
+    // Turnstile loader (unchanged contract).
     (function () {
       const widget = document.querySelector('.cf-turnstile');
       if (!widget) return;
@@ -108,51 +134,81 @@ const TURNSTILE_SITEKEY = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY || '';
       script.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';
       script.async = true;
       script.onload = () => {
-        try {
-          turnstile.render(widget, { sitekey });
-        } catch (e) {}
+        try { turnstile.render(widget, { sitekey }); } catch (e) {}
       };
       document.head.appendChild(script);
     })();
 
+    const CART_KEY = 'aasra_cart_v1';
     const form = document.getElementById('checkout-form');
     const errorEl = document.getElementById('checkout-error');
     const successEl = document.getElementById('checkout-success');
     const btn = document.getElementById('checkout-btn');
+    const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
+    const fmt = (n) => 'PKR ' + Math.round(n).toLocaleString('en-PK');
+    const readCart = () => { try { return JSON.parse(localStorage.getItem(CART_KEY) || '[]'); } catch (e) { return []; } };
 
-    // Radio logic: hide deposit info if not deposit-eligible (server validates; UI hint only)
-    const paymentRadios = form.elements.payment_type;
-    const depositInfo = document.getElementById('deposit-info');
+    function showError(msg) {
+      errorEl.textContent = msg;
+      errorEl.hidden = false;
+      errorEl.focus?.();
+    }
+
+    // Order summary from the local bag (the server re-validates).
+    function renderSummary() {
+      const cart = readCart();
+      const lines = document.getElementById('checkout-lines');
+      if (cart.length === 0) {
+        lines.innerHTML = '<li><span>Your bag is empty</span><span></span></li>';
+      } else {
+        lines.innerHTML = cart.map((i) => {
+          const qty = Math.max(1, Number(i.qty) || 1);
+          return `<li><span>${esc(i.name)} × ${qty}</span><span>${fmt((Number(i.price) || 0) * qty)}</span></li>`;
+        }).join('');
+      }
+      const subtotal = cart.reduce((s, i) => s + (Number(i.price) || 0) * Math.max(1, Number(i.qty) || 1), 0);
+      document.getElementById('co-subtotal').textContent = fmt(subtotal);
+      document.getElementById('co-total').textContent = subtotal >= threshold ? fmt(subtotal) : fmt(subtotal) + ' + shipping';
+      document.getElementById('co-shipping').textContent = subtotal >= threshold ? 'Free' : 'Set by city';
+      const remaining = threshold - subtotal;
+      const text = document.getElementById('co-ship-text');
+      const bar = document.getElementById('co-ship-bar');
+      if (remaining > 0 && subtotal > 0) {
+        text.textContent = `Add ${fmt(remaining)} more for free shipping.`;
+        bar.style.width = Math.min(100, (subtotal / threshold) * 100) + '%';
+        bar.classList.remove('is-done');
+      } else if (subtotal > 0) {
+        text.textContent = 'Free shipping applied.';
+        bar.style.width = '100%';
+        bar.classList.add('is-done');
+      } else {
+        text.textContent = '';
+        bar.style.width = '0';
+      }
+    }
+    renderSummary();
+    window.addEventListener('aasra:cart', renderSummary);
 
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
-      errorEl.style.display = 'none';
-      successEl.style.display = 'none';
+      errorEl.hidden = true;
+      successEl.hidden = true;
 
-      // Build cart from localStorage
-      let cart = [];
-      try {
-        cart = JSON.parse(localStorage.getItem(window.__AASRA_CART_KEY) || '[]');
-      } catch (e) {}
+      const cart = readCart();
       if (cart.length === 0) {
-        errorEl.textContent = 'Your cart is empty.';
-        errorEl.style.display = 'block';
+        showError('Your bag is empty.');
         return;
       }
 
       const formData = new FormData(form);
       const paymentType = formData.get('payment_type');
 
-      // Turnstile token
       let token = '';
       if (typeof turnstile !== 'undefined') {
-        try {
-          token = await turnstile.getResponse();
-        } catch (e) {}
+        try { token = await turnstile.getResponse(); } catch (e) {}
       }
       if (!token) {
-        errorEl.textContent = 'Please complete the security check before continuing.';
-        errorEl.style.display = 'block';
+        showError('Please complete the security check before continuing.');
         return;
       }
 
@@ -183,24 +239,20 @@ const TURNSTILE_SITEKEY = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY || '';
         const data = await res.json();
 
         if (!res.ok || !data.ok) {
-          errorEl.textContent = data.error || 'Checkout failed. Please try again.';
-          errorEl.style.display = 'block';
+          showError(data.error || 'Checkout failed. Please try again.');
           btn.disabled = false;
-          btn.textContent = 'Continue to payment';
+          btn.textContent = 'Continue to secure payment';
           return;
         }
 
         successEl.textContent = 'Redirecting to secure payment…';
-        successEl.style.display = 'block';
-
-        // Redirect to gateway hosted checkout
+        successEl.hidden = false;
         window.location.href = data.checkout_url;
       } catch (err) {
-        errorEl.textContent = 'Network error. Please try again.';
-        errorEl.style.display = 'block';
+        showError('Network error. Please try again.');
         btn.disabled = false;
-        btn.textContent = 'Continue to payment';
+        btn.textContent = 'Continue to secure payment';
       }
     });
   </script>
-</Layout>
+</StoreLayout>

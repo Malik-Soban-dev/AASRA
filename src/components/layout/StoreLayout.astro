@@ -88,6 +88,19 @@ const {
           write(cart);
         };
         window.addEventListener('aasra:cart:clear', () => write([]));
+        // Same contract as the legacy CartDrawer, so bag pages work on the store layout.
+        window.__AASRA_CART_KEY = KEY;
+        window.__aasra_updateQty = (index, delta) => {
+          const cart = read();
+          if (!cart[index]) return;
+          cart[index].qty = Math.max(1, (cart[index].qty || 1) + delta);
+          write(cart);
+        };
+        window.__aasra_remove = (index) => {
+          const cart = read();
+          cart.splice(index, 1);
+          write(cart);
+        };
       })();
 
       // Reveal on scroll (design system §6), staggered via [data-stagger].

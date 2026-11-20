@@ -32,7 +32,7 @@ const images = product.images.length > 1 ? product.images : [product.images[0], 
 
     <div class="as-pdp">
       <div class="as-pdp-gallery">
-        <div class="as-thumbs" role="tablist" aria-label="Product images">
+        <div class="as-thumbs" role="group" aria-label="Product images">
           {images.map((img, i) => (
             <button type="button" class:list={['as-thumb', { 'is-active': i === 0 }]} data-full={img} aria-label={`View ${i + 1}`}>
               <img src={img} alt="" loading="lazy" width="76" height="101" />
