@@ -705,3 +705,25 @@ main table { display: block; max-width: 100%; overflow-x: auto; }
   .as-filterbar { flex-wrap: wrap; gap: var(--as-s4); }
   .as-sort, .as-filter-group { max-width: 100%; }
 }
+
+/* Quick-add sizes stay hidden until the shopper opens Quick add (the component sets the hidden attribute). */
+.as-sizes[hidden] { display: none; }
+
+/* Phone header: logo centred in the middle column; menu button sits at the left edge. */
+@media (max-width: 900px) {
+  .as-logo { grid-column: 2; justify-self: center; }
+  .as-nav-utils { grid-column: 3; }
+}
+
+/* Collection tiles on phones: smaller title and inset so labels sit clear of the photo edge. */
+@media (max-width: 600px) {
+  .as-edit-label { left: var(--as-s3); bottom: var(--as-s3); right: var(--as-s3); }
+  .as-edit-label h3 { font-size: 1.3rem; line-height: 1.15; margin: 0.25rem 0 0.4rem; }
+  .as-edit-label .as-kicker { font-size: 0.66rem; }
+}
+
+/* Footer columns can shrink below their longest link, so nothing forces horizontal scroll at 360px. */
+.as-footer-cols { grid-template-columns: repeat(4, minmax(0, 1fr)) minmax(0, 1.2fr); }
+@media (max-width: 900px) {
+  .as-footer-cols { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}

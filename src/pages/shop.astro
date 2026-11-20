@@ -1,7 +1,12 @@
 ---
-import Layout from '../components/Layout.astro';
-import ProductCard from '../components/ProductCard.astro';
-import { getProductsByCategory, getCategories, formatPKR } from '../lib/products.js';
+/**
+ * Shop — all products, filterable by category and search, sortable.
+ * Store design system: same card, grid and chips as the category pages.
+ * Filters and sort live in the URL, so every view is shareable.
+ */
+import StoreLayout from '../components/layout/StoreLayout.astro';
+import ProductCard from '../components/store/ProductCard.astro';
+import { getProductsByCategory, getCategories } from '../lib/products.js';
 import productsData from '../../data/products.json';
 
 const visible = productsData.products.filter((p) => p.visible);
@@ -10,6 +15,7 @@ const categories = getCategories(productsData);
 const url = new URL(Astro.request.url);
 const selectedCategory = url.searchParams.get('category') || '';
 const q = (url.searchParams.get('q') || '').toLowerCase().trim();
+const sort = url.searchParams.get('sort') || '';
 
 let filtered = visible;
 if (selectedCategory) {
@@ -22,9 +28,6 @@ if (q) {
     p.tags.some((t) => t.toLowerCase().includes(q))
   );
 }
-
-// Sort products server-side with link-safe query parameters
-const sort = url.searchParams.get('sort') || '';
 if (sort === 'price-asc') {
   filtered = [...filtered].sort((a, b) => a.price_pkr - b.price_pkr);
 } else if (sort === 'price-desc') {
@@ -32,85 +35,68 @@ if (sort === 'price-asc') {
 } else if (sort === 'name') {
   filtered = [...filtered].sort((a, b) => a.name.localeCompare(b.name));
 }
+
+const label = (cat) => cat.charAt(0).toUpperCase() + cat.slice(1).replace('-', ' ');
 ---
 
-<Layout title="Shop — AASRA" description="Browse the AASRA collection. Home textiles, rugs, tableware, woodware. PKR.">
-  <div class="page-title-block">
-    <div class="kicker">The collection</div>
-    <h1>Shop</h1>
-    {q && <p class="page-sub">Search results for “{q}”</p>}
-  </div>
-
-  <!-- Product category navigation -->
+<StoreLayout title="Shop — AASRA" description="Browse the AASRA collection: handloom women's and men's clothing, made slowly in Pakistan. PKR.">
   <div class="container">
-    <nav class="plp-catnav" aria-label="Product categories">
-      <a href="/shop" class={!selectedCategory && !q ? 'active' : ''}>All</a>
-      {categories.map((cat) => (
-        <a href={`/shop?category=${cat}`} class={selectedCategory === cat ? 'active' : ''}>
-          {cat.charAt(0).toUpperCase() + cat.slice(1).replace('-', ' ')}
-        </a>
-      ))}
-      <a href="/gifts">Gifts</a>
+    <nav class="as-breadcrumb" aria-label="Breadcrumb">
+      <a href="/">Home</a><span>/</span>
+      <span aria-current="page">Shop</span>
     </nav>
-  </div>
 
-  <section class="section-tight">
-    <div class="container">
-      <div class="plp-toolbar">
-        <span class="small-caps">{filtered.length} products</span>
-        <label class="sort-label">
-          <span class="small-caps">Sort by</span>
-          <select class="sort-select" id="sort-select" aria-label="Sort products">
-            <option value="" selected={!sort}>Our selection</option>
-            <option value="price-asc" selected={sort === 'price-asc'}>Price: low to high</option>
-            <option value="price-desc" selected={sort === 'price-desc'}>Price: high to low</option>
-            <option value="name" selected={sort === 'name'}>Name A–Z</option>
-          </select>
-        </label>
-      </div>
+    <header class="as-plp-head">
+      <p class="as-kicker">The collection · {filtered.length} {filtered.length === 1 ? 'piece' : 'pieces'}</p>
+      <h1 class="as-display-l">{q ? `Results for “${q}”` : 'Shop'}</h1>
+      <p class="as-muted" style="max-width:52ch">Handloom and natural fibres, small runs, made close to home.</p>
+    </header>
 
-      <div class="shop-layout">
-        <!-- Filters sidebar -->
-        <aside class="shop-filters">
-          <div class="small-caps" style="margin-bottom:0.75rem;">Categories</div>
-          <ul>
-            <li>
-              <a href="/shop" class={selectedCategory === '' ? 'active' : ''}>All</a>
-            </li>
-            {categories.map((cat) => (
-              <li>
-                <a href={`/shop?category=${cat}`} class={selectedCategory === cat ? 'active' : ''}>
-                  {cat.charAt(0).toUpperCase() + cat.slice(1).replace('-', ' ')}
-                </a>
-              </li>
-            ))}
-          </ul>
-        </aside>
+    <nav class="as-subcats" aria-label="Categories">
+      <a class:list={['as-chip', { 'is-active': !selectedCategory }]} href="/shop" aria-current={!selectedCategory ? 'page' : undefined}>All</a>
+      {categories.map((cat) => (
+        <a class:list={['as-chip', { 'is-active': selectedCategory === cat }]} href={`/shop?category=${cat}`} aria-current={selectedCategory === cat ? 'page' : undefined}>{label(cat)}</a>
+      ))}
+      <a class="as-chip" href="/gifts">Gifts</a>
+    </nav>
 
-        <!-- Product grid -->
-        <div class="grid" style="flex:1;">
-          {filtered.length > 0 ? (
-            filtered.map((p) => <ProductCard product={p} />)
-          ) : (
-            <p style="grid-column:1/-1; color:var(--muted);">No products found.</p>
-          )}
-        </div>
+    <div class="as-filterbar">
+      <div class="as-filter-group">
+        <label class="as-filter-legend" for="sort-select">Sort</label>
+        <select class="as-sort" id="sort-select" aria-label="Sort products">
+          <option value="" selected={!sort}>Featured</option>
+          <option value="price-asc" selected={sort === 'price-asc'}>Price: low to high</option>
+          <option value="price-desc" selected={sort === 'price-desc'}>Price: high to low</option>
+          <option value="name" selected={sort === 'name'}>Name A–Z</option>
+        </select>
       </div>
     </div>
-  </section>
+
+    <p class="as-kicker" style="margin:var(--as-s4) 0" aria-live="polite">{filtered.length} {filtered.length === 1 ? 'item' : 'items'}</p>
+
+    <div class="as-grid" id="as-grid">
+      {filtered.map((p, i) => (
+        <div class="as-reveal as-grid-item" style={`--i:${i}`}>
+          <ProductCard product={p} />
+        </div>
+      ))}
+      {filtered.length === 0 && (
+        <div class="as-empty">
+          <h2 class="as-h2">Nothing matches yet</h2>
+          <p class="as-muted">Try another category, or see what just landed.</p>
+          <p style="margin-top:var(--as-s5)"><a class="as-btn as-btn--outline" href="/women/new-in">New in</a></p>
+        </div>
+      )}
+    </div>
+  </div>
 
   <script>
-    // @ts-nocheck -- browser-only event handlers use DOM APIs guarded at runtime.
+    // Sort changes the URL (shareable, back-button safe).
     document.getElementById('sort-select')?.addEventListener('change', (e) => {
-      const u = new URL(window.location);
+      const u = new URL(window.location.href);
       if (e.target.value) u.searchParams.set('sort', e.target.value);
       else u.searchParams.delete('sort');
       window.location.href = u.toString();
     });
   </script>
-</Layout>
-
-<style>
-  .font-bold { font-weight: 600; }
-  .text-black { color: var(--text); }
-</style>
+</StoreLayout>
