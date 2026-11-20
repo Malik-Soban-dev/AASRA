@@ -141,6 +141,12 @@ const {
         }
       })();
 
+      // Scrollable tables must be keyboard-reachable (axe: scrollable-region-focusable).
+      (() => {
+        document.querySelectorAll('main table').forEach((t) => {
+          if (t.scrollWidth > t.clientWidth) { t.tabIndex = 0; t.setAttribute('role', 'region'); t.setAttribute('aria-label', 'Table, scroll sideways to see more'); }
+        });
+      })();
       // Scroll progress line (clay), tracks document scroll position.
       (() => {
         const bar = document.getElementById('as-progress');

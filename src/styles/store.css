@@ -678,3 +678,30 @@ html.as-snap .as-look-media {
 .as-pdp summary, .as-accordion summary { min-height: 44px; display: flex; align-items: center; cursor: pointer; }
 h4 > a[href^="/product/"] { display: inline-block; line-height: 24px; min-height: 24px; }
 .as-chip { min-width: 44px; justify-content: center; }
+
+/* ---------- shared fixes for pages on the legacy content styles (2026-11) ----------
+   Legacy global.css adds 40px side padding to .container; the store shell already insets its own
+   container, so the padding doubled up and the header overflowed on phones. */
+.container { padding-left: 0; padding-right: 0; }
+/* Inline text links in legacy content: 24px minimum target (WCAG 2.2 AA 2.5.8). */
+main a:not([class*="as-"]):not(.btn) {
+  display: inline-block; min-height: 24px; line-height: 24px; min-width: 24px;
+}
+.as-sort, select { min-height: 44px; }
+.shop-filters a, .plp-catnav a, .subcats a { display: inline-flex; align-items: center; min-height: 44px; min-width: 44px; justify-content: center; }
+
+/* ---------- phone header: five icons did not fit a 100px column (2026-11) ----------
+   Menu button moves to the left edge; search and bag stay on the right; account and wishlist
+   move into the menu drawer so the header never overflows. */
+@media (max-width: 900px) {
+  .as-header-inner { position: relative; }
+  .as-nav-utils { gap: 0; }
+  .as-burger { position: absolute; left: 0; top: 50%; transform: translateY(-50%); }
+  .as-nav-utils > a[href="/order-lookup"], .as-nav-utils > a[href="/wishlist"] { display: none; }
+}
+/* Legacy tables scroll inside their own box on small screens instead of widening the page. */
+main table { display: block; max-width: 100%; overflow-x: auto; }
+@media (max-width: 600px) {
+  .as-filterbar { flex-wrap: wrap; gap: var(--as-s4); }
+  .as-sort, .as-filter-group { max-width: 100%; }
+}
