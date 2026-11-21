@@ -100,7 +100,13 @@ async function safepayPost(cfg, path, body) {
     } catch (e) {
       detail = '';
     }
-    throw new Error(`safepay_api_http_${response.status} at ${path}` + (detail ? `: ${detail}` : ''));
+    // Key shape only (length and prefix check), never the key values.
+    const keyShape = (k) => `len=${(k || '').length},sec_prefix=${String(k || '').startsWith('sec_')}`;
+    const keys = `api(${keyShape(cfg.apiKey)}) secret(${keyShape(cfg.secretKey)})`;
+    throw new Error(
+      `safepay_api_http_${response.status} at ${path}` +
+        (detail ? `: ${detail}` : ` (empty body, keys ${keys})`)
+    );
   }
   const json = await response.json();
   if (!json || typeof json !== 'object' || !('data' in json)) {
