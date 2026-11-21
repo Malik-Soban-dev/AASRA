@@ -94,7 +94,7 @@ export async function onRequestPost(context) {
   let session;
   try {
     session = await createCheckoutSession(env, {
-      order_id: order.id,
+      orderId: order.id,
       amountPkr: order.balance_amount,
       currency: 'PKR',
       customerEmail: order.email,
@@ -117,20 +117,20 @@ export async function onRequestPost(context) {
     order.id,
     'balance',
     session.provider,
-    session.tracker_token,
+    session.trackerToken,
     order.balance_amount,
     'PKR',
     'pending',
     null,
     now,
     now
-  );
+  ).run();
 
   return jsonResponse({
     ok: true,
     order_id: order.id,
     checkout_url: session.checkoutUrl,
-    tracker_token: session.tracker_token,
+    tracker_token: session.trackerToken,
     amount_due: order.balance_amount,
     expires_at: session.expiresAt,
   });
