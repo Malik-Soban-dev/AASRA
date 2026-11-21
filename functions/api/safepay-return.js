@@ -7,8 +7,9 @@
  * endpoint is exempt from CSRF (external service) and settles the payment
  * through the same idempotent path as the webhook (processPayment).
  *
- * GET renders a small "returning to the store" page for the browser
- * (informational only — never trusted for settlement).
+ * GET renders a "returning to the store" page for the browser. It says
+ * "Payment received" only when D1 already shows the order as paid; otherwise it
+ * says the payment is being confirmed (informational only, never used to settle).
  */
 
 import { verifyRedirectSignature } from '../lib/gateway.js';
@@ -65,29 +66,48 @@ export async function onRequestPost(context) {
   return jsonResponse(result.body, result.status);
 }
 
+/**
+ * Whether the order has a settled payment in D1. The browser GET is display
+ * only, so it reads state rather than trusting the URL.
+ */
+async function isOrderPaid(env, orderId) {
+  if (!env.DB || !orderId) return false;
+  try {
+    const row = await env.DB.prepare('SELECT status FROM orders WHERE id = ?').bind(orderId).first();
+    return !!row && (row.status === 'paid' || row.status === 'deposit-paid');
+  } catch {
+    return false;
+  }
+}
+
 export async function onRequestGet(context) {
   const url = new URL(context.request.url);
-  const order = url.searchParams.get('order') || '';
+  const order = (url.searchParams.get('order') || '').slice(0, 64);
+  const confirmed = await isOrderPaid(context.env, order);
   const target = `/order-success?order=${encodeURIComponent(order)}`;
+  const heading = confirmed ? 'Payment received' : 'Confirming your payment';
+  const message = confirmed
+    ? 'Returning you to the store…'
+    : 'We are confirming your payment with Safepay. Your order page will update once it is confirmed.';
   const html = `<!doctype html>
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <title>Returning to AASRA…</title>
+    <title>${heading} — AASRA</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta http-equiv="refresh" content="2;url=${target}" />
+    <meta http-equiv="refresh" content="${confirmed ? 2 : 5};url=${target}" />
     <style>
       body { font-family: Georgia, serif; background: #f7f5ef; color: #23211d;
              display: flex; align-items: center; justify-content: center; min-height: 100vh; margin: 0; }
-      .box { text-align: center; }
-      a { color: #a65e45; }
+      .box { text-align: center; max-width: 36ch; padding: 0 1rem; }
+      a { color: #94503a; }
     </style>
   </head>
   <body>
     <div class="box">
       <p style="letter-spacing:.2em;text-transform:uppercase;font-size:.7rem">AASRA</p>
-      <h1>Payment received</h1>
-      <p>Returning you to the store… <a href="${target}">continue</a></p>
+      <h1>${heading}</h1>
+      <p>${message} <a href="${target}">Continue</a></p>
     </div>
   </body>
 </html>`;

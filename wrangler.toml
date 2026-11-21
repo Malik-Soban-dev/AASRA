@@ -53,14 +53,13 @@ PAYFAST_ENABLED = "false"
 #   SAFEPAY_WEBHOOK_SECRET
 #   EMAIL_PROVIDER_API_KEY
 
-# --- D1 database binding ---
-# Create the database first (dashboard: Storage & Databases > D1 > "AASRA_DB",
-# or `npx wrangler d1 create AASRA_DB`), then UNCOMMENT this block and paste
-# the database_id. Deploys fail if this block is active with a placeholder.
-# [[d1_databases]]
-# binding = "DB"
-# database_name = "AASRA_DB"
-# database_id = "<PASTE-DATABASE-ID>"
+# --- D1 database binding (AASRA_DB) ---
+# Migrations must be applied to this database before checkout works:
+#   npx wrangler d1 migrations apply AASRA_DB --remote
+[[d1_databases]]
+binding = "DB"
+database_name = "AASRA_DB"
+database_id = "29fd9574-2636-4f49-aab9-b1aa72de49e7"
 
 # Cron triggers — daily 09:00 UTC: balance reminders, reservation expiry,
 # unpaid-order cancellation, gateway reconciliation (functions/scheduled.js)

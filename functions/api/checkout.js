@@ -171,7 +171,7 @@ async function createOrderEvent(db, orderId, type, details = null) {
   try {
     await db.prepare(
       'INSERT INTO order_events (id, order_id, type, details, created_at) VALUES (?, ?, ?, ?, ?)'
-    ).bind(id, orderId, type, details ? JSON.stringify(details) : null, nowIso());
+    ).bind(id, orderId, type, details ? JSON.stringify(details) : null, nowIso()).run();
   } catch (e) {
     // Event logging must not fail the order.
     console.warn('[ORDER_EVENT] failed to log', type, e.message);
@@ -350,7 +350,7 @@ export async function onRequestPost(context) {
         deposit_status, balance_status, balance_due_at,
         balance_token,
         coupon_code, courier, created_at, updated_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
     ).bind(
       orderId,
       initialStatus,
@@ -376,7 +376,7 @@ export async function onRequestPost(context) {
       computed.courier || null,
       now,
       now
-    );
+    ).run();
   } catch (e) {
     // Order insert failed — release reservations
     await releaseReservations(context.env.DB, reservationResult.reservations.map((r) => r.id));
@@ -418,7 +418,7 @@ export async function onRequestPost(context) {
   } catch (e) {
     // Gateway session failed — release reservations, mark order cancelled
     await releaseReservations(context.env.DB, reservationResult.reservations.map((r) => r.id));
-    await context.env.DB.prepare("UPDATE orders SET status = 'cancelled', updated_at = ? WHERE id = ?").bind(now, orderId);
+    await context.env.DB.prepare("UPDATE orders SET status = 'cancelled', updated_at = ? WHERE id = ?").bind(now, orderId).run();
     await createOrderEvent(context.env.DB, orderId, 'gateway_session_failed', { error: e.message });
     return errorResponse('payment_session_failed', 502, 'gateway_error');
   }
@@ -432,19 +432,19 @@ export async function onRequestPost(context) {
     orderId,
     payment_type === 'deposit' ? 'deposit' : 'full',
     session.provider,
-    session.tracker_token,
+    session.trackerToken,
     amountDueNow,
     'PKR',
     'pending',
     null,
     now,
     now
-  );
+  ).run();
 
   await createOrderEvent(context.env.DB, orderId, 'payment_pending', {
     kind: payment_type === 'deposit' ? 'deposit' : 'full',
     amount: amountDueNow,
-    tracker: session.tracker_token,
+    tracker: session.trackerToken,
   });
 
   // 13. Return hosted checkout URL (browser redirects here; webhook is source of truth)
@@ -452,7 +452,7 @@ export async function onRequestPost(context) {
     ok: true,
     order_id: orderId,
     checkout_url: session.checkoutUrl,
-    tracker_token: session.tracker_token,
+    tracker_token: session.trackerToken,
     amount_due_now: amountDueNow,
     total: computed.total,
     deposit_amount: computed.deposit_amount,
