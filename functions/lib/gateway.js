@@ -93,15 +93,14 @@ async function safepayPost(cfg, path, body) {
   });
   if (!response.ok) {
     // TEMPORARY DEBUG: include Safepay's error messages (never keys) to diagnose. Revert after.
+    // Show the failing path and Safepay's raw error body (no request headers, so no keys).
     let detail = '';
     try {
-      const errBody = await response.json();
-      const errs = (errBody && errBody.status && errBody.status.errors) || [];
-      detail = errs.map((e) => (typeof e === 'string' ? e : JSON.stringify(e))).join('; ');
+      detail = (await response.text()).replace(/\s+/g, ' ').slice(0, 300);
     } catch (e) {
       detail = '';
     }
-    throw new Error(`safepay_api_http_${response.status}` + (detail ? `: ${detail.slice(0, 300)}` : ''));
+    throw new Error(`safepay_api_http_${response.status} at ${path}` + (detail ? `: ${detail}` : ''));
   }
   const json = await response.json();
   if (!json || typeof json !== 'object' || !('data' in json)) {
