@@ -189,8 +189,7 @@ async function createOrderEvent(db, orderId, type, details = null) {
   }
 }
 
-// TEMPORARY DEBUG: report any unexpected server error as JSON with its message
-// (no secrets) so the checkout page can show it. Revert after.
+// Unexpected errors: clean up held stock and any half-made order, then return a generic error.
 export async function onRequestPost(context) {
   const state = {};
   try {
@@ -210,7 +209,7 @@ export async function onRequestPost(context) {
     } catch (cleanupError) {
       console.warn('[CHECKOUT] cleanup failed', cleanupError && cleanupError.message);
     }
-    return errorResponse('server_error: ' + (e && e.message ? e.message : 'unknown'), 500, 'server_error');
+    return errorResponse('checkout_failed', 500, 'server_error');
   }
 }
 
@@ -256,9 +255,7 @@ async function handleCheckoutPost(context) {
   // 3. Turnstile verification (bot protection)
   const turnstile = await verifyTurnstile(env, turnstile_token);
   if (!turnstile.ok) {
-    // TEMPORARY DEBUG: show Turnstile error codes (not secrets) while fixing the secret. Revert after.
-    const tsCodes = turnstile.challenge && turnstile.challenge['error-codes'] ? turnstile.challenge['error-codes'].join(',') : (turnstile.error || 'unknown');
-    return errorResponse('turnstile verification failed: ' + tsCodes, 403, 'turnstile_failed');
+    return errorResponse('turnstile verification failed', 403, 'turnstile_failed');
   }
 
   // 4. Validate cart
@@ -465,8 +462,7 @@ async function handleCheckoutPost(context) {
     await releaseReservations(context.env.DB, reservationResult.reservations.map((r) => r.id));
     await context.env.DB.prepare("UPDATE orders SET status = 'cancelled', updated_at = ? WHERE id = ?").bind(now, orderId).run();
     await createOrderEvent(context.env.DB, orderId, 'gateway_session_failed', { error: e.message });
-    // TEMPORARY DEBUG: include the gateway error code (no secrets). Revert after.
-    return errorResponse('payment_session_failed: ' + (e && e.message ? e.message : 'unknown'), 502, 'gateway_error');
+    return errorResponse('payment_session_failed', 502, 'gateway_error');
   }
 
   // Store payment record (pending)

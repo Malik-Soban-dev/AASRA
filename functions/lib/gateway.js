@@ -91,23 +91,7 @@ async function safepayPost(cfg, path, body) {
     },
     body: body === undefined ? undefined : JSON.stringify(body),
   });
-  if (!response.ok) {
-    // TEMPORARY DEBUG: include Safepay's error messages (never keys) to diagnose. Revert after.
-    // Show the failing path and Safepay's raw error body (no request headers, so no keys).
-    let detail = '';
-    try {
-      detail = (await response.text()).replace(/\s+/g, ' ').slice(0, 300);
-    } catch (e) {
-      detail = '';
-    }
-    // Key shape only (length and prefix check), never the key values.
-    const keyShape = (k) => `len=${(k || '').length},sec_prefix=${String(k || '').startsWith('sec_')}`;
-    const keys = `api(${keyShape(cfg.apiKey)}) secret(${keyShape(cfg.secretKey)})`;
-    throw new Error(
-      `safepay_api_http_${response.status} at ${path}` +
-        (detail ? `: ${detail}` : ` (empty body, keys ${keys})`)
-    );
-  }
+  if (!response.ok) throw new Error(`safepay_api_http_${response.status}`);
   const json = await response.json();
   if (!json || typeof json !== 'object' || !('data' in json)) {
     throw new Error('safepay_response_unexpected');
