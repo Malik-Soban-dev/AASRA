@@ -82,7 +82,20 @@ async function isOrderPaid(env, orderId) {
 
 export async function onRequestGet(context) {
   const url = new URL(context.request.url);
-  const order = (url.searchParams.get('order') || '').slice(0, 64);
+  let order = (url.searchParams.get('order') || '').slice(0, 64);
+  // Safepay appends ?tracker=... to redirect_url. Use it to find the order when
+  // the URL has no order number (read-only lookup; the order page only displays).
+  const tracker = (url.searchParams.get('tracker') || '').slice(0, 128);
+  if (!order && tracker && context.env.DB) {
+    try {
+      const row = await context.env.DB.prepare('SELECT order_id FROM payments WHERE tracker_token = ? LIMIT 1')
+        .bind(tracker)
+        .first();
+      if (row && row.order_id) order = String(row.order_id).slice(0, 64);
+    } catch (e) {
+      // Fall through: the order page still shows without an order number.
+    }
+  }
   const confirmed = await isOrderPaid(context.env, order);
   const target = `/order-success?order=${encodeURIComponent(order)}`;
   const heading = confirmed ? 'Payment received' : 'Confirming your payment';
