@@ -7,6 +7,9 @@ import Layout from '../components/Layout.astro';
   <section class="section">
     <div class="container" style="max-width:560px;">
       <h1>Order received</h1>
+      <p id="order-number-line" hidden>
+        Your order number is <strong id="order-number"></strong>. Keep it safe: you need it with your phone number to track your order.
+      </p>
       <p>Thank you. Your order has been placed and is awaiting payment confirmation.</p>
       <p><strong>Important:</strong> The payment confirmation arrives via our payment gateway. You will receive an email once the payment is verified.</p>
       <div style="margin-top:2rem;">
@@ -16,9 +19,13 @@ import Layout from '../components/Layout.astro';
     </div>
   </section>
   <script is:inline>
-    // The order is placed once the shopper reaches this page, so empty the cart.
     try {
-      if (new URLSearchParams(location.search).get('order')) {
+      const orderId = new URLSearchParams(location.search).get('order');
+      if (orderId) {
+        // Show the order number (text only, never HTML).
+        document.getElementById('order-number').textContent = orderId;
+        document.getElementById('order-number-line').hidden = false;
+        // The order is placed once the shopper reaches this page, so empty the cart.
         localStorage.removeItem('aasra_cart_v1');
         window.dispatchEvent(new Event('aasra:cart'));
       }
