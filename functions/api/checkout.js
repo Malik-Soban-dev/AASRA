@@ -151,11 +151,22 @@ async function reserveStock(db, items, holdMinutes = 15) {
 
 async function releaseReservations(db, reservationIds) {
   if (!reservationIds || reservationIds.length === 0) return;
+  // Only reservations still 'active' are released; their units go back to stock.
+  // Already-released rows are skipped, so stock is never returned twice.
+  const placeholders = reservationIds.map(() => '?').join(', ');
+  const active = await db
+    .prepare(`SELECT id, sku, qty FROM reservations WHERE status = 'active' AND id IN (${placeholders})`)
+    .bind(...reservationIds)
+    .all();
   const now = nowIso();
-  const stmts = reservationIds.map((id) =>
-    db.prepare("UPDATE reservations SET status = 'released' WHERE id = ? AND status = 'active'").bind(id)
-  );
-  await db.batch(stmts);
+  const stmts = [];
+  for (const r of active.results || []) {
+    stmts.push(db.prepare("UPDATE reservations SET status = 'released' WHERE id = ? AND status = 'active'").bind(r.id));
+    stmts.push(
+      db.prepare('UPDATE stock SET quantity_available = quantity_available + ?, updated_at = ? WHERE sku = ?').bind(r.qty, now, r.sku)
+    );
+  }
+  if (stmts.length) await db.batch(stmts);
 }
 
 async function linkReservationsToOrder(db, reservationIds, orderId) {
@@ -181,9 +192,24 @@ async function createOrderEvent(db, orderId, type, details = null) {
 // TEMPORARY DEBUG: report any unexpected server error as JSON with its message
 // (no secrets) so the checkout page can show it. Revert after.
 export async function onRequestPost(context) {
+  const state = {};
   try {
-    return await handleCheckoutPost(context);
+    return await handleCheckoutPost({ ...context, state });
   } catch (e) {
+    // Clean up so a crash never leaves stock held or a half-made order behind.
+    try {
+      const db = context.env.DB;
+      if (state.orderId) {
+        await db
+          .prepare("UPDATE orders SET status = 'cancelled', updated_at = ? WHERE id = ? AND status IN ('pending-payment', 'pending-deposit')")
+          .bind(nowIso(), state.orderId)
+          .run();
+        await createOrderEvent(db, state.orderId, 'checkout_failed', { error: String(e && e.message ? e.message : 'unknown') });
+      }
+      if (state.reservationIds) await releaseReservations(db, state.reservationIds);
+    } catch (cleanupError) {
+      console.warn('[CHECKOUT] cleanup failed', cleanupError && cleanupError.message);
+    }
     return errorResponse('server_error: ' + (e && e.message ? e.message : 'unknown'), 500, 'server_error');
   }
 }
@@ -338,6 +364,7 @@ async function handleCheckoutPost(context) {
   let reservationResult;
   try {
     reservationResult = await reserveStock(context.env.DB, items, 15);
+    if (context.state) context.state.reservationIds = reservationResult.reservations.map((r) => r.id);
   } catch (e) {
     if (e.message && e.message.startsWith('insufficient_stock:')) {
       const sku = e.message.split(':')[1];
@@ -348,6 +375,7 @@ async function handleCheckoutPost(context) {
 
   // 11. Create order record
   const orderId = publicOrderNumber();
+  if (context.state) context.state.orderId = orderId;
   // Unguessable token for balance payment + invoice access (not the order id).
   const balanceToken = makeId('bal');
   const now = nowIso();
