@@ -28,7 +28,7 @@ import {
   assertMoneyInvariant,
 } from '../lib/pricing.js';
 import { createCheckoutSession } from '../lib/gateway.js';
-import { sendEmail, orderReceivedEmail } from '../lib/email.js';
+import { sendEmail, orderReceivedEmail, wrapEmail } from '../lib/email.js';
 import productsData from '../../data/products.json';
 import shippingConfigData from '../../data/shipping-rates.json';
 
@@ -488,6 +488,40 @@ async function handleCheckoutPost(context) {
     amount: amountDueNow,
     tracker: session.trackerToken,
   });
+
+  // 12b. Order confirmation email to the customer. A send failure must not
+  // block checkout: log an order event and continue to the payment page.
+  try {
+    const tpl = orderReceivedEmail({
+      order: {
+        id: orderId,
+        customer_name: name,
+        total: computed.total,
+        payment_type,
+        deposit_amount: computed.deposit_amount,
+        balance_amount: computed.balance_amount,
+        balance_token: balanceToken,
+        deposit_status: 'unpaid',
+      },
+      env,
+    });
+    const mail = wrapEmail(env, {
+      subject: tpl.subject,
+      title: 'Order confirmation',
+      body: tpl.html,
+      intro: tpl.intro,
+      outro: tpl.outro,
+      btnText: 'Track your order',
+      btnUrl: `${env.PUBLIC_BASE_URL || 'https://aasra.shop'}/order-lookup`,
+    });
+    const sent = await sendEmail(env, { to: email, subject: mail.subject, html: mail.html, text: mail.text });
+    if (!sent.ok) {
+      await createOrderEvent(context.env.DB, orderId, 'email_failed', { kind: 'order_received', error: sent.error });
+    }
+  } catch (e) {
+    console.warn('[CHECKOUT] order email failed', orderId, e.message);
+    await createOrderEvent(context.env.DB, orderId, 'email_failed', { kind: 'order_received', error: e.message });
+  }
 
   // 13. Return hosted checkout URL (browser redirects here; webhook is source of truth)
   return jsonResponse({
