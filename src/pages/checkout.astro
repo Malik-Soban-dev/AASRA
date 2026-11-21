@@ -231,9 +231,10 @@ const cities = shipping.rates.map((r) => r.city);
       btn.textContent = 'Processing…';
 
       try {
+        await window.__AASRA_CSRF?.ensure?.();
         const res = await fetch('/api/checkout', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 'Content-Type': 'application/json', ...(window.__AASRA_CSRF?.header?.() || {}) },
           body: JSON.stringify(body),
         });
         const data = await res.json();
