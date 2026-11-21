@@ -145,7 +145,7 @@ export async function processPayment(env, db, { eventId, trackerToken, orderId, 
   // Update payment record (mark paid, record idempotency id)
   await db
     .prepare('UPDATE payments SET status = ?, raw_event_id = ?, updated_at = ? WHERE id = ?')
-    .bind('paid', idempotencyId, now, payment.id);
+    .bind('paid', idempotencyId, now, payment.id).run();
 
   // Update order state
   await db
@@ -154,12 +154,12 @@ export async function processPayment(env, db, { eventId, trackerToken, orderId, 
          status = ?, deposit_status = ?, balance_status = ?, updated_at = ?
        WHERE id = ?`
     )
-    .bind(transition.newStatus, transition.depositStatus, transition.balanceStatus, now, payment.order_id);
+    .bind(transition.newStatus, transition.depositStatus, transition.balanceStatus, now, payment.order_id).run();
 
   // Confirm stock reservations (active → confirmed)
   await db
     .prepare("UPDATE reservations SET status = 'confirmed' WHERE order_id = ? AND status = 'active'")
-    .bind(payment.order_id);
+    .bind(payment.order_id).run();
 
   // Log events
   await createOrderEvent(db, payment.order_id, transition.eventType, {
@@ -250,7 +250,7 @@ async function createOrderEvent(db, orderId, type, details = null) {
   try {
     await db
       .prepare('INSERT INTO order_events (id, order_id, type, details, created_at) VALUES (?, ?, ?, ?, ?)')
-      .bind(id, orderId, type, details ? JSON.stringify(details) : null, new Date().toISOString());
+      .bind(id, orderId, type, details ? JSON.stringify(details) : null, new Date().toISOString()).run();
   } catch (e) {
     console.warn('[ORDER_EVENT] failed', type, e.message);
   }
