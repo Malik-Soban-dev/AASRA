@@ -727,3 +727,89 @@ main table { display: block; max-width: 100%; overflow-x: auto; }
 @media (max-width: 900px) {
   .as-footer-cols { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
+
+/* ==========================================================================
+   Home (index.astro) — .as-home-*
+   One hero, category row, New In rail, one campaign band, facts strip.
+   ========================================================================== */
+
+/* Hero: photo fills the first screen on desktop; on phones the copy sits on paper below the photo. */
+.as-home-hero { position: relative; min-height: 88vh; display: grid; align-items: end; overflow: hidden; background: var(--as-ink); color: var(--as-paper); }
+.as-home-hero-media { position: absolute; inset: 0; }
+.as-home-hero-media img { width: 100%; height: 100%; object-fit: cover; object-position: center 30%; }
+.as-home-hero-media::after {
+  content: ''; position: absolute; inset: 0;
+  background: linear-gradient(90deg, rgba(20, 16, 12, 0.62) 0%, rgba(20, 16, 12, 0.18) 60%, rgba(20, 16, 12, 0) 100%);
+}
+.as-home-hero-copy { position: relative; z-index: 1; padding: var(--as-s9) var(--as-gutter) var(--as-s8); max-width: 640px; }
+.as-home-hero .as-kicker { color: rgba(247, 245, 239, 0.85); }
+.as-home-title { font-family: var(--as-display); font-weight: 450; font-size: clamp(3rem, 7vw, 6rem); line-height: 0.98; letter-spacing: -0.01em; margin: var(--as-s3) 0 var(--as-s4); }
+.as-home-lede { font-size: 1.05rem; line-height: 1.6; max-width: 40ch; opacity: 0.92; margin: 0 0 var(--as-s6); }
+.as-home-actions { display: flex; flex-wrap: wrap; gap: var(--as-s3); }
+
+/* Sections */
+.as-home-section { padding: var(--as-s9) var(--as-gutter) var(--as-s7); }
+.as-home-head { display: flex; justify-content: space-between; align-items: flex-end; gap: var(--as-s5); margin-bottom: var(--as-s6); }
+.as-home-head .as-h2 { margin-top: var(--as-s2); }
+
+/* Category row: identical 4:5 photos, labels below the photo (never over it) */
+.as-cats { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--as-s5); }
+.as-cat { display: block; color: var(--as-ink); text-decoration: none; }
+.as-cat-img { display: block; aspect-ratio: 4 / 5; overflow: hidden; background: var(--as-sand); }
+.as-cat-img img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.9s var(--as-ease); }
+.as-cat:hover .as-cat-img img { transform: scale(1.03); }
+.as-cat-row { display: flex; justify-content: space-between; align-items: center; gap: var(--as-s3); padding-top: var(--as-s3); border-bottom: 1px solid var(--as-line); padding-bottom: var(--as-s3); }
+.as-cat-title { font-family: var(--as-display); font-size: 1.3rem; line-height: 1.2; }
+.as-cat-go { font-size: 1.1rem; color: var(--as-clay-ink); transition: transform var(--as-med) var(--as-ease); }
+.as-cat:hover .as-cat-go { transform: translateX(4px); }
+
+/* New in rail spacing on the home page */
+.as-home-rail { padding-top: var(--as-s7); padding-bottom: var(--as-s7); }
+
+/* Campaign band: one full-width image, short on phones */
+.as-home-campaign { position: relative; min-height: 70vh; overflow: hidden; display: flex; align-items: center; justify-content: center; background: var(--as-ink); }
+.as-home-campaign > img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center 35%; }
+.as-home-campaign::after { content: ''; position: absolute; inset: 0; background: rgba(20, 16, 12, 0.36); }
+.as-home-campaign-copy { position: relative; z-index: 2; text-align: center; color: var(--as-paper); padding: var(--as-s8) var(--as-gutter); display: grid; gap: var(--as-s4); justify-items: center; }
+.as-home-campaign .as-kicker { color: rgba(247, 245, 239, 0.85); }
+
+/* Facts strip: delivery and returns, visible before checkout */
+.as-home-facts { padding: var(--as-s7) var(--as-gutter); }
+.as-home-facts ul { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--as-s6); }
+.as-home-facts li { display: grid; gap: 0.35rem; padding-top: var(--as-s4); border-top: 1px solid var(--as-line); }
+.as-home-facts strong { font-family: var(--as-display); font-weight: 450; font-size: 1.25rem; }
+.as-home-facts span { color: var(--as-graphite); font-size: 0.95rem; line-height: 1.5; }
+
+/* Tablet */
+@media (max-width: 900px) {
+  .as-cats { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--as-s4) var(--as-s4); }
+  .as-home-facts ul { grid-template-columns: 1fr; gap: var(--as-s5); }
+}
+
+/* Phone: photo first, copy on paper below, two-column categories, shorter campaign band */
+@media (max-width: 600px) {
+  .as-home-hero { min-height: 0; display: block; background: var(--as-paper); color: var(--as-ink); }
+  .as-home-hero-media { position: relative; inset: auto; height: 62svh; min-height: 360px; }
+  .as-home-hero-media::after { background: linear-gradient(180deg, rgba(20, 16, 12, 0) 60%, rgba(20, 16, 12, 0.2) 100%); }
+  .as-home-hero .as-kicker { color: var(--as-clay-ink); }
+  .as-home-hero-copy { padding: var(--as-s6) var(--as-gutter) var(--as-s7); }
+  .as-home-title { font-size: clamp(2.5rem, 12vw, 3.2rem); margin: var(--as-s2) 0 var(--as-s3); }
+  .as-home-lede { font-size: 1rem; margin-bottom: var(--as-s5); }
+  .as-home-actions .as-btn { flex: 1 1 calc(50% - var(--as-s3)); }
+  .as-home-section { padding: var(--as-s7) var(--as-gutter) var(--as-s6); }
+  .as-home-head { margin-bottom: var(--as-s5); }
+  .as-cat-title { font-size: 1.1rem; }
+  .as-home-campaign { min-height: 56vh; }
+  .as-home-campaign-copy { padding: var(--as-s7) var(--as-gutter); }
+}
+
+/* Hero secondary button: light outline over the photo on desktop, ink outline on the paper background on phones. */
+.as-home-hero .as-home-men { color: var(--as-paper); border-color: rgba(247, 245, 239, 0.8); }
+.as-home-hero .as-home-men:hover { background: var(--as-paper); color: var(--as-ink); }
+@media (max-width: 600px) {
+  .as-home-hero .as-home-men { color: var(--as-ink); border-color: var(--as-ink); }
+  .as-home-hero .as-home-men:hover { background: var(--as-ink); color: var(--as-paper); }
+  .as-home-head { flex-wrap: wrap; align-items: flex-start; }
+  .as-home-head .as-h2 { font-size: 1.65rem; }
+  .as-home-head .as-link { order: 2; }
+}
