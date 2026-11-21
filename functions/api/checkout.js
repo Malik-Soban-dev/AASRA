@@ -323,11 +323,16 @@ async function handleCheckoutPost(context) {
     }
   }
 
-  assertMoneyInvariant({
-    total: computed.total,
-    deposit_amount: computed.deposit_amount,
-    balance_amount: computed.balance_amount,
-  });
+  // Deposit orders split the total into deposit + balance. Full payments take
+  // the whole total now, so deposit/balance stay 0 by design (the webhook marks
+  // both as paid on a full payment) and the split invariant does not apply.
+  if (payment_type === 'deposit') {
+    assertMoneyInvariant({
+      total: computed.total,
+      deposit_amount: computed.deposit_amount,
+      balance_amount: computed.balance_amount,
+    });
+  }
 
   // 10. Reserve stock (15-minute hold)
   let reservationResult;
