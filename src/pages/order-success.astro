@@ -15,4 +15,13 @@ import Layout from '../components/Layout.astro';
       </div>
     </div>
   </section>
+  <script is:inline>
+    // The order is placed once the shopper reaches this page, so empty the cart.
+    try {
+      if (new URLSearchParams(location.search).get('order')) {
+        localStorage.removeItem('aasra_cart_v1');
+        window.dispatchEvent(new Event('aasra:cart'));
+      }
+    } catch (e) {}
+  </script>
 </Layout>
