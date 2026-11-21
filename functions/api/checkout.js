@@ -437,7 +437,8 @@ async function handleCheckoutPost(context) {
     await releaseReservations(context.env.DB, reservationResult.reservations.map((r) => r.id));
     await context.env.DB.prepare("UPDATE orders SET status = 'cancelled', updated_at = ? WHERE id = ?").bind(now, orderId).run();
     await createOrderEvent(context.env.DB, orderId, 'gateway_session_failed', { error: e.message });
-    return errorResponse('payment_session_failed', 502, 'gateway_error');
+    // TEMPORARY DEBUG: include the gateway error code (no secrets). Revert after.
+    return errorResponse('payment_session_failed: ' + (e && e.message ? e.message : 'unknown'), 502, 'gateway_error');
   }
 
   // Store payment record (pending)
