@@ -18,7 +18,7 @@
  * Prices snapshot into the order so later products.json edits don't change old orders.
  */
 
-import { validateCart, isValidPhone, isValidEmail, sanitizeString, requireFields } from '../lib/validation.js';
+import { validateCart, isValidPhone, isValidEmail, sanitizeString, requireFields, normalizePhone } from '../lib/validation.js';
 import {
   setProducts,
   getProducts,
