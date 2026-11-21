@@ -91,7 +91,18 @@ async function safepayPost(cfg, path, body) {
     },
     body: body === undefined ? undefined : JSON.stringify(body),
   });
-  if (!response.ok) throw new Error(`safepay_api_http_${response.status}`);
+  if (!response.ok) {
+    // TEMPORARY DEBUG: include Safepay's error messages (never keys) to diagnose. Revert after.
+    let detail = '';
+    try {
+      const errBody = await response.json();
+      const errs = (errBody && errBody.status && errBody.status.errors) || [];
+      detail = errs.map((e) => (typeof e === 'string' ? e : JSON.stringify(e))).join('; ');
+    } catch (e) {
+      detail = '';
+    }
+    throw new Error(`safepay_api_http_${response.status}` + (detail ? `: ${detail.slice(0, 300)}` : ''));
+  }
   const json = await response.json();
   if (!json || typeof json !== 'object' || !('data' in json)) {
     throw new Error('safepay_response_unexpected');
