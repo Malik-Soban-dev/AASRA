@@ -237,7 +237,9 @@ const cities = shipping.rates.map((r) => r.city);
           headers: { 'Content-Type': 'application/json', ...(window.__AASRA_CSRF?.header?.() || {}) },
           body: JSON.stringify(body),
         });
-        const data = await res.json();
+        const text = await res.text();
+        let data;
+        try { data = JSON.parse(text); } catch (e) { data = { ok: false, error: 'Server error (HTTP ' + res.status + ').' }; }
 
         if (!res.ok || !data.ok) {
           showError(data.error || 'Checkout failed. Please try again.');
