@@ -220,7 +220,9 @@ export async function onRequestPost(context) {
   // 3. Turnstile verification (bot protection)
   const turnstile = await verifyTurnstile(env, turnstile_token);
   if (!turnstile.ok) {
-    return errorResponse('turnstile verification failed', 403, 'turnstile_failed');
+    // TEMPORARY DEBUG: show Turnstile error codes (not secrets) while fixing the secret. Revert after.
+    const tsCodes = turnstile.challenge && turnstile.challenge['error-codes'] ? turnstile.challenge['error-codes'].join(',') : (turnstile.error || 'unknown');
+    return errorResponse('turnstile verification failed: ' + tsCodes, 403, 'turnstile_failed');
   }
 
   // 4. Validate cart
