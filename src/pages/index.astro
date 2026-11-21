@@ -1,92 +1,85 @@
 ---
 /**
- * Home — runway hero, marquee, the edit (broken editorial grid), new-in rail,
- * campaign banner, shop the look. Composition only; see docs/DESIGN_SYSTEM.md.
+ * Home — one hero, the category row, New In, one campaign band, and the
+ * delivery and returns facts. Shorter than before: fewer blocks, no text
+ * over the photo on phones, identical tile proportions. Styles: .as-home-*.
  */
 import StoreLayout from '../components/layout/StoreLayout.astro';
-import RunwayHero from '../components/store/RunwayHero.astro';
 import ProductRail from '../components/store/ProductRail.astro';
-import { newArrivals, products, formatPrice } from '../lib/catalog.js';
+import { newArrivals } from '../lib/catalog.js';
+import site from '../../data/catalog/site.json';
 
-const newIn = newArrivals().slice(0, 6);
-const lookItems = ['W001', 'W003'].map((id) => products.find((p) => p.id === id)).filter(Boolean);
+const newIn = newArrivals().slice(0, 4);
 
-const tiles = [
-  { img: '/images/garments/w-dress-clay.jpg', kicker: 'The spring edit', title: 'Dresses & Kurtas', href: '/women/dresses', alt: 'Clay linen wrap dress' },
-  { img: '/images/garments/m-shirt-slate.jpg', kicker: 'New in', title: 'Shirts & Kurtas', href: '/men/shirts', alt: 'Slate linen shirt' },
-  { img: '/images/garments/w-cardigan-olive.jpg', kicker: 'Handloom', title: 'Knitwear', href: '/women/knitwear', alt: 'Olive wool cardigan' },
-  { img: '/images/garments/w-coat-sand.jpg', kicker: 'Limited', title: 'Outerwear & Shawls', href: '/women/outerwear', alt: 'Sand quilted shawl coat' },
+const categories = [
+  { img: '/images/garments/w-dress-clay.jpg', title: 'Dresses & Kurtas', href: '/women/dresses', alt: 'Clay linen wrap dress' },
+  { img: '/images/garments/m-shirt-slate.jpg', title: 'Shirts & Kurtas', href: '/men/shirts', alt: 'Slate linen shirt' },
+  { img: '/images/garments/w-cardigan-olive.jpg', title: 'Knitwear', href: '/women/knitwear', alt: 'Olive wool cardigan' },
+  { img: '/images/garments/w-coat-sand.jpg', title: 'Outerwear & Shawls', href: '/women/outerwear', alt: 'Sand quilted shawl coat' },
 ];
 ---
 
 <StoreLayout snap>
-  <RunwayHero />
-
-  <section class="as-section container as-snap-section" aria-labelledby="edit-title">
-    <div class="as-section-head as-reveal">
-      <div>
-        <p class="as-kicker">The edit</p>
-        <h2 class="as-h2" id="edit-title">Made for the season, not the cycle</h2>
-      </div>
-      <a class="as-link" href="/women">Shop all</a>
+  <section class="as-home-hero" aria-labelledby="home-title">
+    <div class="as-home-hero-media">
+      <img src="/images/look/banner-runway.jpg" alt="Two models in handloom linen on a sunlit runway" width="2000" height="1125" fetchpriority="high" />
     </div>
-    <div class="as-edit-row" data-stagger>
-      {tiles.map((t, i) => (
-        <a class:list={['as-edit-tile', 'as-reveal']} style={`--i:${i}`} href={t.href}>
-          <img src={t.img} alt={t.alt} loading="lazy" width="900" height="1125" />
-          <div class="as-edit-label">
-            <p class="as-kicker">{t.kicker}</p>
-            <h3>{t.title}</h3>
-            <span class="as-link as-link--light">Shop</span>
-          </div>
-        </a>
-      ))}
+    <div class="as-home-hero-copy">
+      <p class="as-kicker">{site.hero.kicker}</p>
+      <h1 class="as-home-title" id="home-title">Wear the slow made</h1>
+      <p class="as-home-lede">Handloom linen, natural dyes and small runs, made close to home in Pakistan.</p>
+      <div class="as-home-actions">
+        <a class="as-btn as-btn--solid" href={site.hero.women.href}>{site.hero.women.label}</a>
+        <a class="as-btn as-btn--outline as-home-men" href={site.hero.men.href}>{site.hero.men.label}</a>
+      </div>
     </div>
   </section>
 
+  <section class="as-home-section container" aria-labelledby="cats-title">
+    <div class="as-home-head">
+      <div>
+        <p class="as-kicker">Shop by category</p>
+        <h2 class="as-h2" id="cats-title">Made for the season, not the cycle</h2>
+      </div>
+      <a class="as-link" href="/shop">Shop all</a>
+    </div>
+    <ul class="as-cats" role="list">
+      {categories.map((c) => (
+        <li class="as-reveal">
+          <a class="as-cat" href={c.href}>
+            <span class="as-cat-img"><img src={c.img} alt={c.alt} loading="lazy" width="900" height="1125" /></span>
+            <span class="as-cat-row">
+              <span class="as-cat-title">{c.title}</span>
+              <span class="as-cat-go" aria-hidden="true">→</span>
+            </span>
+          </a>
+        </li>
+      ))}
+    </ul>
+  </section>
+
   <ProductRail
-    class="as-snap-section"
+    class="as-home-rail"
     kicker="Fresh off the loom"
     title="New in"
     products={newIn}
     link={{ label: 'View all', href: '/women/new-in' }}
   />
 
-  <section class="as-campaign as-snap-section" aria-label="The campaign">
-    <img src="/images/look/banner-runway.jpg" alt="Two models walking through a sunlit atelier" loading="lazy" width="2000" height="1125" />
-    <div class="as-campaign-copy as-reveal">
-      <p class="as-kicker">Spring / Summer campaign</p>
+  <section class="as-home-campaign" aria-label="The campaign">
+    <img src="/images/look/hero-women.jpg" alt="The ivory kurta styled with the olive cardigan" loading="lazy" width="1100" height="1375" />
+    <div class="as-home-campaign-copy as-reveal">
+      <p class="as-kicker">Spring / Summer</p>
       <h2 class="as-display-l">Made slowly.<br />Worn often.</h2>
-      <a class="as-link as-link--light" href="/women/new-in">Discover the collection</a>
+      <a class="as-btn as-btn--light" href="/women/new-in">Discover the collection</a>
     </div>
   </section>
 
-  <section class="as-section container as-snap-section" aria-labelledby="look-title">
-    <div class="as-section-head as-reveal">
-      <div>
-        <p class="as-kicker">Styled</p>
-        <h2 class="as-h2" id="look-title">Shop the look</h2>
-      </div>
-    </div>
-    <div class="as-look as-reveal">
-      <div class="as-look-media">
-        <img src="/images/look/hero-women.jpg" alt="The ivory kurta styled with the olive cardigan" loading="lazy" width="1100" height="1375" />
-      </div>
-      <div>
-        <p class="as-kicker">Wear it together</p>
-        <h3 class="as-h2" style="margin:.5rem 0 1.5rem">Quiet layers, natural fibres</h3>
-        {lookItems.map((item) => (
-          <div class="as-look-item">
-            <img src={item.images[0]} alt={item.name} loading="lazy" width="96" height="128" />
-            <div>
-              <h4><a href={`/product/${item.slug}`}>{item.name}</a></h4>
-              <p class="as-price as-muted">{formatPrice(item.price_pkr)}</p>
-            </div>
-            <a class="as-btn as-btn--outline" href={`/product/${item.slug}`}>View</a>
-          </div>
-        ))}
-        <a class="as-link" href="/women" style="margin-top:1.5rem">Explore the edit</a>
-      </div>
-    </div>
+  <section class="as-home-facts container" aria-label="Delivery and returns">
+    <ul role="list">
+      <li><strong>Free delivery</strong><span>on orders over PKR 20,000</span></li>
+      <li><strong>Dispatched in 2 days</strong><span>by TCS courier, 2–7 days by city</span></li>
+      <li><strong>Returns within 7 days</strong><span>of delivery, unused and with tags</span></li>
+    </ul>
   </section>
 </StoreLayout>
