@@ -178,7 +178,17 @@ async function createOrderEvent(db, orderId, type, details = null) {
   }
 }
 
+// TEMPORARY DEBUG: report any unexpected server error as JSON with its message
+// (no secrets) so the checkout page can show it. Revert after.
 export async function onRequestPost(context) {
+  try {
+    return await handleCheckoutPost(context);
+  } catch (e) {
+    return errorResponse('server_error: ' + (e && e.message ? e.message : 'unknown'), 500, 'server_error');
+  }
+}
+
+async function handleCheckoutPost(context) {
   const { request, env } = context;
 
   // 1. Parse body
