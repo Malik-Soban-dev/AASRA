@@ -37,9 +37,13 @@ export async function sendEmail(env, { to, subject, html, text }) {
     return { ok: false, error: 'email_provider_not_configured' };
   }
 
-  // Real provider call (Resend example — uncomment and adjust once verified):
-  /*
-  const resp = await fetch(`${cfg.baseUrl}/emails`, {
+  if (cfg.provider !== 'resend') {
+    return { ok: false, error: 'email_provider_not_implemented' };
+  }
+
+  // Resend API. Note: this is the email API host, not PUBLIC_BASE_URL.
+  // Error bodies are not returned or logged; they can echo recipient data.
+  const resp = await fetch('https://api.resend.com/emails', {
     method: 'POST',
     headers: {
       Authorization: `Bearer ${cfg.apiKey}`,
@@ -47,21 +51,17 @@ export async function sendEmail(env, { to, subject, html, text }) {
     },
     body: JSON.stringify({
       from: `${cfg.fromName} <${cfg.from}>`,
-      to,
+      to: [to],
       subject,
       html,
       text,
     }),
   });
   if (!resp.ok) {
-    const err = await resp.text().catch(() => '');
-    return { ok: false, error: `provider_${resp.status}: ${err}` };
+    return { ok: false, error: `provider_${resp.status}` };
   }
-  const data = await resp.json();
+  const data = await resp.json().catch(() => ({}));
   return { ok: true, messageId: data.id };
-  */
-
-  return { ok: false, error: 'email_provider_not_implemented' };
 }
 
 /* ---------------------------------------------------------------- helpers */
