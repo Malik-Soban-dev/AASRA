@@ -7,6 +7,14 @@ main = "src/index.js"
 compatibility_date = "2026-01-01"
 compatibility_flags = ["nodejs_compat"]
 
+# Workers Logs: keeps errors visible in the dashboard (Observability tab).
+# Traces and issue detection are left off on purpose.
+[observability.logs]
+enabled = true
+head_sampling_rate = 1
+persist = true
+invocation_logs = true
+
 # Static assets — built by `npm run build` (astro build -> dist/).
 # ASSETS binding is used by the compiled functions router for non-API routes.
 [assets]

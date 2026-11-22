@@ -63,7 +63,7 @@ export async function onRequestGet(context) {
     deposit_status: order.deposit_status,
     balance_status: order.balance_status,
     balance_due_at: order.balance_due_at,
-    can_pay_balance,
+    can_pay_balance: canPayBalance,
     courier: order.courier,
     tracking_number: order.tracking_number,
     created_at: order.created_at,
