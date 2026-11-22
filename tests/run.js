@@ -410,12 +410,37 @@ t('balancePaidEmail has subject and html', () => {
   assert.ok(e.html.includes('paid in full'), 'mentions paid in full');
 });
 
-t('full payment uses paid-in-full wording, not deposit wording', () => {
-  const e = paymentPaidEmail({ order: { ...sampleOrder, balance_amount: 0 }, kind: 'full', amount: 37800, env: testEnv });
+t('full payment sends a receipt with items, totals and paid status', () => {
+  const order = {
+    ...sampleOrder,
+    items: JSON.stringify([
+      { name: 'Linen Wrap Dress — Clay', sku: 'AS-W002-CLA-S', qty: 2, unit_price_pkr: 22500, line_total_pkr: 45000 },
+    ]),
+    subtotal: 45000, discount: 0, shipping_fee: 0, total: 45000,
+    deposit_amount: 0, balance_amount: 0, balance_token: 'bal_test123',
+  };
+  const e = paymentPaidEmail({ order, kind: 'full', amount: 45000, env: testEnv, trackerToken: 'track_abc', paidAt: '2026-11-22T02:00:00Z' });
+  assert.ok(e.subject.startsWith('Order paid in full'), 'subject');
   assert.ok(!e.subject.includes('Deposit'), 'subject must not say Deposit');
   assert.ok(!e.html.includes('Remaining balance'), 'must not mention remaining balance');
-  assert.ok(e.html.includes('paid in full'), 'mentions paid in full');
-  assert.ok(e.html.includes('37,800'), 'contains full amount');
+  assert.ok(e.html.includes('AS-W002-CLA-S'), 'lists item SKU');
+  assert.ok(e.html.includes('Linen Wrap Dress'), 'lists item name');
+  assert.ok(e.html.includes('PAID'), 'shows PAID status');
+  assert.ok(e.html.includes('track_abc'), 'shows payment reference');
+  assert.ok(e.html.includes('Amount paid'), 'shows amount paid');
+  assert.ok(e.html.includes('Shipping to'), 'shows shipping address block');
+  assert.ok(e.html.includes('House 12'), 'shows address');
+  assert.ok(e.btnUrl && e.btnUrl.includes('type=final'), 'links to final invoice');
+  const copy = (e.subject + e.html + e.intro + e.outro).toLowerCase();
+  assert.ok(!copy.includes('received'), 'paid email must not say "received"');
+  assert.ok(!copy.includes('deposit'), 'paid email must not say "deposit"');
+});
+
+t('full payment with a discount shows the discount line', () => {
+  const order = { ...sampleOrder, items: JSON.stringify([{ name: 'A', sku: 'X', qty: 1, unit_price_pkr: 10000, line_total_pkr: 10000 }]), subtotal: 10000, discount: 1000, shipping_fee: 0, total: 9000, coupon_code: 'WELCOME10' };
+  const e = paymentPaidEmail({ order, kind: 'full', amount: 9000, env: testEnv });
+  assert.ok(e.html.includes('WELCOME10'), 'shows coupon');
+  assert.ok(e.html.includes('-'), 'shows discount sign');
 });
 
 t('deposit and balance payments keep their own emails', () => {

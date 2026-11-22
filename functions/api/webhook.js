@@ -18,7 +18,7 @@
  */
 
 import { verifyWebhookSignature } from '../lib/gateway.js';
-import { sendEmail, paymentPaidEmail } from '../lib/email.js';
+import { sendEmail, paymentPaidEmail, wrapEmail } from '../lib/email.js';
 
 function jsonResponse(data, status = 200) {
   return new Response(JSON.stringify(data), {
@@ -171,10 +171,24 @@ export async function processPayment(env, db, { eventId, trackerToken, orderId, 
 
   // Email customer
   try {
-    await sendEmail(env, {
-      to: order.email,
-      ...paymentPaidEmail({ order, kind: payment.kind, amount: payment.amount, env }),
+    const tpl = paymentPaidEmail({
+      order,
+      kind: payment.kind,
+      amount: payment.amount,
+      env,
+      trackerToken,
+      paidAt: new Date().toISOString(),
     });
+    const mail = wrapEmail(env, {
+      subject: tpl.subject,
+      title: tpl.title || 'Payment confirmation',
+      body: tpl.html,
+      intro: tpl.intro,
+      outro: tpl.outro,
+      btnText: tpl.btnText,
+      btnUrl: tpl.btnUrl,
+    });
+    await sendEmail(env, { to: order.email, subject: mail.subject, html: mail.html, text: mail.text });
   } catch (e) {
     // Email failure must not fail settlement; log and continue.
     console.warn('[WEBHOOK] email failed', payment.order_id, e.message);
