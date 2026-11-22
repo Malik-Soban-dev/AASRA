@@ -24,6 +24,7 @@ import {
   orderReceivedEmail,
   depositPaidEmail,
   balancePaidEmail,
+  paymentPaidEmail,
   balanceReminderEmail,
   shippedEmail,
   deliveredEmail,
@@ -407,6 +408,19 @@ t('balancePaidEmail has subject and html', () => {
   assert.ok(e.subject, 'has subject');
   assert.ok(e.html, 'has html');
   assert.ok(e.html.includes('paid in full'), 'mentions paid in full');
+});
+
+t('full payment uses paid-in-full wording, not deposit wording', () => {
+  const e = paymentPaidEmail({ order: { ...sampleOrder, balance_amount: 0 }, kind: 'full', amount: 37800, env: testEnv });
+  assert.ok(!e.subject.includes('Deposit'), 'subject must not say Deposit');
+  assert.ok(!e.html.includes('Remaining balance'), 'must not mention remaining balance');
+  assert.ok(e.html.includes('paid in full'), 'mentions paid in full');
+  assert.ok(e.html.includes('37,800'), 'contains full amount');
+});
+
+t('deposit and balance payments keep their own emails', () => {
+  assert.ok(paymentPaidEmail({ order: sampleOrder, kind: 'deposit', amount: 3975, env: testEnv }).subject.startsWith('Deposit received'));
+  assert.ok(paymentPaidEmail({ order: sampleOrder, kind: 'balance', amount: 9275, env: testEnv }).subject.startsWith('Order paid in full'));
 });
 
 t('balanceReminderEmail has subject and html', () => {

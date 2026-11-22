@@ -255,8 +255,30 @@ export function refundedEmail({ order, amount, reason, env }) {
  * Generic payment confirmation (delegate to deposit/balance template).
  */
 export function paymentPaidEmail({ order, kind, amount, env }) {
+  if (kind === 'full') return fullPaidEmail({ order, amount, env });
   if (kind === 'balance') return balancePaidEmail({ order, amount, env });
   return depositPaidEmail({ order, amount, env });
+}
+
+/**
+ * Full payment confirmed in one go (no deposit / balance split).
+ * Must not use the deposit wording: the customer has paid the whole order.
+ */
+export function fullPaidEmail({ order, amount, env }) {
+  const invoice = order.balance_token
+    ? `<p><a href="${invoiceLink(env, order.id, order.balance_token, 'final')}">View invoice</a></p>`
+    : '';
+  return {
+    subject: `Order paid in full — ${order.id}`,
+    html: `
+      <p>Hello ${escapeHtml(order.customer_name)},</p>
+      <p>Your payment of <span class="hl">${money(amount)}</span> for order <span class="hl">${escapeHtml(order.id)}</span> has been received.</p>
+      <p>Your order is <span class="hl">paid in full</span> and will be shipped shortly.</p>
+      ${invoice}
+    `,
+    intro: 'Your payment is confirmed.',
+    outro: 'You will receive another update when your order ships.',
+  };
 }
 
 /**
