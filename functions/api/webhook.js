@@ -215,21 +215,37 @@ export async function onRequestPost(context) {
   }
 
   // 4. Extract webhook fields (names vary by Safepay endpoint configuration)
+  // Safepay's documented envelope (safepay-python webhooks / README):
+  //   { token: "evt_...", type: "payment.succeeded", data: { tracker: "track_...",
+  //     state: "TRACKER_ENDED", amount: <lowest denomination>, currency, metadata: { order_id } } }
   const data = payload.data || payload.object || payload;
-  const eventId = payload.event_id || payload.id || data.event_id || null;
-  const eventType = payload.event || payload.type || data.event || data.event_type || null;
-  const trackerToken = data.tracker_token || data.tracker || data.reference || data.token || null;
+  const eventId = payload.token || payload.event_id || payload.id || data.event_id || null;
+  const eventType = payload.type || payload.event || data.event || data.event_type || null;
+  const trackerRaw = data.tracker_token || data.tracker || data.reference || null;
+  const trackerToken =
+    typeof trackerRaw === 'string' ? trackerRaw : (trackerRaw && trackerRaw.token) || data.token || null;
   const amount = data.amount == null ? null : Number(data.amount);
   const currency = data.currency || null;
-  const status = data.status || data.payment_status || null;
-  const orderId = data.order_id || data.merchant_reference || data.order || null;
+  const state = data.state || null;
+  const status = data.status || data.payment_status || state || null;
+  const orderId =
+    (data.metadata && data.metadata.order_id) || data.order_id || data.merchant_reference || data.order || null;
   const kind = data.payment_type || data.kind || null;
 
+  console.log('[WEBHOOK] received', {
+    type: eventType,
+    event: eventId ? String(eventId).slice(0, 12) : null,
+    state,
+    hasTracker: !!trackerToken,
+    hasOrder: !!orderId,
+  });
+
   if (!eventId || !trackerToken || !orderId || !eventType || !status || amount === null || !Number.isFinite(amount) || !currency) {
+    console.warn('[WEBHOOK] contract mismatch', { type: eventType, state, hasTracker: !!trackerToken, hasOrder: !!orderId, hasAmount: amount !== null, hasCurrency: !!currency });
     return jsonResponse({ ok: false, error: 'unverified_webhook_contract' }, 400);
   }
   const okEvents = ['payment.succeeded', 'payment.paid', 'payment:created'];
-  const okStatuses = ['succeeded', 'paid', 'created', 'completed'];
+  const okStatuses = ['succeeded', 'paid', 'created', 'completed', 'tracker_ended'];
   if (!okEvents.includes(String(eventType)) || !okStatuses.includes(String(status).toLowerCase())) {
     return jsonResponse({ ok: true, ignored: true, reason: 'payment_not_successful' });
   }
