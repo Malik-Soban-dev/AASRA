@@ -8,6 +8,7 @@
 import StoreLayout from '../components/layout/StoreLayout.astro';
 import ProductRail from '../components/store/ProductRail.astro';
 import { newArrivals, categoryProducts, categories, categoryLabel, formatPrice } from '../lib/catalog.js';
+const denimProducts = [...categoryProducts('women', 'denim'), ...categoryProducts('men', 'denim')];
 import site from '../../data/catalog/site.json';
 
 const newIn = newArrivals().slice(0, 4);
@@ -142,6 +143,27 @@ const focusGroups = ['women', 'men'].flatMap((gender) =>
     document.querySelector('[data-focus-prev]')?.addEventListener('click', () => { const t = visibleTrack(); t?.scrollBy({ left: -step(t), behavior: 'smooth' }); });
     document.querySelector('[data-focus-next]')?.addEventListener('click', () => { const t = visibleTrack(); t?.scrollBy({ left: step(t), behavior: 'smooth' }); });
   </script>
+
+  <div class="as-denim-drop">
+    <div class="as-denim-banner">
+      <img src="/images/look/denim-drop-banner.jpg" alt="Two models in indigo denim walking on a sunlit street" width="1600" height="900" loading="lazy" />
+      <div class="as-denim-banner-copy">
+        <p class="as-kicker">New season</p>
+        <h2 class="as-denim-title" id="denim-drop-title">New Denim Drop</h2>
+        <div class="as-denim-actions">
+          <a class="as-btn as-btn--solid" href="/women/denim">Women's denim</a>
+          <a class="as-btn as-btn--outline" href="/men/denim">Men's denim</a>
+        </div>
+      </div>
+    </div>
+    <ProductRail
+      class="as-denim-rail"
+      kicker="Denim"
+      title="Shop the drop"
+      products={denimProducts}
+      link={{ label: 'View all', href: '/shop' }}
+    />
+  </div>
 
   <ProductRail
     class="as-home-rail"
