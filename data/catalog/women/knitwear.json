@@ -11,11 +11,13 @@
       "colors": [
         {
           "name": "Olive",
-          "hex": "#36433a"
+          "hex": "#36433a",
+          "image": "/images/garments/w-cardigan-olive.jpg"
         },
         {
           "name": "Oat",
-          "hex": "#d9cfbc"
+          "hex": "#d9cfbc",
+          "image": "/images/colours/handloom-wool-cardigan-olive--oat.jpg"
         }
       ],
       "sizes": [
@@ -47,11 +49,13 @@
       "colors": [
         {
           "name": "Cream",
-          "hex": "#f1ead8"
+          "hex": "#f1ead8",
+          "image": "/images/products/cropped-cardigan-cream.jpg"
         },
         {
           "name": "Black",
-          "hex": "#1d1d1b"
+          "hex": "#1d1d1b",
+          "image": "/images/colours/cropped-cardigan-cream--black.jpg"
         }
       ],
       "sizes": [
@@ -77,11 +81,13 @@
       "colors": [
         {
           "name": "Black",
-          "hex": "#1d1d1b"
+          "hex": "#1d1d1b",
+          "image": "/images/products/rib-knit-top-black.jpg"
         },
         {
           "name": "Ecru",
-          "hex": "#e9e2d0"
+          "hex": "#e9e2d0",
+          "image": "/images/colours/rib-knit-top-black--ecru.jpg"
         }
       ],
       "sizes": [
@@ -107,11 +113,13 @@
       "colors": [
         {
           "name": "Sage",
-          "hex": "#9aa58c"
+          "hex": "#9aa58c",
+          "image": "/images/products/pullover-sage.jpg"
         },
         {
           "name": "Oat",
-          "hex": "#d9cfbc"
+          "hex": "#d9cfbc",
+          "image": "/images/colours/pullover-sage--oat.jpg"
         }
       ],
       "sizes": [

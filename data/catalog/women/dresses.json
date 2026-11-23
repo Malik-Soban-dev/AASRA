@@ -11,11 +11,13 @@
       "colors": [
         {
           "name": "Ivory",
-          "hex": "#efe9dc"
+          "hex": "#efe9dc",
+          "image": "/images/garments/w-kurta-ivory.jpg"
         },
         {
           "name": "Clay",
-          "hex": "#a65e45"
+          "hex": "#a65e45",
+          "image": "/images/colours/chanderi-silk-kurta-ivory--clay.jpg"
         }
       ],
       "sizes": [
@@ -47,11 +49,13 @@
       "colors": [
         {
           "name": "Clay",
-          "hex": "#a65e45"
+          "hex": "#a65e45",
+          "image": "/images/garments/w-dress-clay.jpg"
         },
         {
           "name": "Ink",
-          "hex": "#2c2a26"
+          "hex": "#2c2a26",
+          "image": "/images/colours/linen-wrap-dress-clay--ink.jpg"
         }
       ],
       "sizes": [
@@ -83,11 +87,13 @@
       "colors": [
         {
           "name": "Indigo",
-          "hex": "#2f3f5c"
+          "hex": "#2f3f5c",
+          "image": "/images/products/midi-dress-indigo.jpg"
         },
         {
           "name": "Ecru",
-          "hex": "#e9e2d0"
+          "hex": "#e9e2d0",
+          "image": "/images/colours/midi-dress-indigo--ecru.jpg"
         }
       ],
       "sizes": [
@@ -113,11 +119,13 @@
       "colors": [
         {
           "name": "Ecru",
-          "hex": "#e9e2d0"
+          "hex": "#e9e2d0",
+          "image": "/images/products/shirt-dress-ecru.jpg"
         },
         {
           "name": "Stone",
-          "hex": "#cfc6b4"
+          "hex": "#cfc6b4",
+          "image": "/images/colours/shirt-dress-ecru--stone.jpg"
         }
       ],
       "sizes": [
@@ -143,11 +151,13 @@
       "colors": [
         {
           "name": "Rust",
-          "hex": "#9b4a2e"
+          "hex": "#9b4a2e",
+          "image": "/images/products/kaftan-rust.jpg"
         },
         {
           "name": "Cream",
-          "hex": "#f1ead8"
+          "hex": "#f1ead8",
+          "image": "/images/colours/kaftan-rust--cream.jpg"
         }
       ],
       "sizes": [

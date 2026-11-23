@@ -172,6 +172,9 @@ const images = product.images.length > 1 ? product.images : [product.images[0], 
         document.getElementById('as-color-name').textContent = color;
         document.querySelectorAll('.as-swatch').forEach((s) => s.classList.remove('is-active'));
         sw.classList.add('is-active');
+        // Show this colour's photo when the product has one.
+        const colourImage = productData.colors.find((c) => c.name === color)?.image;
+        if (colourImage && mainImg) { mainImg.src = colourImage; mainImg.removeAttribute('srcset'); }
         // Refresh SKU mapping for the new colour.
         document.querySelectorAll('#as-size-row .as-size').forEach((btn) => {
           const variant = productData.variants.find((v) => v.size === btn.dataset.size && v.color === color);

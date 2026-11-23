@@ -11,11 +11,13 @@
       "colors": [
         {
           "name": "Sand",
-          "hex": "#d6c9b2"
+          "hex": "#d6c9b2",
+          "image": "/images/garments/w-coat-sand.jpg"
         },
         {
           "name": "Charcoal",
-          "hex": "#3c3a36"
+          "hex": "#3c3a36",
+          "image": "/images/colours/quilted-shawl-coat-sand--charcoal.jpg"
         }
       ],
       "sizes": [
@@ -47,11 +49,13 @@
       "colors": [
         {
           "name": "Stone",
-          "hex": "#cfc6b4"
+          "hex": "#cfc6b4",
+          "image": "/images/products/trench-stone.jpg"
         },
         {
           "name": "Black",
-          "hex": "#1d1d1b"
+          "hex": "#1d1d1b",
+          "image": "/images/colours/trench-stone--black.jpg"
         }
       ],
       "sizes": [
@@ -77,11 +81,13 @@
       "colors": [
         {
           "name": "Black",
-          "hex": "#1d1d1b"
+          "hex": "#1d1d1b",
+          "image": "/images/products/wool-jacket-black.jpg"
         },
         {
           "name": "Charcoal",
-          "hex": "#3c3a36"
+          "hex": "#3c3a36",
+          "image": "/images/colours/wool-jacket-black--charcoal.jpg"
         }
       ],
       "sizes": [
@@ -107,11 +113,13 @@
       "colors": [
         {
           "name": "Olive",
-          "hex": "#5b5a3c"
+          "hex": "#5b5a3c",
+          "image": "/images/products/quilted-gilet-olive.jpg"
         },
         {
           "name": "Navy",
-          "hex": "#1f2a3d"
+          "hex": "#1f2a3d",
+          "image": "/images/colours/quilted-gilet-olive--navy.jpg"
         }
       ],
       "sizes": [

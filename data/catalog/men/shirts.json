@@ -11,11 +11,13 @@
       "colors": [
         {
           "name": "Slate",
-          "hex": "#5d6a72"
+          "hex": "#5d6a72",
+          "image": "/images/garments/m-shirt-slate.jpg"
         },
         {
           "name": "Ivory",
-          "hex": "#efe9dc"
+          "hex": "#efe9dc",
+          "image": "/images/colours/linen-shirt-slate--ivory.jpg"
         }
       ],
       "sizes": [
@@ -47,11 +49,13 @@
       "colors": [
         {
           "name": "Indigo",
-          "hex": "#37415c"
+          "hex": "#37415c",
+          "image": "/images/garments/m-kurta-indigo.jpg"
         },
         {
           "name": "Sand",
-          "hex": "#d6c9b2"
+          "hex": "#d6c9b2",
+          "image": "/images/colours/kurta-shirt-indigo--sand.jpg"
         }
       ],
       "sizes": [
@@ -83,11 +87,13 @@
       "colors": [
         {
           "name": "White",
-          "hex": "#f5f5f2"
+          "hex": "#f5f5f2",
+          "image": "/images/products/oxford-shirt-white.jpg"
         },
         {
           "name": "Blue",
-          "hex": "#4f6b8a"
+          "hex": "#4f6b8a",
+          "image": "/images/colours/oxford-shirt-white--blue.jpg"
         }
       ],
       "sizes": [
@@ -113,11 +119,13 @@
       "colors": [
         {
           "name": "Blue",
-          "hex": "#4f6b8a"
+          "hex": "#4f6b8a",
+          "image": "/images/products/chambray-shirt-blue.jpg"
         },
         {
           "name": "Stone",
-          "hex": "#cfc6b4"
+          "hex": "#cfc6b4",
+          "image": "/images/colours/chambray-shirt-blue--stone.jpg"
         }
       ],
       "sizes": [
@@ -143,11 +151,13 @@
       "colors": [
         {
           "name": "Sage",
-          "hex": "#9aa58c"
+          "hex": "#9aa58c",
+          "image": "/images/products/camp-collar-shirt-sage.jpg"
         },
         {
           "name": "Ecru",
-          "hex": "#e9e2d0"
+          "hex": "#e9e2d0",
+          "image": "/images/colours/camp-collar-shirt-sage--ecru.jpg"
         }
       ],
       "sizes": [
