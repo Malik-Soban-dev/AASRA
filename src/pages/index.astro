@@ -6,9 +6,8 @@
  * Styles: .as-home-*, .as-tiles, .as-labels (store.css).
  */
 import StoreLayout from '../components/layout/StoreLayout.astro';
-import ProductCard from '../components/store/ProductCard.astro';
 import ProductRail from '../components/store/ProductRail.astro';
-import { newArrivals, categoryProducts, categories, categoryLabel } from '../lib/catalog.js';
+import { newArrivals, categoryProducts, categories, categoryLabel, formatPrice } from '../lib/catalog.js';
 import site from '../../data/catalog/site.json';
 
 const newIn = newArrivals().slice(0, 4);
@@ -29,7 +28,10 @@ const focusGroups = ['women', 'men'].flatMap((gender) =>
     label: categoryLabel(gender, c.category),
     products: categoryProducts(gender, c.category).slice(0, 10),
   }))
-);
+).map((g, _, all) => ({
+  ...g,
+  label: all.filter((o) => o.label === g.label).length > 1 ? `${g.label} (${g.gender === 'women' ? 'Women' : 'Men'})` : g.label,
+}));
 ---
 
 <StoreLayout>
@@ -69,31 +71,34 @@ const focusGroups = ['women', 'men'].flatMap((gender) =>
   </section>
 
   <section class="as-focus container" aria-labelledby="focus-title">
-    <h2 class="as-h2 as-focus-title" id="focus-title">Categories in Focus</h2>
-    <div class="as-focus-body">
-      <nav class="as-focus-list" aria-label="Categories">
-        <ul role="list">
-          {focusGroups.map((g, i) => (
-            <li>
-              <button type="button" class:list={['as-focus-link', { 'is-active': i === 0 }]} data-focus={g.key} aria-pressed={i === 0 ? 'true' : 'false'}>
-                {g.label}
-                <span>{g.gender === 'women' ? 'Women' : 'Men'}</span>
-              </button>
-            </li>
-          ))}
-        </ul>
-      </nav>
-      <div class="as-focus-panels">
+    <h2 class="as-focus-title" id="focus-title">Categories in Focus</h2>
+    <nav class="as-focus-list" aria-label="Categories">
+      <ul role="list">
         {focusGroups.map((g, i) => (
-          <div class="as-focus-panel" data-focus-panel={g.key} hidden={i !== 0}>
-            <div class="as-focus-track">
-              {g.products.map((p) => (
-                <div class="as-focus-card"><ProductCard product={p} /></div>
-              ))}
-            </div>
-          </div>
+          <li>
+            <button type="button" class:list={['as-focus-link', { 'is-active': i === 0 }]} data-focus={g.key} aria-pressed={i === 0 ? 'true' : 'false'}>{g.label}</button>
+          </li>
         ))}
-      </div>
+      </ul>
+    </nav>
+    <div class="as-focus-panels">
+      {focusGroups.map((g, i) => (
+        <div class="as-focus-panel" data-focus-panel={g.key} hidden={i !== 0}>
+          <div class="as-focus-track">
+            {g.products.map((p) => (
+              <a class="as-focus-card" href={`/product/${p.slug}`}>
+                <span class="as-focus-img"><img src={p.images[0]} alt={p.name} loading="lazy" width="600" height="800" /></span>
+                <span class="as-focus-name">{p.name}</span>
+                <span class="as-focus-meta">{g.gender === 'women' ? 'Women' : 'Men'} · {g.label}</span>
+                <span class="as-focus-price">{formatPrice(p.price_pkr)}</span>
+                <span class="as-focus-swatches" aria-label={`${p.colors.length} colours`}>
+                  {p.colors.map((c) => <i style={`background:${c.hex}`} title={c.name}></i>)}
+                </span>
+              </a>
+            ))}
+          </div>
+        </div>
+      ))}
     </div>
   </section>
 

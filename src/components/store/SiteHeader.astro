@@ -128,7 +128,12 @@ const megaFeature = {
     if (open || y <= 40 || y > lastY + 2) header.classList.remove('is-hidden');
     else if (y < lastY - 2) header.classList.add('is-hidden');
     if (Math.abs(y - lastY) > 2) lastY = y;
+    document.documentElement.classList.toggle('hdr-hidden', header.classList.contains('is-hidden'));
   };
+  // Publish the header height so sticky bars (filters) sit just below it.
+  const measureHeader = () => document.documentElement.style.setProperty('--as-header-h', header.offsetHeight + 'px');
+  measureHeader();
+  window.addEventListener('resize', measureHeader, { passive: true });
   window.addEventListener('scroll', onScroll, { passive: true });
   onScroll();
 
