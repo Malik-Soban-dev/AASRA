@@ -844,3 +844,32 @@ main table { display: block; max-width: 100%; overflow-x: auto; }
   background: none; border: 0; padding: 0.8rem; color: var(--as-ink);
   font: inherit; font-size: 0.85rem; text-decoration: underline; text-underline-offset: 4px; cursor: pointer;
 }
+
+/* ---- Home: collection tiles (image pair + title) ---- */
+.as-visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.as-tiles { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 48px 32px; }
+.as-tile { display: block; color: var(--as-ink); text-decoration: none; }
+.as-tile-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.as-tile-pair img { width: 100%; aspect-ratio: 3 / 4; object-fit: cover; background: #ebebeb; display: block; }
+.as-tile-meta { display: flex; flex-direction: column; gap: 4px; margin-top: 16px; }
+.as-tile-kicker { font-size: 0.72rem; letter-spacing: 0.14em; text-transform: uppercase; color: #666666; }
+.as-tile-title { font-family: var(--as-display); font-size: 1.5rem; font-weight: 500; }
+.as-tile:hover .as-tile-title { text-decoration: underline; text-underline-offset: 6px; }
+
+/* ---- Home: labelled category grid ---- */
+.as-labels { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(5, 1fr); gap: 32px 20px; }
+.as-label { display: block; color: var(--as-ink); text-decoration: none; }
+.as-label-img { display: block; overflow: hidden; background: #ebebeb; }
+.as-label-img img { width: 100%; aspect-ratio: 3 / 4; object-fit: cover; display: block; transition: transform 0.4s ease; }
+.as-label:hover .as-label-img img { transform: scale(1.03); }
+.as-label-name { display: block; margin-top: 12px; font-size: 0.8rem; font-weight: 500; letter-spacing: 0.12em; text-transform: uppercase; }
+.as-label-gender { display: block; margin-top: 2px; font-size: 0.72rem; color: #666666; letter-spacing: 0.08em; }
+
+@media (max-width: 720px) {
+  .as-tiles { grid-template-columns: 1fr; gap: 40px; }
+  .as-labels { grid-template-columns: repeat(2, 1fr); gap: 24px 12px; }
+  .as-tile-title { font-size: 1.25rem; }
+}
+@media (max-width: 720px) {
+  .as-labels > li:last-child:nth-child(odd) { grid-column: span 2; }
+}

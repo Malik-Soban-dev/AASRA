@@ -1,22 +1,38 @@
 ---
 /**
- * Home — one hero, the category row, New In, one campaign band, and the
- * delivery and returns facts. Shorter than before: fewer blocks, no text
- * over the photo on phones, identical tile proportions. Styles: .as-home-*.
+ * Home — follows the reference's page flow:
+ * banner → collection tile pairs (image pair + title) → labelled category
+ * grid per gender → New In rail → delivery facts. Our photos and copy only.
+ * Styles: .as-home-*, .as-tiles, .as-labels (store.css).
  */
 import StoreLayout from '../components/layout/StoreLayout.astro';
 import ProductRail from '../components/store/ProductRail.astro';
-import { newArrivals } from '../lib/catalog.js';
+import { newArrivals, categoryProducts, categories, categoryLabel } from '../lib/catalog.js';
 import site from '../../data/catalog/site.json';
 
 const newIn = newArrivals().slice(0, 4);
 
-const categories = [
-  { img: '/images/garments/w-dress-clay.jpg', title: 'Dresses & Kurtas', href: '/women/dresses', alt: 'Clay linen wrap dress' },
-  { img: '/images/garments/m-shirt-slate.jpg', title: 'Shirts & Kurtas', href: '/men/shirts', alt: 'Slate linen shirt' },
-  { img: '/images/garments/w-cardigan-olive.jpg', title: 'Knitwear', href: '/women/knitwear', alt: 'Olive wool cardigan' },
-  { img: '/images/garments/w-coat-sand.jpg', title: 'Outerwear & Shawls', href: '/women/outerwear', alt: 'Sand quilted shawl coat' },
+// Collection tiles: two photos per tile, title below (reference: "Artisanal Collection" style).
+const collections = [
+  { title: 'Dresses & Kurtas', kicker: 'Women', href: '/women/dresses', imgs: ['/images/garments/w-dress-clay.jpg', '/images/garments/w-kurta-ivory.jpg'], alt: 'Clay wrap dress and ivory kurta' },
+  { title: 'Outerwear & Shawls', kicker: 'Women', href: '/women/outerwear', imgs: ['/images/garments/w-coat-sand.jpg', '/images/garments/w-cardigan-olive.jpg'], alt: 'Sand coat and olive cardigan' },
+  { title: 'Shirts & Kurtas', kicker: 'Men', href: '/men/shirts', imgs: ['/images/garments/m-shirt-slate.jpg', '/images/garments/m-kurta-indigo.jpg'], alt: 'Slate shirt and indigo kurta' },
+  { title: 'Knitwear', kicker: 'Men', href: '/men/knitwear', imgs: ['/images/garments/m-crew-charcoal.jpg', '/images/garments/m-shirt-slate.jpg'], alt: 'Charcoal knit and slate shirt' },
 ];
+
+// Category grid: every category per gender, labelled, with the first product photo.
+const fallback = '/images/garments/w-kurta-ivory.jpg';
+const labelTiles = ['women', 'men'].flatMap((gender) =>
+  (categories[gender] || []).filter((c) => c.category !== 'new-in').map((c) => {
+    const first = categoryProducts(gender, c.category)[0];
+    return {
+      gender,
+      label: categoryLabel(gender, c.category),
+      href: `/${gender}/${c.category}`,
+      img: first?.images?.[0] || fallback,
+    };
+  })
+);
 ---
 
 <StoreLayout snap>
@@ -35,23 +51,41 @@ const categories = [
     </div>
   </section>
 
-  <section class="as-home-section container" aria-labelledby="cats-title">
+  <section class="as-home-section container" aria-labelledby="tiles-title">
+    <h2 class="as-h2 as-visually-hidden" id="tiles-title">Collections</h2>
+    <ul class="as-tiles" role="list">
+      {collections.map((c) => (
+        <li class="as-reveal">
+          <a class="as-tile" href={c.href}>
+            <span class="as-tile-pair">
+              <img src={c.imgs[0]} alt={c.alt} loading="lazy" width="600" height="800" />
+              <img src={c.imgs[1]} alt="" loading="lazy" width="600" height="800" />
+            </span>
+            <span class="as-tile-meta">
+              <span class="as-tile-kicker">{c.kicker}</span>
+              <span class="as-tile-title">{c.title}</span>
+            </span>
+          </a>
+        </li>
+      ))}
+    </ul>
+  </section>
+
+  <section class="as-home-section container" aria-labelledby="labels-title">
     <div class="as-home-head">
       <div>
         <p class="as-kicker">Shop by category</p>
-        <h2 class="as-h2" id="cats-title">Made for the season, not the cycle</h2>
+        <h2 class="as-h2" id="labels-title">Women and men</h2>
       </div>
       <a class="as-link" href="/shop">Shop all</a>
     </div>
-    <ul class="as-cats" role="list">
-      {categories.map((c) => (
+    <ul class="as-labels" role="list">
+      {labelTiles.map((t) => (
         <li class="as-reveal">
-          <a class="as-cat" href={c.href}>
-            <span class="as-cat-img"><img src={c.img} alt={c.alt} loading="lazy" width="900" height="1125" /></span>
-            <span class="as-cat-row">
-              <span class="as-cat-title">{c.title}</span>
-              <span class="as-cat-go" aria-hidden="true">→</span>
-            </span>
+          <a class="as-label" href={t.href}>
+            <span class="as-label-img"><img src={t.img} alt="" loading="lazy" width="600" height="800" /></span>
+            <span class="as-label-name">{t.label}</span>
+            <span class="as-label-gender">{t.gender === 'women' ? 'Women' : 'Men'}</span>
           </a>
         </li>
       ))}
@@ -65,15 +99,6 @@ const categories = [
     products={newIn}
     link={{ label: 'View all', href: '/women/new-in' }}
   />
-
-  <section class="as-home-campaign" aria-label="The campaign">
-    <img src="/images/look/hero-women.jpg" alt="The ivory kurta styled with the olive cardigan" loading="lazy" width="1100" height="1375" />
-    <div class="as-home-campaign-copy as-reveal">
-      <p class="as-kicker">Spring / Summer</p>
-      <h2 class="as-display-l">Made slowly.<br />Worn often.</h2>
-      <a class="as-btn as-btn--light" href="/women/new-in">Discover the collection</a>
-    </div>
-  </section>
 
   <section class="as-home-facts container" aria-label="Delivery and returns">
     <ul role="list">
