@@ -439,7 +439,7 @@ html.hdr-hidden .as-filterbar { top: 0; }
 .as-thumbs button.is-active { border-color: var(--as-ink); }
 .as-thumbs img { aspect-ratio: 3 / 4; object-fit: cover; width: 100%; }
 .as-pdp-main { position: relative; overflow: hidden; background: var(--as-sand); }
-.as-pdp-main img { width: 100%; aspect-ratio: 3 / 4; object-fit: cover; transition: transform 600ms var(--as-ease); }
+.as-pdp-main img { width: 100%; height: auto; aspect-ratio: 3 / 4; object-fit: cover; transition: transform 600ms var(--as-ease); }
 .as-pdp-main:hover img { transform: scale(1.06); }
 .as-pdp-info { position: sticky; top: 96px; padding-top: var(--as-s2); }
 .as-pdp-info .as-display-l { margin: 0.65rem 0 0.85rem; font-size: clamp(1.9rem, 3vw, 2.6rem); }
@@ -549,7 +549,7 @@ html.hdr-hidden .as-filterbar { top: 0; }
   .as-edit-grid { display: flex; flex-direction: column; }
   .as-tile-a, .as-tile-b, .as-tile-c, .as-tile-d { aspect-ratio: 4 / 5; margin: 0; }
   .as-look { grid-template-columns: 1fr; }
-  .as-pdp { grid-template-columns: 1fr; }
+  .as-pdp { grid-template-columns: 1fr; padding-top: var(--as-s4); }
   .as-pdp-info, .as-thumbs { position: static; }
   .as-pdp-gallery { grid-template-columns: 1fr; }
   .as-thumbs { flex-direction: row; order: 2; overflow-x: auto; }
@@ -1124,3 +1124,6 @@ html.hdr-hidden .as-plp-toolbar { top: 0; }
   .as-subcats::-webkit-scrollbar { display: none; }
   .as-subcats .as-chip { flex: none; white-space: nowrap; }
 }
+
+/* Product page sticky bar: "Select a size" stays solid ink (still disabled until a size is chosen), not faded grey. */
+.as-stickybar .as-btn--solid[disabled] { opacity: 1; background: var(--as-ink); border-color: var(--as-ink); color: var(--as-paper); }
