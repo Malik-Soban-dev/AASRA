@@ -1117,3 +1117,14 @@ html.hdr-hidden .as-plp-toolbar { top: 0; }
     display: block; position: fixed; inset: 0; z-index: 55; background: rgba(17, 17, 17, 0.35);
   }
 }
+
+/* Phone: sub-category chips run on one line and scroll sideways, so they take one row, not two. */
+@media (max-width: 720px) {
+  .as-subcats {
+    flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; -webkit-overflow-scrolling: touch;
+    margin: 0 calc(-1 * var(--as-gutter)); padding: 0 var(--as-gutter) var(--as-s5);
+    scroll-padding-inline: var(--as-gutter);
+  }
+  .as-subcats::-webkit-scrollbar { display: none; }
+  .as-subcats .as-chip { flex: none; white-space: nowrap; }
+}
