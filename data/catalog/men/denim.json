@@ -22,7 +22,9 @@
         "XXL"
       ],
       "images": [
-        "/images/garments/m-denim-relaxed-mid.jpg"
+        "/images/garments/m-denim-relaxed-mid.jpg",
+        "/images/garments/placeholders/m-denim-relaxed-mid-detail.jpg",
+        "/images/garments/placeholders/m-denim-relaxed-mid-close.jpg"
       ],
       "description": "Relaxed-fit jeans in a mid-blue wash, with room through the seat and thigh.",
       "details": [
@@ -54,7 +56,9 @@
         "XXL"
       ],
       "images": [
-        "/images/garments/m-denim-slim-black.jpg"
+        "/images/garments/m-denim-slim-black.jpg",
+        "/images/garments/placeholders/m-denim-slim-black-detail.jpg",
+        "/images/garments/placeholders/m-denim-slim-black-close.jpg"
       ],
       "description": "Slim-fit black jeans that sit close without pulling at the knee.",
       "details": [
@@ -86,7 +90,9 @@
         "XXL"
       ],
       "images": [
-        "/images/garments/m-denim-overshirt-indigo.jpg"
+        "/images/garments/m-denim-overshirt-indigo.jpg",
+        "/images/garments/placeholders/m-denim-overshirt-indigo-detail.jpg",
+        "/images/garments/placeholders/m-denim-overshirt-indigo-close.jpg"
       ],
       "description": "A layering overshirt in indigo denim, with two chest pockets and a relaxed body.",
       "details": [

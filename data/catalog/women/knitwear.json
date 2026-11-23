@@ -28,7 +28,8 @@
         "XL"
       ],
       "images": [
-        "/images/garments/w-cardigan-olive.jpg"
+        "/images/garments/w-cardigan-olive.jpg",
+        "/images/garments/placeholders/w-cardigan-olive-detail.jpg"
       ],
       "description": "An oversized cardigan woven on handlooms in the northern valleys — undyed olive wool, patch pockets, a collar to turn up.",
       "details": [
@@ -65,7 +66,8 @@
         "XL"
       ],
       "images": [
-        "/images/products/cropped-cardigan-cream.jpg"
+        "/images/products/cropped-cardigan-cream.jpg",
+        "/images/garments/placeholders/cropped-cardigan-cream-detail.jpg"
       ],
       "description": "Cropped Cardigan, available in Cream and Black.",
       "details": [],
@@ -97,7 +99,8 @@
         "XL"
       ],
       "images": [
-        "/images/products/rib-knit-top-black.jpg"
+        "/images/products/rib-knit-top-black.jpg",
+        "/images/garments/placeholders/rib-knit-top-black-detail.jpg"
       ],
       "description": "Rib Knit Top, available in Black and Ecru.",
       "details": [],
@@ -129,7 +132,8 @@
         "XL"
       ],
       "images": [
-        "/images/products/pullover-sage.jpg"
+        "/images/products/pullover-sage.jpg",
+        "/images/garments/placeholders/pullover-sage-detail.jpg"
       ],
       "description": "Pullover, available in Sage and Oat.",
       "details": [],

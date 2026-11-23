@@ -28,7 +28,8 @@
         "XL"
       ],
       "images": [
-        "/images/garments/w-kurta-ivory.jpg"
+        "/images/garments/w-kurta-ivory.jpg",
+        "/images/garments/placeholders/w-kurta-ivory-detail.jpg"
       ],
       "description": "A quietly luminous kurta in handloom chanderi silk, with tonal threadwork at the neckline. Cut for ease, finished by hand.",
       "details": [
@@ -66,7 +67,8 @@
         "XL"
       ],
       "images": [
-        "/images/garments/w-dress-clay.jpg"
+        "/images/garments/w-dress-clay.jpg",
+        "/images/garments/placeholders/w-dress-clay-detail.jpg"
       ],
       "description": "A wrap dress in washed linen, dyed with madder root to a soft clay tone. The belt ties at the side; the hem moves.",
       "details": [
@@ -103,7 +105,8 @@
         "XL"
       ],
       "images": [
-        "/images/products/midi-dress-indigo.jpg"
+        "/images/products/midi-dress-indigo.jpg",
+        "/images/garments/placeholders/midi-dress-indigo-detail.jpg"
       ],
       "description": "Midi Dress, available in Indigo and Ecru.",
       "details": [],
@@ -135,7 +138,8 @@
         "XL"
       ],
       "images": [
-        "/images/products/shirt-dress-ecru.jpg"
+        "/images/products/shirt-dress-ecru.jpg",
+        "/images/garments/placeholders/shirt-dress-ecru-detail.jpg"
       ],
       "description": "Shirt Dress, available in Ecru and Stone.",
       "details": [],
@@ -167,7 +171,8 @@
         "XL"
       ],
       "images": [
-        "/images/products/kaftan-rust.jpg"
+        "/images/products/kaftan-rust.jpg",
+        "/images/garments/placeholders/kaftan-rust-detail.jpg"
       ],
       "description": "Kaftan, available in Rust and Cream.",
       "details": [],
