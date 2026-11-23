@@ -142,6 +142,10 @@ const focusGroups = ['women', 'men'].flatMap((gender) =>
   </section>
 
   <script>
+    // Fade the right edge of the category names only while there are more names to scroll to.
+    const focusList = document.querySelector('.as-focus-list ul');
+    const markOverflow = () => focusList?.classList.toggle('is-overflow', focusList.scrollWidth - focusList.clientWidth > 4 && focusList.scrollLeft < focusList.scrollWidth - focusList.clientWidth - 4);
+    if (focusList) { markOverflow(); focusList.addEventListener('scroll', markOverflow, { passive: true }); window.addEventListener('resize', markOverflow); }
     document.querySelectorAll('[data-focus]').forEach((btn) => {
       btn.addEventListener('click', () => {
         const key = btn.dataset.focus;
