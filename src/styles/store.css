@@ -439,7 +439,7 @@ html.hdr-hidden .as-filterbar { top: 0; }
 .as-thumbs button.is-active { border-color: var(--as-ink); }
 .as-thumbs img { aspect-ratio: 3 / 4; object-fit: cover; width: 100%; }
 .as-pdp-main { position: relative; overflow: hidden; background: var(--as-sand); }
-.as-pdp-main img { width: 100%; height: auto; aspect-ratio: 3 / 4; object-fit: cover; transition: transform 600ms var(--as-ease); }
+.as-pdp-main img { width: 100%; aspect-ratio: 3 / 4; object-fit: cover; transition: transform 600ms var(--as-ease); }
 .as-pdp-main:hover img { transform: scale(1.06); }
 .as-pdp-info { position: sticky; top: 96px; padding-top: var(--as-s2); }
 .as-pdp-info .as-display-l { margin: 0.65rem 0 0.85rem; font-size: clamp(1.9rem, 3vw, 2.6rem); }
@@ -1125,5 +1125,9 @@ html.hdr-hidden .as-plp-toolbar { top: 0; }
   .as-subcats .as-chip { flex: none; white-space: nowrap; }
 }
 
-/* Product page sticky bar: "Select a size" stays solid ink (still disabled until a size is chosen), not faded grey. */
-.as-stickybar .as-btn--solid[disabled] { opacity: 1; background: var(--as-ink); border-color: var(--as-ink); color: var(--as-paper); }
+/* Phone: breadcrumb stays on one line; the current page name truncates instead of wrapping. */
+@media (max-width: 720px) {
+  .as-breadcrumb { flex-wrap: nowrap; white-space: nowrap; overflow: hidden; }
+  .as-breadcrumb > * { flex: none; }
+  .as-breadcrumb > [aria-current] { flex: 0 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+}
