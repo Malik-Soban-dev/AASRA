@@ -52,22 +52,24 @@ const focusGroups = ['women', 'men'].flatMap((gender) =>
 
   <section class="as-home-section container" aria-labelledby="tiles-title">
     <h2 class="as-h2 as-visually-hidden" id="tiles-title">Collections</h2>
-    <ul class="as-tiles" role="list">
-      {collections.map((c) => (
-        <li class="as-reveal">
-          <a class="as-tile" href={c.href}>
-            <span class="as-tile-pair">
-              <img src={c.imgs[0]} alt={c.alt} loading="lazy" width="600" height="800" />
-              <img src={c.imgs[1]} alt="" loading="lazy" width="600" height="800" />
-            </span>
-            <span class="as-tile-meta">
-              <span class="as-tile-kicker">{c.kicker}</span>
-              <span class="as-tile-title">{c.title}</span>
-            </span>
-          </a>
-        </li>
-      ))}
-    </ul>
+    {['Women', 'Men'].map((g) => (
+      <ul class={`as-tiles as-tiles--${g.toLowerCase()}`} role="list">
+        {collections.filter((c) => c.kicker === g).map((c) => (
+          <li class="as-reveal">
+            <a class="as-tile" href={c.href}>
+              <span class="as-tile-pair">
+                <img src={c.imgs[0]} alt={c.alt} loading="lazy" width="600" height="800" />
+                <img src={c.imgs[1]} alt="" loading="lazy" width="600" height="800" />
+              </span>
+              <span class="as-tile-meta">
+                <span class="as-tile-kicker">{c.kicker}</span>
+                <span class="as-tile-title">{c.title}</span>
+              </span>
+            </a>
+          </li>
+        ))}
+      </ul>
+    ))}
   </section>
 
   <section class="as-focus" aria-labelledby="focus-title">
