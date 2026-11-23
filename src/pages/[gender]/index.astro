@@ -8,8 +8,10 @@ import StoreLayout from '../../components/layout/StoreLayout.astro';
 import ProductRail from '../../components/store/ProductRail.astro';
 import RunwayHero from '../../components/store/RunwayHero.astro';
 import CategoriesFocus from '../../components/store/CategoriesFocus.astro';
+import CategoryStrip from '../../components/store/CategoryStrip.astro';
+import FootwearFeature from '../../components/store/FootwearFeature.astro';
 import { collectionsList } from '../../lib/collections.js';
-import { newArrivals, categoryProducts } from '../../lib/catalog.js';
+import { newArrivals, categoryProducts, categories, categoryLabel } from '../../lib/catalog.js';
 
 export function getStaticPaths() {
   return [{ params: { gender: 'women' } }, { params: { gender: 'men' } }];
@@ -21,6 +23,12 @@ const kicker = gender === 'women' ? 'The handloom edit' : 'Quiet menswear';
 const newIn = newArrivals(gender).slice(0, 4);
 const denim = categoryProducts(gender, 'denim');
 const tiles = collectionsList.filter((c) => c.kicker === title);
+// Category strip: every collection for this gender (footwear included), one photo each.
+const stripItems = (categories[gender] || []).filter((c) => c.category !== 'new-in').map((c) => {
+  const first = categoryProducts(gender, c.category)[0];
+  return { href: `/${gender}/${c.category}`, label: categoryLabel(gender, c.category), img: first?.images[0], alt: first?.name || categoryLabel(gender, c.category) };
+});
+const footwear = categoryProducts(gender, 'footwear');
 
 const slides = [
   { img: `/images/look/hero-${gender}.jpg`, caption: `${kicker} — ${title}`, alt: `${title}, spring campaign` },
@@ -37,6 +45,8 @@ const slides = [
     ctas={[{ label: 'Shop new in', href: `/${gender}/new-in` }, { label: 'Shop denim', href: `/${gender}/denim` }]}
     label={`${title} collection`}
   />
+
+  <CategoryStrip items={stripItems} />
 
   <section class="as-home-section container" aria-labelledby="tiles-title">
     <h2 class="as-h2 as-visually-hidden" id="tiles-title">Collections</h2>
@@ -85,6 +95,20 @@ const slides = [
       link={{ label: 'View all', href: `/${gender}/denim` }}
     />
   </div>
+
+  <FootwearFeature
+    gender={gender}
+    img={`/images/look/footwear-${gender}.jpg`}
+    lede="Leather, canvas and suede, made to walk in."
+    href={`/${gender}/footwear`}
+  />
+  <ProductRail
+    class="as-footwear-rail"
+    kicker="Footwear"
+    title="Shop the pairs"
+    products={footwear}
+    link={{ label: 'View all', href: `/${gender}/footwear` }}
+  />
 
   <CategoriesFocus genders={[gender]} />
 

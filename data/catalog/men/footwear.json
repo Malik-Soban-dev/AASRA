@@ -1,0 +1,109 @@
+{
+  "category": "footwear",
+  "label": "Footwear",
+  "products": [
+    {
+      "id": "M401",
+      "slug": "leather-derby-brown",
+      "name": "Leather Derby — Brown",
+      "price_pkr": 17500,
+      "colors": [
+        {
+          "name": "Brown",
+          "hex": "#5a3c26",
+          "image": "/images/garments/m-footwear-derby-brown.jpg"
+        }
+      ],
+      "sizes": [
+        "39",
+        "40",
+        "41",
+        "42",
+        "43",
+        "44"
+      ],
+      "images": [
+        "/images/garments/m-footwear-derby-brown.jpg",
+        "/images/garments/placeholders/m-footwear-derby-brown-detail.jpg",
+        "/images/garments/placeholders/m-footwear-derby-brown-close.jpg"
+      ],
+      "description": "Classic derby shoes in full-grain brown leather, with an open lacing and a leather sole.",
+      "details": [
+        "Open lacing",
+        "Leather sole",
+        "Leather lining"
+      ],
+      "fabric": "Full-grain leather upper, leather sole",
+      "care": "Polish regularly. Use shoe trees to hold shape."
+    },
+    {
+      "id": "M402",
+      "slug": "canvas-sneaker-stone",
+      "name": "Canvas Sneaker — Stone",
+      "price_pkr": 10500,
+      "badge": "NEW",
+      "colors": [
+        {
+          "name": "Stone",
+          "hex": "#c9bfae",
+          "image": "/images/garments/m-footwear-sneaker-stone.jpg"
+        }
+      ],
+      "sizes": [
+        "39",
+        "40",
+        "41",
+        "42",
+        "43",
+        "44"
+      ],
+      "images": [
+        "/images/garments/m-footwear-sneaker-stone.jpg",
+        "/images/garments/placeholders/m-footwear-sneaker-stone-detail.jpg",
+        "/images/garments/placeholders/m-footwear-sneaker-stone-close.jpg"
+      ],
+      "description": "Low-top sneakers in organic cotton canvas, built on a cupsole for everyday wear.",
+      "details": [
+        "Organic cotton canvas",
+        "Cupsole",
+        "Removable insole"
+      ],
+      "fabric": "Organic cotton canvas upper, natural rubber sole",
+      "care": "Hand wash cold with mild soap. Air dry."
+    },
+    {
+      "id": "M403",
+      "slug": "suede-loafer-navy",
+      "name": "Suede Loafer — Navy",
+      "price_pkr": 13900,
+      "colors": [
+        {
+          "name": "Navy",
+          "hex": "#1f2a44",
+          "image": "/images/garments/m-footwear-loafer-navy.jpg"
+        }
+      ],
+      "sizes": [
+        "39",
+        "40",
+        "41",
+        "42",
+        "43",
+        "44"
+      ],
+      "images": [
+        "/images/garments/m-footwear-loafer-navy.jpg",
+        "/images/garments/placeholders/m-footwear-loafer-navy-detail.jpg",
+        "/images/garments/placeholders/m-footwear-loafer-navy-close.jpg"
+      ],
+      "description": "Soft navy suede loafers with a penny strap and a flexible leather sole.",
+      "details": [
+        "Penny strap",
+        "Suede upper",
+        "Leather sole"
+      ],
+      "fabric": "Suede upper, leather sole",
+      "care": "Brush with a suede brush. Keep dry."
+    }
+  ]
+}

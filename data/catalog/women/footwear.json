@@ -1,0 +1,109 @@
+{
+  "category": "footwear",
+  "label": "Footwear",
+  "products": [
+    {
+      "id": "W401",
+      "slug": "leather-mule-tan",
+      "name": "Leather Mule — Tan",
+      "price_pkr": 14900,
+      "badge": "NEW",
+      "colors": [
+        {
+          "name": "Tan",
+          "hex": "#9a6b45",
+          "image": "/images/garments/w-footwear-mule-tan.jpg"
+        }
+      ],
+      "sizes": [
+        "36",
+        "37",
+        "38",
+        "39",
+        "40",
+        "41"
+      ],
+      "images": [
+        "/images/garments/w-footwear-mule-tan.jpg",
+        "/images/garments/placeholders/w-footwear-mule-tan-detail.jpg",
+        "/images/garments/placeholders/w-footwear-mule-tan-close.jpg"
+      ],
+      "description": "Soft tanned-leather mules with a low heel, stitched by hand in Peshawar. Easy on, easy to wear all day.",
+      "details": [
+        "Low block heel",
+        "Leather lining",
+        "Stitched leather sole"
+      ],
+      "fabric": "100% vegetable-tanned leather",
+      "care": "Wipe with a dry cloth. Keep away from water."
+    },
+    {
+      "id": "W402",
+      "slug": "ankle-boot-black",
+      "name": "Ankle Boot — Black",
+      "price_pkr": 18500,
+      "colors": [
+        {
+          "name": "Black",
+          "hex": "#1d1d1f",
+          "image": "/images/garments/w-footwear-boot-black.jpg"
+        }
+      ],
+      "sizes": [
+        "36",
+        "37",
+        "38",
+        "39",
+        "40",
+        "41"
+      ],
+      "images": [
+        "/images/garments/w-footwear-boot-black.jpg",
+        "/images/garments/placeholders/w-footwear-boot-black-detail.jpg",
+        "/images/garments/placeholders/w-footwear-boot-black-close.jpg"
+      ],
+      "description": "A close-fitting ankle boot in smooth black leather with a side zip and a sculpted heel.",
+      "details": [
+        "Side zip",
+        "Block heel 4 cm",
+        "Leather lining"
+      ],
+      "fabric": "Leather upper, rubber sole",
+      "care": "Polish with a neutral cream. Store with shoe trees."
+    },
+    {
+      "id": "W403",
+      "slug": "canvas-sneaker-oat",
+      "name": "Canvas Sneaker — Oat",
+      "price_pkr": 9900,
+      "colors": [
+        {
+          "name": "Oat",
+          "hex": "#d9cfbc",
+          "image": "/images/garments/w-footwear-sneaker-oat.jpg"
+        }
+      ],
+      "sizes": [
+        "36",
+        "37",
+        "38",
+        "39",
+        "40",
+        "41"
+      ],
+      "images": [
+        "/images/garments/w-footwear-sneaker-oat.jpg",
+        "/images/garments/placeholders/w-footwear-sneaker-oat-detail.jpg",
+        "/images/garments/placeholders/w-footwear-sneaker-oat-close.jpg"
+      ],
+      "description": "Low-top sneakers in organic cotton canvas, with a cupsole and a cushioned insole.",
+      "details": [
+        "Organic cotton canvas",
+        "Cupsole",
+        "Removable insole"
+      ],
+      "fabric": "Organic cotton canvas upper, natural rubber sole",
+      "care": "Hand wash cold with mild soap. Air dry."
+    }
+  ]
+}

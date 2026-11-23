@@ -1,0 +1,18 @@
+---
+/**
+ * FootwearFeature — full-bleed footwear photo with a title and a shop link.
+ * Sits above the footwear product rail on the women's and men's pages.
+ * Styles: .as-foot-feature (store.css).
+ */
+const { gender, img, title = 'Footwear', lede = '', href } = Astro.props;
+---
+
+<section class="as-foot-feature" aria-labelledby={`foot-${gender}`}>
+  <img src={img} alt="" loading="lazy" width="1600" height="900" />
+  <div class="as-foot-copy">
+    <p class="as-kicker">{title}</p>
+    <h2 class="as-foot-title" id={`foot-${gender}`}>{title}</h2>
+    {lede && <p class="as-foot-lede">{lede}</p>}
+    <a class="as-btn as-btn--light" href={href}>Shop footwear</a>
+  </div>
+</section>

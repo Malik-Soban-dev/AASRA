@@ -1154,3 +1154,37 @@ html.hdr-hidden .as-plp-toolbar { top: 0; }
 .as-hero-controls { display: flex; align-items: center; gap: var(--as-s3); }
 .as-hero .as-hero-arrow { border-color: rgba(255, 255, 255, 0.7); color: var(--as-paper); }
 .as-hero .as-hero-arrow:hover { background: var(--as-paper); color: var(--as-ink); }
+
+/* Hero scroll parallax: slides overscan the hero so the drift never shows an edge. */
+.as-hero-media { inset: 0; will-change: transform; }
+.as-hero-slide { top: -15%; height: 130%; }
+
+/* ---------- category strip (new, gender pages) ---------- */
+.as-cat-strip { padding: var(--as-s7) 0 var(--as-s6); }
+.as-cat-strip ul { display: flex; gap: 6px; padding: 0 6px; list-style: none; margin: 0; }
+.as-cat-strip li { flex: 1 1 0; min-width: 0; }
+.as-cat-strip a { position: relative; display: block; overflow: hidden; background: var(--as-sand); aspect-ratio: 3 / 4; }
+.as-cat-img, .as-cat-img img { position: absolute; inset: 0; width: 100%; height: 100%; }
+.as-cat-img img { object-fit: cover; transition: transform 1s var(--as-ease); }
+.as-cat-strip a:hover .as-cat-img img { transform: scale(1.04); }
+.as-cat-strip a::after { content: ''; position: absolute; inset: 0; background: linear-gradient(transparent 50%, rgba(17, 17, 17, 0.45)); }
+.as-cat-label {
+  position: absolute; z-index: 2; left: 0; right: 0; bottom: var(--as-s4); text-align: center;
+  color: var(--as-paper); font-size: var(--as-t-micro); letter-spacing: var(--as-track-micro); text-transform: uppercase;
+  padding: 0 var(--as-s2);
+}
+
+/* ---------- footwear feature (new, gender pages) ---------- */
+.as-foot-feature { position: relative; height: 82vh; min-height: 460px; overflow: hidden; background: var(--as-ink); color: var(--as-paper); }
+.as-foot-feature > img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.as-foot-feature::after { content: ''; position: absolute; inset: 0; background: linear-gradient(rgba(17, 17, 17, 0) 40%, rgba(17, 17, 17, 0.55)); }
+.as-foot-copy { position: absolute; z-index: 2; left: var(--as-gutter); bottom: var(--as-s7); max-width: 34rem; }
+.as-foot-copy .as-kicker { color: rgba(255, 255, 255, 0.85); }
+.as-foot-title { font-family: var(--as-display); font-size: clamp(2.6rem, 6vw, 5rem); font-weight: 400; line-height: 1; margin: var(--as-s3) 0 var(--as-s3); }
+.as-foot-lede { font-size: 1rem; line-height: 1.5; color: rgba(255, 255, 255, 0.9); margin-bottom: var(--as-s5); }
+
+@media (max-width: 720px) {
+  .as-cat-strip ul { overflow-x: auto; scroll-snap-type: x mandatory; }
+  .as-cat-strip li { flex: 0 0 62vw; scroll-snap-align: start; }
+  .as-foot-feature { height: 70vh; }
+}

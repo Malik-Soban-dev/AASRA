@@ -1,0 +1,21 @@
+---
+/**
+ * CategoryStrip — edge-to-edge row of category photo tiles with a label on each.
+ * Used on the women's and men's pages (and is a new section, not on the home).
+ * Styles: .as-cat-strip (store.css).
+ */
+const { items = [] } = Astro.props;
+---
+
+<section class="as-cat-strip" aria-label="Shop by category">
+  <ul role="list">
+    {items.map((it) => (
+      <li class="as-reveal">
+        <a class="as-cat-link" href={it.href}>
+          <span class="as-cat-img"><img src={it.img} alt={it.alt} loading="lazy" width="600" height="800" /></span>
+          <span class="as-cat-label">{it.label}</span>
+        </a>
+      </li>
+    ))}
+  </ul>
+</section>
