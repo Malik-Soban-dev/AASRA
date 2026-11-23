@@ -881,3 +881,35 @@ main table { display: block; max-width: 100%; overflow-x: auto; }
 @media (max-width: 720px) {
   .as-labels > li:last-child:nth-child(odd) { grid-column: span 2; }
 }
+
+/* Home: the hero stays in place and the sections slide over it (parallax reveal). */
+.as-home-hero { position: sticky; top: 0; z-index: 0; }
+.as-home-hero ~ * { position: relative; z-index: 1; background: var(--as-paper); box-shadow: 0 0 0 100vmax var(--as-paper); clip-path: inset(0 -100vmax); }
+main:has(> .as-home-hero) { overflow-x: clip; }
+
+/* ---- Home: Categories in Focus (category list on the left, product cards on the right) ---- */
+.as-focus { padding: var(--as-s9) var(--as-gutter) var(--as-s7); }
+.as-focus-title { margin-bottom: var(--as-s6); }
+[hidden] { display: none !important; }
+.as-focus-body { display: grid; grid-template-columns: 200px minmax(0, 1fr); gap: 40px; align-items: start; }
+.as-focus-list ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 18px; }
+.as-focus-link {
+  background: none; border: 0; padding: 0; cursor: pointer; text-align: left;
+  display: flex; flex-direction: column; gap: 2px;
+  font-family: var(--as-display); font-size: 1.2rem; color: #666666;
+}
+.as-focus-link span { font-family: var(--as-ui); font-size: 0.7rem; letter-spacing: 0.12em; text-transform: uppercase; color: #999999; }
+.as-focus-link:hover { color: var(--as-ink); }
+.as-focus-link.is-active { color: var(--as-ink); text-decoration: underline; text-underline-offset: 6px; }
+.as-focus-track {
+  display: grid; grid-auto-flow: column; grid-auto-columns: minmax(200px, 240px); gap: 20px;
+  overflow-x: auto; scroll-snap-type: x mandatory; padding-bottom: 12px; scrollbar-width: thin;
+}
+.as-focus-card { scroll-snap-align: start; min-width: 0; }
+@media (max-width: 720px) {
+  .as-focus { padding: var(--as-s7) var(--as-gutter) var(--as-s6); }
+  .as-focus-body { grid-template-columns: 1fr; gap: 24px; }
+  .as-focus-list ul { flex-direction: row; overflow-x: auto; gap: 22px; padding-bottom: 4px; }
+  .as-focus-link { white-space: nowrap; font-size: 1.05rem; }
+  .as-focus-track { grid-auto-columns: 62vw; }
+}
