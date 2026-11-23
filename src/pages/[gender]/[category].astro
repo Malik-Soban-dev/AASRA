@@ -69,8 +69,7 @@ const allSizes = [...new Set(items.flatMap((p) => p.sizes))];
             <option value="name">Name</option>
           </select>
         </div>
-      </div>
-
+      <div class="as-filter-backdrop" data-filter-backdrop hidden></div>
       <div class="as-filter-panel" id="as-filter-panel" data-filter-panel hidden>
         <div class="as-facet">
           <p class="as-facet-legend">Colour</p>
@@ -94,6 +93,8 @@ const allSizes = [...new Set(items.flatMap((p) => p.sizes))];
           <button type="button" class="as-filter-clear" data-filter-clear disabled>Clear all</button>
           <button type="button" class="as-btn as-btn--solid as-filter-done" data-filter-done>Done</button>
         </div>
+      </div>
+
       </div>
 
       <div class="as-plp-empty" id="as-nomatch" hidden>
@@ -134,11 +135,15 @@ const allSizes = [...new Set(items.flatMap((p) => p.sizes))];
     const noMatch = document.getElementById('as-nomatch');
     const active = { color: null, size: null };
 
+    const backdrop = document.querySelector('[data-filter-backdrop]');
     const setOpen = (open) => {
       panel.hidden = !open;
+      backdrop.hidden = !open;
       toggle.setAttribute('aria-expanded', String(open));
     };
     toggle.addEventListener('click', () => setOpen(panel.hidden));
+    backdrop.addEventListener('click', () => { setOpen(false); toggle.focus(); });
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !panel.hidden) { setOpen(false); toggle.focus(); } });
     document.querySelector('[data-filter-done]')?.addEventListener('click', () => { setOpen(false); toggle.focus(); });
 
     const syncPressed = () => {

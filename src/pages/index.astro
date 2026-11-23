@@ -73,6 +73,14 @@ const focusGroups = ['women', 'men'].flatMap((gender) =>
     ))}
   </section>
 
+  <ProductRail
+    class="as-home-rail"
+    kicker="Fresh off the loom"
+    title="New in"
+    products={newIn}
+    link={{ label: 'View all', href: '/women/new-in' }}
+  />
+
   <div class="as-denim-drop">
     <div class="as-denim-banner">
       <img src="/images/look/denim-drop-banner.jpg" alt="Two models in indigo denim walking on a sunlit street" width="1600" height="900" loading="lazy" />
@@ -168,14 +176,6 @@ const focusGroups = ['women', 'men'].flatMap((gender) =>
     document.querySelector('[data-focus-prev]')?.addEventListener('click', () => { const t = visibleTrack(); t?.scrollBy({ left: -step(t), behavior: 'smooth' }); });
     document.querySelector('[data-focus-next]')?.addEventListener('click', () => { const t = visibleTrack(); t?.scrollBy({ left: step(t), behavior: 'smooth' }); });
   </script>
-
-  <ProductRail
-    class="as-home-rail"
-    kicker="Fresh off the loom"
-    title="New in"
-    products={newIn}
-    link={{ label: 'View all', href: '/women/new-in' }}
-  />
 
   <section class="as-home-facts container" aria-label="Delivery and returns">
     <ul role="list">
