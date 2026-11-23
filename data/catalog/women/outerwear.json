@@ -11,11 +11,13 @@
       "colors": [
         {
           "name": "Sand",
-          "hex": "#d6c9b2"
+          "hex": "#d6c9b2",
+          "image": "/images/garments/w-coat-sand.jpg"
         },
         {
           "name": "Charcoal",
-          "hex": "#3c3a36"
+          "hex": "#3c3a36",
+          "image": "/images/colours/quilted-shawl-coat-sand--charcoal.jpg"
         }
       ],
       "sizes": [
