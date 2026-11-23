@@ -39,10 +39,6 @@ import { formatPKR } from '../lib/products.js';
             <div style="font-size:1.1rem; font-weight:600;" id="res-balance">0 PKR</div>
           </div>
         </div>
-        <div style="margin:1rem 0;">
-          <div style="font-size:0.7rem; text-transform:uppercase; letter-spacing:0.12em; color:var(--muted); margin-bottom:0.4rem;">Deposit</div>
-          <div style="font-size:0.9rem;" id="res-deposit">—</div>
-        </div>
         <div id="pay-now-wrapper" style="margin-top:1.5rem; display:none;">
           <button type="button" class="btn btn-primary btn-full" id="pay-now-btn">Pay now</button>
           <p id="pay-now-error" class="form-error" style="display:none; margin-top:0.75rem;"></p>
@@ -134,7 +130,6 @@ import { formatPKR } from '../lib/products.js';
         statusEl.textContent = data.status;
         statusEl.className = 'status-badge' + (data.status === 'paid' ? ' status-paid' : ' status-pending');
         document.getElementById('res-total').textContent = (data.total || 0).toLocaleString() + ' PKR';
-        document.getElementById('res-deposit').textContent = (data.deposit_amount || 0).toLocaleString() + ' PKR';
         const due = data.amount_due || 0;
         document.getElementById('res-balance').textContent = due.toLocaleString() + ' PKR';
 

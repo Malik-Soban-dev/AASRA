@@ -641,6 +641,18 @@ t('pay-now refuses an order that has nothing left to pay', async () => {
   assert.strictEqual(body.code, 'nothing_to_pay');
 });
 
+t('checkout only accepts full payment (deposit disabled)', () => {
+  // checkout.js imports JSON without an import attribute, so it cannot be
+  // loaded by plain Node here. Check the guard in the source instead.
+  const src = readFileSync(new URL('../functions/api/checkout.js', import.meta.url), 'utf8');
+  assert.ok(
+    /if \(payment_type !== 'full'\)[\s\S]{0,200}deposit_disabled/.test(src),
+    'checkout must reject any payment_type other than full'
+  );
+  const checkoutPage = readFileSync(new URL('../src/pages/checkout.astro', import.meta.url), 'utf8');
+  assert.ok(!/value="deposit"/.test(checkoutPage), 'checkout page must not offer deposit');
+});
+
 // ============================================================
 // Run all tests
 // ============================================================

@@ -146,9 +146,10 @@ async function handleCheckoutPost(context) {
     return errorResponse('checkout_unavailable:safepay_not_fully_configured', 503, 'payment_not_configured');
   }
 
-  // Validate payment_type
-  if (payment_type !== 'full' && payment_type !== 'deposit') {
-    return errorResponse('invalid payment_type', 400, 'invalid_payment_type');
+  // Prepaid only: deposit orders are switched off. New orders must be paid in
+  // full online. (Deposit code below stays for orders placed before this change.)
+  if (payment_type !== 'full') {
+    return errorResponse('Only full payment is available right now.', 400, 'deposit_disabled');
   }
 
   // 3. Turnstile verification (bot protection)

@@ -229,7 +229,7 @@ export function cancelledEmail({ order, reason, env }) {
       <p>Hello ${escapeHtml(order.customer_name)},</p>
       <p>Order <span class="hl">${escapeHtml(order.id)}</span> has been cancelled.</p>
       ${reason ? `<p>Reason: ${escapeHtml(reason)}</p>` : ''}
-      <p>Any amounts paid will be refunded per our <a href="${b}/deposit-policy">Deposit &amp; Cancellation Policy</a>.</p>
+      <p>Any amounts paid will be refunded per our <a href="${b}/return-policy">Return &amp; Refund Policy</a>.</p>
     `,
     intro: 'Your order has been cancelled.',
     outro: 'We are sorry to see the order go. Please contact us if you have questions.',
