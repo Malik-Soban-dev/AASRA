@@ -549,7 +549,7 @@ html.hdr-hidden .as-filterbar { top: 0; }
   .as-edit-grid { display: flex; flex-direction: column; }
   .as-tile-a, .as-tile-b, .as-tile-c, .as-tile-d { aspect-ratio: 4 / 5; margin: 0; }
   .as-look { grid-template-columns: 1fr; }
-  .as-pdp { grid-template-columns: 1fr; }
+  .as-pdp { grid-template-columns: 1fr; padding-top: var(--as-s4); }
   .as-pdp-info, .as-thumbs { position: static; }
   .as-pdp-gallery { grid-template-columns: 1fr; }
   .as-thumbs { flex-direction: row; order: 2; overflow-x: auto; }
@@ -1123,4 +1123,11 @@ html.hdr-hidden .as-plp-toolbar { top: 0; }
   }
   .as-subcats::-webkit-scrollbar { display: none; }
   .as-subcats .as-chip { flex: none; white-space: nowrap; }
+}
+
+/* Phone: breadcrumb stays on one line; the current page name truncates instead of wrapping. */
+@media (max-width: 720px) {
+  .as-breadcrumb { flex-wrap: nowrap; white-space: nowrap; overflow: hidden; }
+  .as-breadcrumb > * { flex: none; }
+  .as-breadcrumb > [aria-current] { flex: 0 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
 }
