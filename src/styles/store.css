@@ -998,3 +998,8 @@ main:has(> .as-home-hero) { overflow-x: clip; }
   .as-denim-banner-copy { padding: var(--as-s6) var(--as-gutter) var(--as-s7); }
   .as-denim-actions .as-btn { flex: 1 1 calc(50% - var(--as-s3)); }
 }
+
+/* Phone denim rail: one large card per screen, next card peeks in. */
+@media (max-width: 640px) {
+  .as-denim-rail .as-rail-track > * { flex-basis: 74%; }
+}
