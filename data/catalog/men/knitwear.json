@@ -11,11 +11,13 @@
       "colors": [
         {
           "name": "Charcoal",
-          "hex": "#3c3a36"
+          "hex": "#3c3a36",
+          "image": "/images/garments/m-crew-charcoal.jpg"
         },
         {
           "name": "Oat",
-          "hex": "#d9cfbc"
+          "hex": "#d9cfbc",
+          "image": "/images/colours/merino-crewneck-charcoal--oat.jpg"
         }
       ],
       "sizes": [
@@ -46,11 +48,13 @@
       "colors": [
         {
           "name": "Oat",
-          "hex": "#d9cfbc"
+          "hex": "#d9cfbc",
+          "image": "/images/products/cable-knit-oat.jpg"
         },
         {
           "name": "Navy",
-          "hex": "#1f2a3d"
+          "hex": "#1f2a3d",
+          "image": "/images/colours/cable-knit-oat--navy.jpg"
         }
       ],
       "sizes": [
@@ -76,11 +80,13 @@
       "colors": [
         {
           "name": "Grey",
-          "hex": "#8c8c88"
+          "hex": "#8c8c88",
+          "image": "/images/products/half-zip-knit-grey.jpg"
         },
         {
           "name": "Black",
-          "hex": "#1d1d1b"
+          "hex": "#1d1d1b",
+          "image": "/images/colours/half-zip-knit-grey--black.jpg"
         }
       ],
       "sizes": [
@@ -106,11 +112,13 @@
       "colors": [
         {
           "name": "Navy",
-          "hex": "#1f2a3d"
+          "hex": "#1f2a3d",
+          "image": "/images/products/v-neck-knit-navy.jpg"
         },
         {
           "name": "Oat",
-          "hex": "#d9cfbc"
+          "hex": "#d9cfbc",
+          "image": "/images/colours/v-neck-knit-navy--oat.jpg"
         }
       ],
       "sizes": [
