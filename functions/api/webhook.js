@@ -133,6 +133,22 @@ export async function processPayment(env, db, { eventId, trackerToken, orderId, 
   const order = await db.prepare('SELECT * FROM orders WHERE id = ?').bind(payment.order_id).first();
   if (!order) return { status: 404, body: { ok: false, error: 'order_not_found' } };
 
+  // Money safety: a second full payment for an order that is already paid is
+  // recorded as a duplicate and flagged for refund. It is not settled again and
+  // the customer is not emailed twice.
+  if (payment.kind === 'full' && order.status === 'paid') {
+    const dupNow = nowIso();
+    await db
+      .prepare('UPDATE payments SET status = ?, raw_event_id = ?, updated_at = ? WHERE id = ?')
+      .bind('duplicate', idempotencyId, dupNow, payment.id).run();
+    await createOrderEvent(db, payment.order_id, 'duplicate_payment', {
+      amount: payment.amount,
+      tracker: trackerToken,
+      action: 'refund_required',
+    });
+    return { status: 200, body: { ok: true, duplicate_payment: true, order_id: payment.order_id } };
+  }
+
   let transition;
   try {
     transition = transitionOrder(order, payment.kind);

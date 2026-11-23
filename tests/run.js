@@ -503,6 +503,8 @@ t('wrapEmail produces full HTML layout', () => {
 // Safepay signature verification (contract lock, 2026-11)
 // ============================================================
 import { createHmac } from 'node:crypto';
+import { processPayment } from '../functions/api/webhook.js';
+import { onRequestPost as payOrderPost } from '../functions/api/pay-order.js';
 
 t('webhook signature: HMAC-SHA512 over raw body verifies', async () => {
   const env = { SAFEPAY_WEBHOOK_SECRET: 'whsec_test_123' };
@@ -542,6 +544,101 @@ t('redirect signature: HMAC-SHA256 hex of tracker with v1 secret verifies', asyn
     true,
     'secret-key fallback verifies'
   );
+});
+
+// ============================================================
+// Payment safety: duplicate settlement and pay-now guards
+// (small fake D1: routes by SQL text; records every write)
+// ============================================================
+function fakeDb(routes) {
+  const writes = [];
+  return {
+    writes,
+    prepare(sql) {
+      return {
+        bind(...args) {
+          const lookup = () => {
+            for (const [needle, value] of routes) {
+              if (sql.includes(needle)) return typeof value === 'function' ? value(args) : value;
+            }
+            return null;
+          };
+          return {
+            first: async () => lookup(),
+            all: async () => ({ results: lookup() ? [lookup()].flat() : [] }),
+            run: async () => {
+              writes.push({ sql, args });
+              return { success: true, results: [] };
+            },
+          };
+        },
+      };
+    },
+    async batch(stmts) {
+      return stmts.map(() => ({ success: true, results: [] }));
+    },
+  };
+}
+
+t('duplicate full payment on a paid order is not settled again', async () => {
+  const payment = { id: 'pay-2', order_id: 'AAS-DUP-1', kind: 'full', status: 'pending', amount: 37800, tracker_token: 'trk_2' };
+  const order = { id: 'AAS-DUP-1', status: 'paid', payment_type: 'full', total: 37800, deposit_status: 'paid', balance_status: 'paid' };
+  const db = fakeDb([
+    ['FROM payments WHERE raw_event_id', null],
+    ['FROM payments WHERE tracker_token = ? AND status = ?', payment],
+    ['FROM orders WHERE id = ?', order],
+  ]);
+  const res = await processPayment({}, db, { eventId: 'evt_dup_1', trackerToken: 'trk_2', orderId: 'AAS-DUP-1', amount: 37800, kind: 'full' });
+  assert.strictEqual(res.status, 200);
+  assert.strictEqual(res.body.duplicate_payment, true);
+  assert.ok(!db.writes.some((w) => w.sql.startsWith('UPDATE orders')), 'order must not be re-settled');
+  assert.ok(db.writes.some((w) => w.sql.startsWith('UPDATE payments') && w.args.includes('duplicate')), 'payment marked duplicate');
+  assert.ok(db.writes.some((w) => w.args.includes('duplicate_payment')), 'duplicate logged for refund');
+});
+
+t('pay-now refuses an order whose phone does not match (no hint about the order)', async () => {
+  const db = fakeDb([['FROM orders WHERE id = ? AND phone = ?', null]]);
+  const req = new Request('https://aasra.shop/api/pay-order', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ order_id: 'AAS-X', phone: '03000000000' }),
+  });
+  const res = await payOrderPost({ request: req, env: { DB: db } });
+  const body = await res.json();
+  assert.strictEqual(res.status, 404);
+  assert.strictEqual(body.code, 'order_not_found');
+});
+
+t('pay-now blocks a second payment while one is in progress', async () => {
+  const order = { id: 'AAS-P-1', phone: '03001234567', email: 'a@example.com', status: 'pending-payment', payment_type: 'full', total: 37800, items: '[]' };
+  const db = fakeDb([
+    ['FROM orders WHERE id = ? AND phone = ?', order],
+    ["AND status = 'pending' AND created_at > ?", { id: 'pay-old' }],
+  ]);
+  const req = new Request('https://aasra.shop/api/pay-order', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ order_id: 'AAS-P-1', phone: '03001234567' }),
+  });
+  const res = await payOrderPost({ request: req, env: { DB: db } });
+  const body = await res.json();
+  assert.strictEqual(res.status, 409);
+  assert.strictEqual(body.code, 'payment_in_progress');
+  assert.ok(!db.writes.some((w) => w.sql.startsWith('INSERT INTO payments')), 'no second session recorded');
+});
+
+t('pay-now refuses an order that has nothing left to pay', async () => {
+  const order = { id: 'AAS-P-2', phone: '03001234567', status: 'paid', payment_type: 'full', total: 37800, items: '[]' };
+  const db = fakeDb([['FROM orders WHERE id = ? AND phone = ?', order]]);
+  const req = new Request('https://aasra.shop/api/pay-order', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ order_id: 'AAS-P-2', phone: '03001234567' }),
+  });
+  const res = await payOrderPost({ request: req, env: { DB: db } });
+  const body = await res.json();
+  assert.strictEqual(res.status, 409);
+  assert.strictEqual(body.code, 'nothing_to_pay');
 });
 
 // ============================================================

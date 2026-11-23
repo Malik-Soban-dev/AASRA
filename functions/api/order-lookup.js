@@ -50,6 +50,9 @@ export async function onRequestGet(context) {
     order.balance_status === 'unpaid' &&
     order.status !== 'cancelled' &&
     order.status !== 'refunded';
+  // What the customer can pay right now from the lookup page (see pay-order.js).
+  const canPayFull = order.payment_type === 'full' && order.status === 'pending-payment';
+  const amountDue = canPayFull ? Number(order.total) : canPayBalance ? Number(order.balance_amount) : 0;
 
   return jsonResponse({
     ok: true,
@@ -64,6 +67,8 @@ export async function onRequestGet(context) {
     balance_status: order.balance_status,
     balance_due_at: order.balance_due_at,
     can_pay_balance: canPayBalance,
+    can_pay: canPayFull || canPayBalance,
+    amount_due: amountDue,
     courier: order.courier,
     tracking_number: order.tracking_number,
     created_at: order.created_at,
