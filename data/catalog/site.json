@@ -9,7 +9,7 @@
     "women": { "label": "Shop Women", "href": "/women" },
     "men": { "label": "Shop Men", "href": "/men" }
   },
-  "marquee": ["Handloom linen", "Slow made in Pakistan", "Natural dyes", "Fair wages, real workshops", "Small runs, no waste"],
+  "marquee": ["Slow made in Pakistan", "Handwoven", "Natural dyes", "Fair wages", "Small runs"],
   "nav": {
     "women": [
       { "label": "New In", "href": "/women/new-in" },
