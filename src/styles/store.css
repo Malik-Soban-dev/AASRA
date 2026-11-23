@@ -948,7 +948,7 @@ main:has(> .as-home-hero) { overflow-x: clip; }
    height, including their copy. Overrides the 600px rules above. */
 @media (max-width: 720px) {
   /* Hero: the photo fills the whole phone screen; copy sits over its lower part. */
-  .as-home-hero { position: relative; height: 100vh; height: 100svh; min-height: 0; display: block; background: var(--as-ink); color: var(--as-paper); overflow: hidden; }
+  .as-home-hero { position: sticky; top: 0; z-index: 0; height: 100vh; height: 100svh; min-height: 0; display: block; background: var(--as-ink); color: var(--as-paper); overflow: hidden; }
   .as-home-hero-media { position: absolute; inset: 0; }
   .as-home-hero-media img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center 30%; }
   .as-home-hero-media::after { background: linear-gradient(180deg, rgba(17, 17, 17, 0.35) 0%, rgba(17, 17, 17, 0) 30%, rgba(17, 17, 17, 0) 45%, rgba(17, 17, 17, 0.82) 100%); }
@@ -961,7 +961,7 @@ main:has(> .as-home-hero) { overflow-x: clip; }
   .as-home-hero .as-home-men:hover { background: var(--as-paper); color: var(--as-ink); }
   .as-home-section { padding: 0; }
   .as-tiles { gap: 0; margin: 0; }
-  .as-tiles > li { height: 100vh; height: 100svh; }
+  .as-tiles > li { height: 100vh; height: 100svh; box-sizing: border-box; padding-top: var(--as-s5); }
   .as-tile { height: 100%; display: flex; flex-direction: column; padding-bottom: var(--as-s5); }
   .as-tile-pair { flex: 1 1 auto; min-height: 0; gap: 4px; }
   .as-tile-pair img { height: 100%; aspect-ratio: auto; min-height: 0; }
