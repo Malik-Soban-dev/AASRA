@@ -1,0 +1,99 @@
+---
+/**
+ * Categories in Focus — one panel per category (a row of product cards), with a
+ * full-height feature photo on the left. Used on the home page and on each
+ * gender landing page. `genders` limits the categories shown.
+ */
+import { categories, categoryProducts, categoryLabel, formatPrice } from '../../lib/catalog.js';
+
+const { genders = ['women', 'men'] } = Astro.props;
+const raw = genders.flatMap((gender) =>
+  (categories[gender] || []).filter((c) => c.category !== 'new-in').map((c) => ({
+    key: `${gender}-${c.category}`,
+    gender,
+    label: categoryLabel(gender, c.category),
+    products: categoryProducts(gender, c.category).slice(0, 10),
+  }))
+);
+// Same category name in two genders gets a gender suffix.
+const focusGroups = raw.map((g, _, all) => ({
+  ...g,
+  label: all.filter((o) => o.label === g.label).length > 1 ? `${g.label} (${g.gender === 'women' ? 'Women' : 'Men'})` : g.label,
+}));
+---
+
+  <section class="as-focus" aria-labelledby="focus-title">
+    <div class="as-focus-feature">
+      {focusGroups.map((g, i) => (
+        <img data-focus-feature={g.key} src={g.products[0].images[0]} alt="" loading="lazy" width="800" height="1000" hidden={i !== 0} />
+      ))}
+    </div>
+    <div class="as-focus-main">
+      <h2 class="as-focus-title" id="focus-title">Categories in Focus</h2>
+      <div class="as-focus-nav">
+        <button type="button" class="as-rail-btn" data-focus-prev aria-label="Previous products">
+          <svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7" /></svg>
+        </button>
+        <button type="button" class="as-rail-btn" data-focus-next aria-label="Next products">
+          <svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7" /></svg>
+        </button>
+      </div>
+      <nav class="as-focus-list" aria-label="Categories">
+        <ul role="list">
+          {focusGroups.map((g, i) => (
+            <li>
+              <button type="button" class:list={['as-focus-link', { 'is-active': i === 0 }]} data-focus={g.key} aria-pressed={i === 0 ? 'true' : 'false'}>{g.label}</button>
+            </li>
+          ))}
+        </ul>
+      </nav>
+      <div class="as-focus-panels">
+        {focusGroups.map((g, i) => (
+          <div class="as-focus-panel" data-focus-panel={g.key} hidden={i !== 0}>
+            <div class="as-focus-track">
+              {g.products.map((p) => (
+                <a class="as-focus-card" href={`/product/${p.slug}`}>
+                  <span class="as-focus-img"><img src={p.images[0]} alt={p.name} loading="lazy" width="600" height="800" /></span>
+                  <span class="as-focus-name">{p.name}</span>
+                  <span class="as-focus-meta">{g.gender === 'women' ? 'Women' : 'Men'} · {g.label}</span>
+                  <span class="as-focus-price">{formatPrice(p.price_pkr)}</span>
+                  <span class="as-focus-swatches" aria-label={`${p.colors.length} colours`}>
+                    {p.colors.map((c, i) => <i style={`background:${c.hex}`} title={c.name} data-colour-image={c.image || p.images[0]} data-colour={c.name} role="button" tabindex="0" aria-label={`Show ${c.name}`} aria-pressed={i === 0 ? 'true' : 'false'} class:list={['as-dot', { 'is-active': i === 0 }]}></i>)}
+                  </span>
+                </a>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <script>
+    // Fade the right edge of the category names only while there are more names to scroll to.
+    const focusList = document.querySelector('.as-focus-list ul');
+    const markOverflow = () => focusList?.classList.toggle('is-overflow', focusList.scrollWidth - focusList.clientWidth > 4 && focusList.scrollLeft < focusList.scrollWidth - focusList.clientWidth - 4);
+    if (focusList) { markOverflow(); focusList.addEventListener('scroll', markOverflow, { passive: true }); window.addEventListener('resize', markOverflow); }
+    document.querySelectorAll('[data-focus]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const key = btn.dataset.focus;
+        document.querySelectorAll('[data-focus]').forEach((b) => {
+          const on = b === btn;
+          b.classList.toggle('is-active', on);
+          b.setAttribute('aria-pressed', on ? 'true' : 'false');
+        });
+        document.querySelectorAll('[data-focus-panel]').forEach((panel) => {
+          panel.hidden = panel.dataset.focusPanel !== key;
+        });
+        document.querySelectorAll('[data-focus-feature]').forEach((img) => {
+          img.hidden = img.dataset.focusFeature !== key;
+        });
+      });
+    });
+    // Previous / next arrows move the visible row by one card.
+    const visibleTrack = () => document.querySelector('.as-focus-panel:not([hidden]) .as-focus-track');
+    const step = (t) => (t.querySelector('.as-focus-card')?.getBoundingClientRect().width || 280) + 14;
+    document.querySelector('[data-focus-prev]')?.addEventListener('click', () => { const t = visibleTrack(); t?.scrollBy({ left: -step(t), behavior: 'smooth' }); });
+    document.querySelector('[data-focus-next]')?.addEventListener('click', () => { const t = visibleTrack(); t?.scrollBy({ left: step(t), behavior: 'smooth' }); });
+  </script>
+

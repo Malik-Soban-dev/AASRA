@@ -1,74 +1,98 @@
 ---
 /**
- * Gender landing — /women, /men: campaign hero, sub-category tiles, new-in rail.
+ * Gender landing — /women, /men. Same flow as the home page, so the two
+ * gender pages stay consistent: full-screen campaign carousel → collection
+ * tile pairs → New in rail → denim drop → Categories in Focus → delivery facts.
  */
 import StoreLayout from '../../components/layout/StoreLayout.astro';
-import Marquee from '../../components/store/Marquee.astro';
 import ProductRail from '../../components/store/ProductRail.astro';
-import site from '../../../data/catalog/site.json';
-import { categories, newArrivals, categoryProducts, formatPrice } from '../../lib/catalog.js';
+import RunwayHero from '../../components/store/RunwayHero.astro';
+import CategoriesFocus from '../../components/store/CategoriesFocus.astro';
+import { collectionsList } from '../../lib/collections.js';
+import { newArrivals, categoryProducts } from '../../lib/catalog.js';
 
 export function getStaticPaths() {
   return [{ params: { gender: 'women' } }, { params: { gender: 'men' } }];
 }
 
 const { gender } = Astro.params;
-const isWomen = gender === 'women';
-const heroImg = isWomen ? '/images/look/hero-women.jpg' : '/images/look/hero-men.jpg';
-const title = isWomen ? 'Women' : 'Men';
-const kicker = isWomen ? 'The handloom edit' : 'Quiet menswear';
-const cats = categories[gender].filter((c) => c.category !== 'new-in');
-const newIn = newArrivals(gender);
-// Row 1: a (large) + b. Row 2: e + f. With three collections the last one spans the row.
-const tileClass = (i) => {
-  if (i === 0) return 'as-tile-a';
-  if (i === 1) return 'as-tile-b';
-  if (i === 2) return cats.length === 3 ? 'as-tile-full' : 'as-tile-e';
-  return 'as-tile-f';
-};
-const tiles = cats.map((c) => {
-  const first = categoryProducts(gender, c.category)[0];
-  return { ...c, img: first?.images[0] || heroImg, alt: first?.name || c.label };
-});
+const title = gender === 'women' ? 'Women' : 'Men';
+const kicker = gender === 'women' ? 'The handloom edit' : 'Quiet menswear';
+const newIn = newArrivals(gender).slice(0, 4);
+const denim = categoryProducts(gender, 'denim');
+const tiles = collectionsList.filter((c) => c.kicker === title);
+
+const slides = [
+  { img: `/images/look/hero-${gender}.jpg`, caption: `${kicker} — ${title}`, alt: `${title}, spring campaign` },
+  { img: '/images/look/banner-runway.jpg', caption: 'The campaign — Spring / Summer', alt: 'Two models in handloom linen on a sunlit runway' },
+  { img: '/images/look/denim-drop-banner.jpg', caption: 'New season — Denim', alt: 'Two models in indigo denim walking on a sunlit street' },
+];
 ---
 
 <StoreLayout title={`${title} — AASRA`}>
-  <section class="as-campaign" style="min-height:86vh" aria-label={`${title} collection`}>
-    <img src={heroImg} alt={`${title}, spring campaign`} fetchpriority="high" width="1600" height="1000" />
-    <div class="as-campaign-copy">
-      <p class="as-kicker">{kicker}</p>
-      <h1 class="as-display-xl" style="margin:.5rem 0 1.5rem">{title}</h1>
-      <a class="as-link as-link--light" href={`/${gender}/new-in`}>Shop new in</a>
-    </div>
-  </section>
+  <RunwayHero
+    slides={slides}
+    kicker={kicker}
+    headline={title}
+    ctas={[{ label: 'Shop new in', href: `/${gender}/new-in` }, { label: 'Shop denim', href: `/${gender}/denim` }]}
+    label={`${title} collection`}
+  />
 
-  <Marquee items={site.marquee} />
-
-  <section class="as-section container" aria-label="Categories">
-    <div class="as-section-head as-reveal">
-      <div>
-        <p class="as-kicker">Shop by category</p>
-        <h2 class="as-h2">Everything {title.toLowerCase()}, in its place</h2>
-      </div>
-    </div>
-    <div class="as-edit-grid" data-stagger>
-      {tiles.map((t, i) => (
-        <a class:list={['as-edit-tile', tileClass(i), 'as-reveal']} style={`--i:${i}`} href={t.href}>
-          <img src={t.img} alt={t.alt} loading="lazy" width="900" height="1125" />
-          <div class="as-edit-label">
-            <p class="as-kicker">{t.category === 'new-in' ? 'Just landed' : 'Collection'}</p>
-            <h3>{t.label}</h3>
-            <span class="as-link as-link--light">Shop</span>
-          </div>
-        </a>
+  <section class="as-home-section container" aria-labelledby="tiles-title">
+    <h2 class="as-h2 as-visually-hidden" id="tiles-title">Collections</h2>
+    <ul class={`as-tiles as-tiles--${gender}`} role="list">
+      {tiles.map((c) => (
+        <li class="as-reveal">
+          <a class="as-tile" href={c.href}>
+            <span class="as-tile-pair">
+              <img src={c.imgs[0]} alt={c.alt} loading="lazy" width="600" height="800" />
+              <img src={c.imgs[1]} alt="" loading="lazy" width="600" height="800" />
+            </span>
+            <span class="as-tile-meta">
+              <span class="as-tile-kicker">{c.kicker}</span>
+              <span class="as-tile-title">{c.title}</span>
+            </span>
+          </a>
+        </li>
       ))}
-    </div>
+    </ul>
   </section>
 
   <ProductRail
-    kicker="Just landed"
+    class="as-home-rail"
+    kicker="Fresh off the loom"
     title={`New in ${title.toLowerCase()}`}
     products={newIn}
     link={{ label: 'View all', href: `/${gender}/new-in` }}
   />
+
+  <div class="as-denim-drop">
+    <div class="as-denim-banner">
+      <img src="/images/look/denim-drop-banner.jpg" alt="Two models in indigo denim walking on a sunlit street" width="1600" height="900" loading="lazy" />
+      <div class="as-denim-banner-copy">
+        <p class="as-kicker">New season</p>
+        <h2 class="as-denim-title" id="denim-drop-title">New Denim Drop</h2>
+        <div class="as-denim-actions">
+          <a class="as-btn as-btn--solid" href={`/${gender}/denim`}>{`Shop ${title.toLowerCase()} denim`}</a>
+        </div>
+      </div>
+    </div>
+    <ProductRail
+      class="as-denim-rail"
+      kicker="Denim"
+      title="Shop the drop"
+      products={denim}
+      link={{ label: 'View all', href: `/${gender}/denim` }}
+    />
+  </div>
+
+  <CategoriesFocus genders={[gender]} />
+
+  <section class="as-home-facts container" aria-label="Delivery and returns">
+    <ul role="list">
+      <li><strong>Free delivery</strong><span>on orders over PKR 20,000</span></li>
+      <li><strong>Dispatched in 2 days</strong><span>by TCS courier, 2–7 days by city</span></li>
+      <li><strong>Returns within 7 days</strong><span>of delivery, unused and with tags</span></li>
+    </ul>
+  </section>
 </StoreLayout>
