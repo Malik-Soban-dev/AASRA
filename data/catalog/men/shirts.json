@@ -119,11 +119,13 @@
       "colors": [
         {
           "name": "Blue",
-          "hex": "#4f6b8a"
+          "hex": "#4f6b8a",
+          "image": "/images/products/chambray-shirt-blue.jpg"
         },
         {
           "name": "Stone",
-          "hex": "#cfc6b4"
+          "hex": "#cfc6b4",
+          "image": "/images/colours/chambray-shirt-blue--stone.jpg"
         }
       ],
       "sizes": [
@@ -149,11 +151,13 @@
       "colors": [
         {
           "name": "Sage",
-          "hex": "#9aa58c"
+          "hex": "#9aa58c",
+          "image": "/images/products/camp-collar-shirt-sage.jpg"
         },
         {
           "name": "Ecru",
-          "hex": "#e9e2d0"
+          "hex": "#e9e2d0",
+          "image": "/images/colours/camp-collar-shirt-sage--ecru.jpg"
         }
       ],
       "sizes": [
