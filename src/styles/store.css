@@ -936,12 +936,13 @@ main:has(> .as-home-hero) { overflow-x: clip; }
   .as-focus-feature { min-height: 0; aspect-ratio: 4 / 5; }
   .as-focus-feature img { top: 0; height: 100%; }
   .as-focus-main { padding: var(--as-s7) 0 var(--as-s6) var(--as-gutter); }
-  .as-focus-list ul { flex-direction: row; overflow-x: auto; gap: 22px; padding-bottom: 4px; padding-right: var(--as-gutter); }
+  .as-focus-list ul { flex-direction: row; flex-wrap: nowrap; overflow-x: auto; gap: 22px; padding-bottom: 4px; padding-right: var(--as-gutter); scrollbar-width: none; }
+  .as-focus-list ul::-webkit-scrollbar { display: none; }
   .as-focus-link { white-space: nowrap; font-size: 1.05rem; }
   .as-focus-panels, .as-focus-panel:not([hidden]) { flex: none; display: block; }
-  .as-focus-track { flex: none; display: grid; grid-auto-columns: 62vw; overflow-x: auto; }
+  .as-focus-track { flex: none; display: grid; grid-auto-columns: 70vw; overflow-x: auto; }
   .as-focus-img { height: auto; position: relative; }
-  .as-focus-img img { position: static; height: auto; aspect-ratio: 3 / 4; }
+  .as-focus-img img { position: static; height: auto; aspect-ratio: 2 / 3; }
 }
 
 /* Phone full-screen pass: the home hero and each collection tile fill one screen
