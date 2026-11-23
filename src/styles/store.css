@@ -920,3 +920,18 @@ main:has(> .as-home-hero) { overflow-x: clip; }
   .as-focus-link { white-space: nowrap; font-size: 1.05rem; }
   .as-focus-track { grid-auto-columns: 62vw; }
 }
+
+/* Phone full-screen pass: the home hero and each collection tile fill one screen
+   height, including their copy. Overrides the 600px rules above. */
+@media (max-width: 720px) {
+  .as-home-hero { height: 100vh; height: 100svh; min-height: 0; display: flex; flex-direction: column; }
+  .as-home-hero-media { flex: 1 1 auto; min-height: 0; }
+  .as-home-hero-copy { flex: none; }
+  .as-home-section { padding: 0; }
+  .as-tiles { gap: 0; margin: 0; }
+  .as-tiles > li { height: 100vh; height: 100svh; }
+  .as-tile { height: 100%; display: flex; flex-direction: column; padding-bottom: var(--as-s5); }
+  .as-tile-pair { flex: 1 1 auto; min-height: 0; gap: 4px; }
+  .as-tile-pair img { height: 100%; aspect-ratio: auto; min-height: 0; }
+  .as-tile-meta { flex: none; margin: var(--as-s4) var(--as-gutter) 0; }
+}
