@@ -115,7 +115,13 @@ import { formatPKR } from '../lib/products.js';
       const phone = form.elements.phone.value.trim();
 
       try {
-        const res = await fetch(`/api/order-lookup?order_id=${encodeURIComponent(orderId)}&phone=${encodeURIComponent(phone)}`);
+        const token = await csrfToken();
+        const res = await fetch('/api/order-lookup', {
+          method: 'POST',
+          credentials: 'same-origin',
+          headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': token },
+          body: JSON.stringify({ order_id: orderId, phone }),
+        });
         const data = await res.json();
 
         if (!res.ok || !data.ok) {

@@ -1,8 +1,10 @@
 /**
- * GET /api/order-lookup?order_id=...&phone=...
+ * POST /api/order-lookup  body: { "order_id": "...", "phone": "..." }
  *
  * Order status lookup (no customer account required).
  * Requires order ID + phone (both must match). Returns status and balance due.
+ * The phone number is sent in the POST body, not the URL, so it does not end
+ * up in request logs. CSRF-protected like the other POST endpoints.
  * Rate-limited; no exposure of other customers' data.
  */
 
@@ -17,12 +19,18 @@ function errorResponse(message, status = 400, code) {
   return jsonResponse({ ok: false, error: message, code }, status);
 }
 
-export async function onRequestGet(context) {
+export async function onRequestPost(context) {
   const { env } = context;
-  const url = context.url || new URL(context.request.url);
 
-  const orderId = url.searchParams.get('order_id');
-  const phone = url.searchParams.get('phone');
+  let body;
+  try {
+    body = await context.request.json();
+  } catch {
+    return errorResponse('invalid_json', 400, 'invalid_json');
+  }
+
+  const orderId = typeof body?.order_id === 'string' ? body.order_id.trim() : '';
+  const phone = typeof body?.phone === 'string' ? body.phone.trim() : '';
 
   if (!orderId || !phone) {
     return errorResponse('order_id and phone are required', 400, 'missing_fields');

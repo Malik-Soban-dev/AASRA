@@ -653,6 +653,15 @@ t('checkout only accepts full payment (deposit disabled)', () => {
   assert.ok(!/value="deposit"/.test(checkoutPage), 'checkout page must not offer deposit');
 });
 
+t('order lookup takes phone in POST body, not the URL', () => {
+  const api = readFileSync(new URL('../functions/api/order-lookup.js', import.meta.url), 'utf8');
+  assert.ok(/export async function onRequestPost\(/.test(api), 'lookup must be a POST handler');
+  assert.ok(!/onRequestGet/.test(api), 'lookup must not accept GET (phone would appear in URL logs)');
+  const page = readFileSync(new URL('../src/pages/order-lookup.astro', import.meta.url), 'utf8');
+  assert.ok(!/order-lookup\?order_id=/.test(page), 'lookup page must not put the phone in the URL');
+  assert.ok(/method: 'POST'[\s\S]{0,300}\/api\/order-lookup/.test(page) || /\/api\/order-lookup'[\s\S]{0,200}method: 'POST'/.test(page), 'lookup page must POST to /api/order-lookup');
+});
+
 // ============================================================
 // Run all tests
 // ============================================================
