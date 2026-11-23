@@ -9,15 +9,123 @@
       "price_pkr": 19500,
       "badge": "NEW",
       "colors": [
-        { "name": "Charcoal", "hex": "#3c3a36" },
-        { "name": "Oat", "hex": "#d9cfbc" }
+        {
+          "name": "Charcoal",
+          "hex": "#3c3a36"
+        },
+        {
+          "name": "Oat",
+          "hex": "#d9cfbc"
+        }
       ],
-      "sizes": ["S", "M", "L", "XL", "XXL"],
-      "images": ["/images/garments/m-crew-charcoal.jpg"],
+      "sizes": [
+        "S",
+        "M",
+        "L",
+        "XL",
+        "XXL"
+      ],
+      "images": [
+        "/images/garments/m-crew-charcoal.jpg"
+      ],
       "description": "Fine-gauge merino, knitted in a family workshop in Lahore. Clean enough for the office, soft enough for Sundays.",
-      "details": ["Regular fit", "Fully fashioned shoulders", "Ribbed cuffs and hem"],
+      "details": [
+        "Regular fit",
+        "Fully fashioned shoulders",
+        "Ribbed cuffs and hem"
+      ],
       "fabric": "100% extra-fine merino wool",
       "care": "Hand wash cold or dry clean. Dry flat."
+    },
+    {
+      "id": "M007",
+      "slug": "cable-knit-oat",
+      "name": "Cable Knit — Oat",
+      "price_pkr": 17500,
+      "badge": "NEW",
+      "colors": [
+        {
+          "name": "Oat",
+          "hex": "#d9cfbc"
+        },
+        {
+          "name": "Navy",
+          "hex": "#1f2a3d"
+        }
+      ],
+      "sizes": [
+        "S",
+        "M",
+        "L",
+        "XL"
+      ],
+      "images": [
+        "/images/products/cable-knit-oat.jpg"
+      ],
+      "description": "Cable Knit, available in Oat and Navy.",
+      "details": [],
+      "fabric": "To be confirmed",
+      "care": "Follow the care label inside the garment."
+    },
+    {
+      "id": "M008",
+      "slug": "half-zip-knit-grey",
+      "name": "Half-Zip Knit — Grey",
+      "price_pkr": 18900,
+      "badge": null,
+      "colors": [
+        {
+          "name": "Grey",
+          "hex": "#8c8c88"
+        },
+        {
+          "name": "Black",
+          "hex": "#1d1d1b"
+        }
+      ],
+      "sizes": [
+        "S",
+        "M",
+        "L",
+        "XL"
+      ],
+      "images": [
+        "/images/products/half-zip-knit-grey.jpg"
+      ],
+      "description": "Half-Zip Knit, available in Grey and Black.",
+      "details": [],
+      "fabric": "To be confirmed",
+      "care": "Follow the care label inside the garment."
+    },
+    {
+      "id": "M009",
+      "slug": "v-neck-knit-navy",
+      "name": "V-Neck Knit — Navy",
+      "price_pkr": 16500,
+      "badge": null,
+      "colors": [
+        {
+          "name": "Navy",
+          "hex": "#1f2a3d"
+        },
+        {
+          "name": "Oat",
+          "hex": "#d9cfbc"
+        }
+      ],
+      "sizes": [
+        "S",
+        "M",
+        "L",
+        "XL"
+      ],
+      "images": [
+        "/images/products/v-neck-knit-navy.jpg"
+      ],
+      "description": "V-Neck Knit, available in Navy and Oat.",
+      "details": [],
+      "fabric": "To be confirmed",
+      "care": "Follow the care label inside the garment."
     }
   ]
 }

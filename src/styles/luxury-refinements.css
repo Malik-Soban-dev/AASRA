@@ -1,9 +1,9 @@
 /* AASRA editorial and motion refinements. Kept separate to make interaction
    timing and accessible fallbacks easy to audit. */
 :root { --motion-ease: cubic-bezier(.22,.61,.36,1); --motion-duration: 450ms; }
-.announcement-bar { min-height:28px; display:flex; justify-content:center; align-items:center; gap:.7rem; padding:.35rem 1rem; background:#f5f2ec; color:#4d4942; text-align:center; font-size:.62rem; letter-spacing:.12em; text-transform:uppercase; }
+.announcement-bar { min-height:28px; display:flex; justify-content:center; align-items:center; gap:.7rem; padding:.35rem 1rem; background:#ffffff; color:#111111; text-align:center; font-size:.62rem; letter-spacing:.12em; text-transform:uppercase; }
 .announcement-bar a { border-bottom:1px solid currentColor; white-space:nowrap; }
-.header.home-over-image .announcement-bar { background:rgba(30,27,24,.28); color:#fff; }
+.header.home-over-image .announcement-bar { background:rgba(17,17,17,.28); color:#fff; }
 .header.home-over-image.scrolled .announcement-bar { display:none; }
 .header, .header-logo-row, .header-nav, .header .logo { transition:background-color var(--motion-duration) var(--motion-ease), color var(--motion-duration) var(--motion-ease), box-shadow var(--motion-duration) var(--motion-ease), padding var(--motion-duration) var(--motion-ease), height var(--motion-duration) var(--motion-ease), max-height var(--motion-duration) var(--motion-ease), font-size var(--motion-duration) var(--motion-ease); }
 @media (min-width:821px) {
@@ -35,7 +35,7 @@
 .campaign-band .wide-content .hero-links > span { color:#fff; font-size:.6875rem; letter-spacing:.24em; text-transform:uppercase; border-bottom:1px solid rgba(255,255,255,.55); padding-bottom:.3rem; }
 .featured-grid { margin-bottom:2rem; }
 .editorial-cta { text-align:center; margin-top:2.5rem; }
-.craftsmanship-section { background:#f7f5f0; }
+.craftsmanship-section { background:#ffffff; }
 .craftsmanship-panel { display:grid; grid-template-columns:1fr 1fr; gap:clamp(2rem,7vw,7rem); align-items:center; }
 .craftsmanship-panel img { width:100%; aspect-ratio:1.1; object-fit:cover; }
 .quick-add { display:block; width:100%; margin-top:.6rem; padding:.75rem .5rem; text-align:center; border:1px solid var(--border); background:transparent; color:var(--text); cursor:pointer; font-size:.64rem; letter-spacing:.17em; text-transform:uppercase; transition:background 300ms, color 300ms, border-color 300ms; }
@@ -52,7 +52,7 @@
 .header-search-row > p { width:min(720px,100%); margin-top:1rem; color:var(--muted); font-size:.8rem; }
 .mobile-menu { display:block; opacity:0; visibility:hidden; pointer-events:none; transition:transform 450ms var(--motion-ease), opacity 450ms var(--motion-ease), visibility 450ms; }
 .mobile-menu.open { opacity:1; visibility:visible; pointer-events:auto; }
-:where(a,button,input,select,textarea,summary):focus-visible { outline:2px solid #76674f; outline-offset:4px; }
+:where(a,button,input,select,textarea,summary):focus-visible { outline:2px solid #666666; outline-offset:4px; }
 button, input, select { font:inherit; }
 .pdp-gallery-stack { overflow:hidden; }
 .pdp-gallery-stack img { cursor:zoom-in; transition:transform 400ms var(--motion-ease); }

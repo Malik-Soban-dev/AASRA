@@ -9,13 +9,32 @@
       "price_pkr": 12400,
       "badge": "NEW",
       "colors": [
-        { "name": "Slate", "hex": "#5d6a72" },
-        { "name": "Ivory", "hex": "#efe9dc" }
+        {
+          "name": "Slate",
+          "hex": "#5d6a72"
+        },
+        {
+          "name": "Ivory",
+          "hex": "#efe9dc"
+        }
       ],
-      "sizes": ["S", "M", "L", "XL", "XXL"],
-      "images": ["/images/garments/m-shirt-slate.jpg"],
+      "sizes": [
+        "S",
+        "M",
+        "L",
+        "XL",
+        "XXL"
+      ],
+      "images": [
+        "/images/garments/m-shirt-slate.jpg"
+      ],
       "description": "Our everyday shirt, cut generous in washed European linen. It softens with every wash and keeps its line.",
-      "details": ["Relaxed fit", "Corozo buttons", "Single chest pocket", "Curved hem"],
+      "details": [
+        "Relaxed fit",
+        "Corozo buttons",
+        "Single chest pocket",
+        "Curved hem"
+      ],
       "fabric": "100% washed linen, 160 gsm",
       "care": "Gentle wash cold, line dry, warm iron."
     },
@@ -26,15 +45,124 @@
       "price_pkr": 13900,
       "badge": "HANDLOOM",
       "colors": [
-        { "name": "Indigo", "hex": "#37415c" },
-        { "name": "Sand", "hex": "#d6c9b2" }
+        {
+          "name": "Indigo",
+          "hex": "#37415c"
+        },
+        {
+          "name": "Sand",
+          "hex": "#d6c9b2"
+        }
       ],
-      "sizes": ["S", "M", "L", "XL", "XXL"],
-      "images": ["/images/garments/m-kurta-indigo.jpg"],
+      "sizes": [
+        "S",
+        "M",
+        "L",
+        "XL",
+        "XXL"
+      ],
+      "images": [
+        "/images/garments/m-kurta-indigo.jpg"
+      ],
       "description": "A short kurta in handloom cotton-linen, indigo-dyed in small vats. Mandarin collar, wooden buttons, slub texture that catches the light.",
-      "details": ["Mandarin collar", "Wooden buttons", "Side vents", "Mid-hip length"],
+      "details": [
+        "Mandarin collar",
+        "Wooden buttons",
+        "Side vents",
+        "Mid-hip length"
+      ],
       "fabric": "Handloom cotton-linen, natural indigo",
       "care": "Wash separately first two washes. Line dry in shade."
+    },
+    {
+      "id": "M004",
+      "slug": "oxford-shirt-white",
+      "name": "Oxford Shirt — White",
+      "price_pkr": 11900,
+      "badge": "NEW",
+      "colors": [
+        {
+          "name": "White",
+          "hex": "#f5f5f2"
+        },
+        {
+          "name": "Blue",
+          "hex": "#4f6b8a"
+        }
+      ],
+      "sizes": [
+        "S",
+        "M",
+        "L",
+        "XL"
+      ],
+      "images": [
+        "/images/products/oxford-shirt-white.jpg"
+      ],
+      "description": "Oxford Shirt, available in White and Blue.",
+      "details": [],
+      "fabric": "To be confirmed",
+      "care": "Follow the care label inside the garment."
+    },
+    {
+      "id": "M005",
+      "slug": "chambray-shirt-blue",
+      "name": "Chambray Shirt — Blue",
+      "price_pkr": 12900,
+      "badge": null,
+      "colors": [
+        {
+          "name": "Blue",
+          "hex": "#4f6b8a"
+        },
+        {
+          "name": "Stone",
+          "hex": "#cfc6b4"
+        }
+      ],
+      "sizes": [
+        "S",
+        "M",
+        "L",
+        "XL"
+      ],
+      "images": [
+        "/images/products/chambray-shirt-blue.jpg"
+      ],
+      "description": "Chambray Shirt, available in Blue and Stone.",
+      "details": [],
+      "fabric": "To be confirmed",
+      "care": "Follow the care label inside the garment."
+    },
+    {
+      "id": "M006",
+      "slug": "camp-collar-shirt-sage",
+      "name": "Camp Collar Shirt — Sage",
+      "price_pkr": 10900,
+      "badge": null,
+      "colors": [
+        {
+          "name": "Sage",
+          "hex": "#9aa58c"
+        },
+        {
+          "name": "Ecru",
+          "hex": "#e9e2d0"
+        }
+      ],
+      "sizes": [
+        "S",
+        "M",
+        "L",
+        "XL"
+      ],
+      "images": [
+        "/images/products/camp-collar-shirt-sage.jpg"
+      ],
+      "description": "Camp Collar Shirt, available in Sage and Ecru.",
+      "details": [],
+      "fabric": "To be confirmed",
+      "care": "Follow the care label inside the garment."
     }
   ]
 }

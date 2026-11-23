@@ -9,13 +9,32 @@
       "price_pkr": 18900,
       "badge": "NEW",
       "colors": [
-        { "name": "Ivory", "hex": "#efe9dc" },
-        { "name": "Clay", "hex": "#a65e45" }
+        {
+          "name": "Ivory",
+          "hex": "#efe9dc"
+        },
+        {
+          "name": "Clay",
+          "hex": "#a65e45"
+        }
       ],
-      "sizes": ["XS", "S", "M", "L", "XL"],
-      "images": ["/images/garments/w-kurta-ivory.jpg"],
+      "sizes": [
+        "XS",
+        "S",
+        "M",
+        "L",
+        "XL"
+      ],
+      "images": [
+        "/images/garments/w-kurta-ivory.jpg"
+      ],
       "description": "A quietly luminous kurta in handloom chanderi silk, with tonal threadwork at the neckline. Cut for ease, finished by hand.",
-      "details": ["Relaxed straight fit", "Tonal neckline embroidery", "Side slits, mid-thigh length", "Matches the Chanderi Trouser"],
+      "details": [
+        "Relaxed straight fit",
+        "Tonal neckline embroidery",
+        "Side slits, mid-thigh length",
+        "Matches the Chanderi Trouser"
+      ],
       "fabric": "Handloom chanderi silk, mulmul cotton lining",
       "care": "Dry clean only. Store folded, away from direct light."
     },
@@ -26,15 +45,124 @@
       "price_pkr": 22500,
       "badge": "NEW",
       "colors": [
-        { "name": "Clay", "hex": "#a65e45" },
-        { "name": "Ink", "hex": "#2c2a26" }
+        {
+          "name": "Clay",
+          "hex": "#a65e45"
+        },
+        {
+          "name": "Ink",
+          "hex": "#2c2a26"
+        }
       ],
-      "sizes": ["XS", "S", "M", "L", "XL"],
-      "images": ["/images/garments/w-dress-clay.jpg"],
+      "sizes": [
+        "XS",
+        "S",
+        "M",
+        "L",
+        "XL"
+      ],
+      "images": [
+        "/images/garments/w-dress-clay.jpg"
+      ],
       "description": "A wrap dress in washed linen, dyed with madder root to a soft clay tone. The belt ties at the side; the hem moves.",
-      "details": ["True wrap construction", "Self-fabric belt", "Midi length", "French seams inside"],
+      "details": [
+        "True wrap construction",
+        "Self-fabric belt",
+        "Midi length",
+        "French seams inside"
+      ],
       "fabric": "100% washed linen, 190 gsm",
       "care": "Gentle wash cold, line dry, warm iron."
+    },
+    {
+      "id": "W005",
+      "slug": "midi-dress-indigo",
+      "name": "Midi Dress — Indigo",
+      "price_pkr": 21500,
+      "badge": "NEW",
+      "colors": [
+        {
+          "name": "Indigo",
+          "hex": "#2f3f5c"
+        },
+        {
+          "name": "Ecru",
+          "hex": "#e9e2d0"
+        }
+      ],
+      "sizes": [
+        "S",
+        "M",
+        "L",
+        "XL"
+      ],
+      "images": [
+        "/images/products/midi-dress-indigo.jpg"
+      ],
+      "description": "Midi Dress, available in Indigo and Ecru.",
+      "details": [],
+      "fabric": "To be confirmed",
+      "care": "Follow the care label inside the garment."
+    },
+    {
+      "id": "W006",
+      "slug": "shirt-dress-ecru",
+      "name": "Shirt Dress — Ecru",
+      "price_pkr": 19900,
+      "badge": null,
+      "colors": [
+        {
+          "name": "Ecru",
+          "hex": "#e9e2d0"
+        },
+        {
+          "name": "Stone",
+          "hex": "#cfc6b4"
+        }
+      ],
+      "sizes": [
+        "S",
+        "M",
+        "L",
+        "XL"
+      ],
+      "images": [
+        "/images/products/shirt-dress-ecru.jpg"
+      ],
+      "description": "Shirt Dress, available in Ecru and Stone.",
+      "details": [],
+      "fabric": "To be confirmed",
+      "care": "Follow the care label inside the garment."
+    },
+    {
+      "id": "W007",
+      "slug": "kaftan-rust",
+      "name": "Kaftan — Rust",
+      "price_pkr": 17800,
+      "badge": null,
+      "colors": [
+        {
+          "name": "Rust",
+          "hex": "#9b4a2e"
+        },
+        {
+          "name": "Cream",
+          "hex": "#f1ead8"
+        }
+      ],
+      "sizes": [
+        "S",
+        "M",
+        "L",
+        "XL"
+      ],
+      "images": [
+        "/images/products/kaftan-rust.jpg"
+      ],
+      "description": "Kaftan, available in Rust and Cream.",
+      "details": [],
+      "fabric": "To be confirmed",
+      "care": "Follow the care label inside the garment."
     }
   ]
 }

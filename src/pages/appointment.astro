@@ -88,7 +88,7 @@ import Layout from '../components/Layout.astro';
         });
         const data = await res.json();
         if (data.ok) {
-          msg.style.color = '#1f5a1f';
+          msg.style.color = '#111111';
           msg.textContent = 'Request received — we will confirm by Email shortly.';
           form.reset();
         } else {
