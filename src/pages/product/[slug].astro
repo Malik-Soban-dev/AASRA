@@ -48,6 +48,7 @@ product.images.forEach((src) => addPhoto(src, ''));
           </figure>
         ))}
       </div>
+      <div class="as-pdp-dots" id="as-pdp-dots" aria-label="Product photos"></div>
 
       <div class="as-pdp-info">
         <p class="as-kicker">{product.fabric || 'Natural fibres'}</p>
@@ -136,9 +137,38 @@ product.images.forEach((src) => addPhoto(src, ''));
   <script define:vars={{ productData: product }}>
     // Gallery thumbs, colour/size selection, add to bag via the shared cart API.
     const gallery = document.getElementById('as-pdp-gallery');
+    const dotsWrap = document.getElementById('as-pdp-dots');
+    const slides = () => [...gallery.querySelectorAll('.as-pdp-fig')];
+    // Phone slider: dots follow the slide nearest the scroll position; tapping a dot scrolls to that photo.
+    const syncDots = () => {
+      const list = slides();
+      let best = 0;
+      list.forEach((f, i) => { if (Math.abs(f.offsetLeft - gallery.scrollLeft) < Math.abs(list[best].offsetLeft - gallery.scrollLeft)) best = i; });
+      dotsWrap.querySelectorAll('.as-pdp-dot').forEach((d, i) => {
+        d.classList.toggle('is-active', i === best);
+        d.setAttribute('aria-current', i === best ? 'true' : 'false');
+      });
+    };
+    const buildDots = () => {
+      dotsWrap.innerHTML = '';
+      if (slides().length < 2) return;
+      slides().forEach((_, i) => {
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'as-pdp-dot';
+        b.setAttribute('aria-label', `Photo ${i + 1} of ${slides().length}`);
+        b.addEventListener('click', () => gallery.scrollTo({ left: slides()[i].offsetLeft, behavior: 'smooth' }));
+        dotsWrap.appendChild(b);
+      });
+      syncDots();
+    };
+    gallery.addEventListener('scroll', syncDots, { passive: true });
+    buildDots();
     const showColourPhoto = (name) => {
-      const fig = [...gallery.querySelectorAll('.as-pdp-fig')].find((f) => f.dataset.colour === name);
-      if (fig && fig !== gallery.querySelector('.as-pdp-fig')) gallery.insertBefore(fig, gallery.querySelector('.as-pdp-fig'));
+      const fig = slides().find((f) => f.dataset.colour === name);
+      if (fig && fig !== slides()[0]) gallery.insertBefore(fig, slides()[0]);
+      gallery.scrollLeft = 0;
+      syncDots();
     };
 
     let color = productData.colors[0].name;
