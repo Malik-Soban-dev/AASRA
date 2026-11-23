@@ -299,6 +299,7 @@ ul, ol { list-style: none; }
 .as-tile-b { grid-column: span 5; aspect-ratio: 4 / 3; align-self: end; }
 .as-tile-c { grid-column: 6 / span 5; aspect-ratio: 16 / 10; margin-top: var(--as-s7); }
 .as-tile-d { grid-column: 1 / span 5; aspect-ratio: 4 / 5; }
+.as-tile-full { grid-column: 1 / -1; aspect-ratio: 16 / 7; }
 
 /* ---------- product card & rail ---------- */
 .as-card { position: relative; }
@@ -547,7 +548,7 @@ html.hdr-hidden .as-filterbar { top: 0; }
   .as-hero-panel:hover { flex-grow: 1; }
   .as-hero-copy { position: absolute; inset: 0; }
   .as-edit-grid { display: flex; flex-direction: column; }
-  .as-tile-a, .as-tile-b, .as-tile-c, .as-tile-d { aspect-ratio: 4 / 5; margin: 0; }
+  .as-tile-a, .as-tile-b, .as-tile-c, .as-tile-d, .as-tile-full { aspect-ratio: 4 / 5; margin: 0; }
   .as-look { grid-template-columns: 1fr; }
   .as-pdp { grid-template-columns: 1fr; padding-top: var(--as-s4); }
   .as-pdp-info, .as-thumbs { position: static; }
