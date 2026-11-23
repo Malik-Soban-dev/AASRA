@@ -39,7 +39,7 @@ const firstColor = product.colors[0];
     <div class="as-card-meta">
       <span class="as-price">{price}</span>
       <span class="as-card-colors" aria-label={`${product.colors.length} colours`}>
-        {product.colors.map((c) => <i style={`background:${c.hex}`} title={c.name}></i>)}
+        {product.colors.map((c) => <i style={`background:${c.hex}`} title={c.name} data-colour={c.name} data-href={`/product/${product.slug}`} role="link" tabindex="0" aria-label={`${c.name}: open in this colour`}></i>)}
       </span>
     </div>
   </div>

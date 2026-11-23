@@ -338,6 +338,9 @@ ul, ol { list-style: none; }
   width: 11px; height: 11px; border-radius: 50%; display: inline-block;
   border: 1px solid rgba(17, 17, 17, 0.18);
 }
+/* Colour dots on cards open the product in that colour (see StoreLayout). */
+[data-colour][data-href] { cursor: pointer; }
+[data-colour][data-href]:focus-visible { outline: 2px solid var(--as-ink); outline-offset: 2px; }
 
 .as-rail { position: relative; }
 .as-rail-track {

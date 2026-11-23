@@ -108,7 +108,7 @@ const focusGroups = ['women', 'men'].flatMap((gender) =>
                   <span class="as-focus-meta">{g.gender === 'women' ? 'Women' : 'Men'} · {g.label}</span>
                   <span class="as-focus-price">{formatPrice(p.price_pkr)}</span>
                   <span class="as-focus-swatches" aria-label={`${p.colors.length} colours`}>
-                    {p.colors.map((c) => <i style={`background:${c.hex}`} title={c.name}></i>)}
+                    {p.colors.map((c) => <i style={`background:${c.hex}`} title={c.name} data-colour={c.name} data-href={`/product/${p.slug}`} role="link" tabindex="0" aria-label={`${c.name}: open in this colour`}></i>)}
                   </span>
                 </a>
               ))}
