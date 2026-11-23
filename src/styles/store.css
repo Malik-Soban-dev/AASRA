@@ -1206,3 +1206,11 @@ html.hdr-hidden .as-plp-toolbar { top: 0; }
   .as-pdp-gallery .as-pdp-fig:last-of-type:nth-of-type(odd) img { aspect-ratio: 3 / 4; }
   .as-pdp-dots { display: flex; justify-content: center; gap: 6px; margin-top: var(--as-s3); }
 }
+
+/* Phone product page: photo fills the space; tight spacing between photo, dots and details. */
+@media (max-width: 860px) {
+  .as-pdp { row-gap: var(--as-s3); }
+  .as-pdp-gallery .as-pdp-fig { flex: 0 0 92%; }
+  .as-pdp-gallery .as-pdp-fig img { aspect-ratio: 3 / 4; }
+  .as-pdp-dots { margin-top: var(--as-s2); }
+}
