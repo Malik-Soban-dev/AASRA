@@ -396,13 +396,16 @@ ul, ol { list-style: none; }
 }
 .as-chip:hover { border-color: var(--as-ink); }
 .as-chip.is-active { background: var(--as-ink); color: var(--as-paper); border-color: var(--as-ink); }
+/* Filter bar sits directly under the header (height measured in SiteHeader); it moves to the top when the header hides. */
 .as-filterbar {
-  position: sticky; top: 72px; z-index: 40;
+  position: sticky; top: var(--as-header-h, 104px); z-index: 40;
   display: flex; align-items: center; justify-content: space-between; gap: var(--as-s4);
   padding: var(--as-s3) 0; margin-bottom: var(--as-s5);
-  background: color-mix(in srgb, var(--as-paper) 92%, transparent);
-  backdrop-filter: blur(6px); border-bottom: 1px solid var(--as-line);
+  background: var(--as-paper);
+  border-bottom: 1px solid var(--as-line);
+  transition: top 0.35s ease;
 }
+html.hdr-hidden .as-filterbar { top: 0; }
 .as-filter-group { display: flex; align-items: center; gap: var(--as-s3); flex-wrap: wrap; }
 .as-filter-legend {
   font-size: var(--as-t-micro); font-weight: 600;
