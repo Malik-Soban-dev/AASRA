@@ -965,6 +965,11 @@ main:has(> .as-home-hero) { overflow-x: clip; }
   .as-tiles { display: flex; gap: 12px; margin: 0; padding: 0 var(--as-gutter); overflow-x: auto; overscroll-behavior-x: contain; scroll-snap-type: x mandatory; scroll-padding: 0 var(--as-gutter); scrollbar-width: none; -ms-overflow-style: none; }
   .as-tiles::-webkit-scrollbar { display: none; }
   .as-tiles > li { flex: 0 0 80vw; scroll-snap-align: start; height: 100vh; height: 100svh; box-sizing: border-box; padding-top: var(--as-s5); }
+  /* Carousel tiles do not run the fade-in slide, so they stay still while the page scrolls. */
+  .as-tiles > li.as-reveal { opacity: 1; transform: none; transition: none; }
+  /* Men: one large photo per slide (women keep two). */
+  .as-tiles--men .as-tile-pair { grid-template-columns: 1fr; }
+  .as-tiles--men .as-tile-pair img:nth-child(2) { display: none; }
   .as-tile { height: 100%; display: flex; flex-direction: column; padding-bottom: var(--as-s5); }
   .as-tile-pair { flex: 1 1 auto; min-height: 0; gap: 4px; }
   .as-tile-pair img { height: 100%; aspect-ratio: auto; min-height: 0; }
