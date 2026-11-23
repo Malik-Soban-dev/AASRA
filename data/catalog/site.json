@@ -6,23 +6,70 @@
     "kicker": "Spring / Summer — The Handloom Edit",
     "line1": "Wear the",
     "line2": "slow made",
-    "women": { "label": "Shop Women", "href": "/women" },
-    "men": { "label": "Shop Men", "href": "/men" }
+    "women": {
+      "label": "Shop Women",
+      "href": "/women"
+    },
+    "men": {
+      "label": "Shop Men",
+      "href": "/men"
+    }
   },
-  "marquee": ["Slow made in Pakistan", "Handwoven", "Natural dyes", "Fair wages", "Small runs"],
+  "marquee": [
+    "Slow made in Pakistan",
+    "Handwoven",
+    "Natural dyes",
+    "Fair wages",
+    "Small runs"
+  ],
   "nav": {
     "women": [
-      { "label": "New In", "href": "/women/new-in" },
-      { "label": "Dresses & Kurtas", "href": "/women/dresses" },
-      { "label": "Knitwear", "href": "/women/knitwear" },
-      { "label": "Outerwear & Shawls", "href": "/women/outerwear" },
-      { "label": "All Women", "href": "/women" }
+      {
+        "label": "New In",
+        "href": "/women/new-in"
+      },
+      {
+        "label": "Dresses & Kurtas",
+        "href": "/women/dresses"
+      },
+      {
+        "label": "Knitwear",
+        "href": "/women/knitwear"
+      },
+      {
+        "label": "Outerwear & Shawls",
+        "href": "/women/outerwear"
+      },
+      {
+        "label": "Footwear",
+        "href": "/women/footwear"
+      },
+      {
+        "label": "All Women",
+        "href": "/women"
+      }
     ],
     "men": [
-      { "label": "New In", "href": "/men/new-in" },
-      { "label": "Shirts & Kurtas", "href": "/men/shirts" },
-      { "label": "Knitwear", "href": "/men/knitwear" },
-      { "label": "All Men", "href": "/men" }
+      {
+        "label": "New In",
+        "href": "/men/new-in"
+      },
+      {
+        "label": "Shirts & Kurtas",
+        "href": "/men/shirts"
+      },
+      {
+        "label": "Knitwear",
+        "href": "/men/knitwear"
+      },
+      {
+        "label": "Footwear",
+        "href": "/men/footwear"
+      },
+      {
+        "label": "All Men",
+        "href": "/men"
+      }
     ]
   },
   "footer": {
@@ -30,37 +77,93 @@
       {
         "title": "Shop Women",
         "links": [
-          { "label": "New In", "href": "/women/new-in" },
-          { "label": "Dresses & Kurtas", "href": "/women/dresses" },
-          { "label": "Knitwear", "href": "/women/knitwear" },
-          { "label": "Outerwear & Shawls", "href": "/women/outerwear" }
+          {
+            "label": "New In",
+            "href": "/women/new-in"
+          },
+          {
+            "label": "Dresses & Kurtas",
+            "href": "/women/dresses"
+          },
+          {
+            "label": "Knitwear",
+            "href": "/women/knitwear"
+          },
+          {
+            "label": "Outerwear & Shawls",
+            "href": "/women/outerwear"
+          },
+          {
+            "label": "Footwear",
+            "href": "/women/footwear"
+          }
         ]
       },
       {
         "title": "Shop Men",
         "links": [
-          { "label": "New In", "href": "/men/new-in" },
-          { "label": "Shirts & Kurtas", "href": "/men/shirts" },
-          { "label": "Knitwear", "href": "/men/knitwear" }
+          {
+            "label": "New In",
+            "href": "/men/new-in"
+          },
+          {
+            "label": "Shirts & Kurtas",
+            "href": "/men/shirts"
+          },
+          {
+            "label": "Knitwear",
+            "href": "/men/knitwear"
+          },
+          {
+            "label": "Footwear",
+            "href": "/men/footwear"
+          }
         ]
       },
       {
         "title": "Help",
         "links": [
-          { "label": "Shipping & Delivery", "href": "/shipping" },
-          { "label": "Returns & Exchanges", "href": "/return-policy" },
-          { "label": "Size Guide", "href": "/size-guide" },
-          { "label": "Order Lookup", "href": "/order-lookup" },
-          { "label": "Contact", "href": "/contact" }
+          {
+            "label": "Shipping & Delivery",
+            "href": "/shipping"
+          },
+          {
+            "label": "Returns & Exchanges",
+            "href": "/return-policy"
+          },
+          {
+            "label": "Size Guide",
+            "href": "/size-guide"
+          },
+          {
+            "label": "Order Lookup",
+            "href": "/order-lookup"
+          },
+          {
+            "label": "Contact",
+            "href": "/contact"
+          }
         ]
       },
       {
         "title": "About",
         "links": [
-          { "label": "Our Story", "href": "/about" },
-          { "label": "Responsibility", "href": "/responsibility" },
-          { "label": "The Journal", "href": "/journal" },
-          { "label": "Services", "href": "/services" }
+          {
+            "label": "Our Story",
+            "href": "/about"
+          },
+          {
+            "label": "Responsibility",
+            "href": "/responsibility"
+          },
+          {
+            "label": "The Journal",
+            "href": "/journal"
+          },
+          {
+            "label": "Services",
+            "href": "/services"
+          }
         ]
       }
     ],

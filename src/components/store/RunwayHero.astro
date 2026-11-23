@@ -2,8 +2,8 @@
 /**
  * RunwayHero — full-screen campaign carousel (used on the home page and on the
  * women's and men's pages):
- * crossfading campaign slides with slow Ken Burns motion, kinetic headline,
- * CTAs, caption, arrows and dots, marquee at the base. Auto-advances every 6s;
+ * crossfading campaign slides with slow Ken Burns motion and scroll parallax,
+ * kinetic headline, CTAs, caption and dot navigation, marquee at the base. Auto-advances every 6s;
  * static first frame under reduced motion.
  * Props default to the home-page campaign; gender pages pass their own.
  */
@@ -62,9 +62,6 @@ const words = headline.split(' ');
       <span>Scroll</span>
     </div>
     <div class="as-hero-controls">
-      <button type="button" class="as-rail-btn as-hero-arrow" data-hero-prev aria-label="Previous slide">
-        <svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7" /></svg>
-      </button>
       <div class="as-hero-dots" role="group" aria-label="Campaign slides">
         {slides.map((s, i) => (
           <button
@@ -76,9 +73,6 @@ const words = headline.split(' ');
           ></button>
         ))}
       </div>
-      <button type="button" class="as-rail-btn as-hero-arrow" data-hero-next aria-label="Next slide">
-        <svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7" /></svg>
-      </button>
     </div>
   </div>
 
@@ -86,7 +80,7 @@ const words = headline.split(' ');
 </section>
 
 <script>
-  // Hero slideshow: auto-advance (6s), arrows and dots, caption swap.
+  // Hero slideshow: auto-advance (6s), dot navigation, caption swap.
   // Reduced motion: first slide stays, no animation.
   (() => {
     const hero = document.querySelector('[data-hero]');
@@ -112,9 +106,22 @@ const words = headline.split(' ');
     dots.forEach((dot) => {
       dot.addEventListener('click', () => { show(Number(dot.dataset.slide)); start(); });
     });
-    hero.querySelector('[data-hero-prev]')?.addEventListener('click', () => { show(current - 1); start(); });
-    hero.querySelector('[data-hero-next]')?.addEventListener('click', () => { show(current + 1); start(); });
     start();
+
+    // Scroll parallax: the photo drifts at 30% of page speed, capped so it never
+    // shows an edge (slides are 130% tall, offset -15%).
+    if (!reduce) {
+      const media = hero.querySelector('[data-hero-media]');
+      let ticking = false;
+      const drift = () => {
+        ticking = false;
+        const h = hero.offsetHeight;
+        const y = Math.min(Math.max(window.scrollY, 0), h);
+        media.style.transform = `translate3d(0, ${Math.round(Math.min(y * 0.3, h * 0.15))}px, 0)`;
+      };
+      window.addEventListener('scroll', () => { if (!ticking) { ticking = true; requestAnimationFrame(drift); } }, { passive: true });
+      drift();
+    }
 
     // Subtle cursor parallax on the media (±8px), design-system hero pattern.
     if (!reduce && matchMedia('(hover:hover)').matches) {
