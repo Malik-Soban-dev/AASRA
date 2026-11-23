@@ -52,7 +52,7 @@ const allSizes = [...new Set(items.flatMap((p) => p.sizes))];
       ))}
     </div>
 
-    <div class="as-plp-bar" data-plp-bar>
+    <div class="as-plp-body" data-plp-bar>
       <div class="as-plp-toolbar">
         <button type="button" class="as-filter-toggle" aria-expanded="false" aria-controls="as-filter-panel" data-filter-toggle>
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h9M17 7h3M4 17h3M11 17h9" /><circle cx="15" cy="7" r="2" /><circle cx="9" cy="17" r="2" /></svg>
@@ -100,7 +100,6 @@ const allSizes = [...new Set(items.flatMap((p) => p.sizes))];
         <p>Nothing matches these filters.</p>
         <button type="button" class="as-btn as-btn--outline" data-filter-clear-inline>Clear filters</button>
       </div>
-    </div>
 
     <div class="as-grid" id="as-grid" data-stagger>
       {items.map((p, i) => (
@@ -119,6 +118,7 @@ const allSizes = [...new Set(items.flatMap((p) => p.sizes))];
           <p style="margin-top:var(--as-s5)"><a class="as-btn as-btn--outline" href={`/${gender}/new-in`}>New in</a></p>
         </div>
       )}
+    </div>
     </div>
   </div>
 

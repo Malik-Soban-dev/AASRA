@@ -1009,6 +1009,7 @@ main:has(> .as-home-hero) { overflow-x: clip; }
 }
 
 /* ---------- Category (PLP) toolbar: one compact sticky row, filter panel opens below it ---------- */
+.as-plp-body { position: relative; }
 .as-plp-bar { margin-bottom: var(--as-s5); }
 .as-plp-toolbar {
   position: sticky; top: var(--as-header-h, 104px); z-index: 40;
