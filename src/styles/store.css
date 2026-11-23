@@ -901,7 +901,7 @@ main:has(> .as-home-hero) { overflow-x: clip; }
 .as-focus { display: grid; grid-template-columns: minmax(0, 36%) minmax(0, 1fr); background: var(--as-paper); height: 100vh; height: 100svh; min-height: 600px; overflow: hidden; }
 .as-focus-feature { position: relative; min-height: 420px; overflow: hidden; background: var(--as-paper); }
 .as-focus-feature img { position: absolute; top: 40px; left: 0; width: 100%; height: calc(100% - 120px); object-fit: cover; object-position: center top; }
-.as-focus-main { position: relative; min-width: 0; display: flex; flex-direction: column; padding: 112px 0 32px var(--as-s7); }
+.as-focus-main { position: relative; min-width: 0; display: flex; flex-direction: column; padding: 72px 0 24px var(--as-s7); }
 .as-focus-nav { position: absolute; top: 104px; right: var(--as-gutter); display: flex; gap: var(--as-s3); }
 .as-focus-title { font-family: var(--as-display); font-size: clamp(2.2rem, 3.4vw, 2.9rem); font-weight: 600; letter-spacing: -0.01em; margin: 0 0 var(--as-s4); }
 [hidden] { display: none !important; }
@@ -912,11 +912,11 @@ main:has(> .as-home-hero) { overflow-x: clip; }
 }
 .as-focus-link:hover { color: var(--as-ink); }
 .as-focus-link.is-active { color: var(--as-ink); font-weight: 600; text-decoration: underline; text-underline-offset: 6px; }
-.as-focus-panels { flex: 1 1 0; min-height: 0; display: flex; flex-direction: column; margin-top: var(--as-s4); }
+.as-focus-panels { flex: 1 1 0; min-height: 0; display: flex; flex-direction: column; margin-top: var(--as-s2); }
 .as-focus-panel:not([hidden]) { flex: 1 1 0; min-height: 0; display: flex; flex-direction: column; }
 .as-focus-track {
   flex: 1 1 0; min-height: 0; display: grid; grid-auto-flow: column; grid-auto-columns: minmax(330px, 380px); gap: 16px;
-  overflow-x: auto; overflow-y: hidden; scroll-snap-type: x mandatory; padding: var(--as-s3) var(--as-gutter) 0 0;
+  overflow-x: auto; overflow-y: hidden; scroll-snap-type: x mandatory; padding: var(--as-s2) var(--as-gutter) 0 0;
   scrollbar-width: none; -ms-overflow-style: none;
 }
 .as-focus-track::-webkit-scrollbar { display: none; }
