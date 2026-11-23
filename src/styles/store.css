@@ -898,8 +898,8 @@ main:has(> .as-home-hero) { overflow-x: clip; }
 
 /* ---- Home: Categories in Focus (reference layout: photo left, title and category list right, cards running off the right edge).
    Desktop fits one screen: the section is at least one viewport tall and the card photos take the space left under the list. ---- */
-.as-focus { display: grid; grid-template-columns: minmax(0, 36%) minmax(0, 1fr); background: var(--as-paper); }
-.as-focus-feature { position: sticky; top: 0; align-self: start; height: 100vh; height: 100svh; overflow: hidden; background: var(--as-paper); }
+.as-focus { display: grid; grid-template-columns: minmax(0, 36%) minmax(0, 1fr); background: var(--as-paper); height: 100vh; height: 100svh; min-height: 600px; overflow: hidden; }
+.as-focus-feature { position: relative; min-height: 420px; overflow: hidden; background: var(--as-paper); }
 .as-focus-feature img { position: absolute; top: 40px; left: 0; width: 100%; height: calc(100% - 120px); object-fit: cover; object-position: center top; }
 .as-focus-main { position: relative; min-width: 0; display: flex; flex-direction: column; padding: 72px 0 24px var(--as-s7); }
 .as-focus-nav { position: absolute; top: 104px; right: var(--as-gutter); display: flex; gap: var(--as-s3); }
@@ -912,16 +912,16 @@ main:has(> .as-home-hero) { overflow-x: clip; }
 }
 .as-focus-link:hover { color: var(--as-ink); }
 .as-focus-link.is-active { color: var(--as-ink); font-weight: 600; text-decoration: underline; text-underline-offset: 6px; }
-.as-focus-panels { display: flex; flex-direction: column; margin-top: var(--as-s2); }
-.as-focus-panel:not([hidden]) { display: flex; flex-direction: column; }
+.as-focus-panels { flex: 1 1 0; min-height: 0; display: flex; flex-direction: column; margin-top: var(--as-s2); }
+.as-focus-panel:not([hidden]) { flex: 1 1 0; min-height: 0; display: flex; flex-direction: column; }
 .as-focus-track {
-  display: grid; grid-auto-flow: column; grid-auto-columns: minmax(330px, 380px); gap: 16px;
+  flex: 1 1 0; min-height: 0; display: grid; grid-auto-flow: column; grid-auto-columns: minmax(330px, 380px); gap: 16px;
   overflow-x: auto; overflow-y: hidden; scroll-snap-type: x mandatory; padding: var(--as-s2) var(--as-gutter) 0 0;
   scrollbar-width: none; -ms-overflow-style: none;
 }
 .as-focus-track::-webkit-scrollbar { display: none; }
 .as-focus-card { display: flex; flex-direction: column; min-height: 0; gap: 4px; color: var(--as-ink); text-decoration: none; scroll-snap-align: start; min-width: 0; }
-.as-focus-img { height: 700px; position: relative; overflow: hidden; background: #efefef; }
+.as-focus-img { flex: 1 1 0; min-height: 140px; position: relative; overflow: hidden; background: #efefef; }
 .as-focus-img img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; transition: transform 0.5s ease; }
 .as-focus-card:hover .as-focus-img img { transform: scale(1.03); }
 .as-focus-name { margin-top: 10px; font-size: 0.8rem; font-weight: 500; letter-spacing: 0.04em; text-transform: uppercase; }
@@ -930,7 +930,7 @@ main:has(> .as-home-hero) { overflow-x: clip; }
 .as-focus-swatches { display: flex; gap: 6px; margin-top: 2px; }
 .as-focus-swatches i { width: 12px; height: 12px; border-radius: 50%; border: 1px solid #d9d9d9; display: inline-block; }
 @media (max-width: 720px) {
-  .as-focus { grid-template-columns: 1fr; }
+  .as-focus { grid-template-columns: 1fr; height: auto; min-height: 0; overflow: visible; }
   .as-focus-nav { display: none; }
   .as-focus-feature { position: relative; top: auto; height: auto; }
   .as-focus-feature { min-height: 0; aspect-ratio: 4 / 5; }
