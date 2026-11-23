@@ -18,7 +18,16 @@ if (!product) return Astro.redirect('/404');
 const related = wearItWith(product);
 const price = formatPrice(product.price_pkr);
 const firstColor = product.colors[0];
-const images = product.images.length > 1 ? product.images : [product.images[0], product.images[0]];
+// Gallery photos: each colour's own photo first, then any other product photos. No duplicates.
+const photos = [];
+const seenPhotos = new Set();
+const addPhoto = (src, colour) => {
+  if (!src || seenPhotos.has(src)) return;
+  seenPhotos.add(src);
+  photos.push({ src, colour: colour || '' });
+};
+product.colors.forEach((c) => addPhoto(c.image, c.name));
+product.images.forEach((src) => addPhoto(src, ''));
 ---
 
 <StoreLayout title={`${product.name} — AASRA`}>
@@ -31,18 +40,13 @@ const images = product.images.length > 1 ? product.images : [product.images[0], 
     </nav>
 
     <div class="as-pdp">
-      <div class="as-pdp-gallery">
-        <div class="as-thumbs" role="group" aria-label="Product images">
-          {images.map((img, i) => (
-            <button type="button" class:list={['as-thumb', { 'is-active': i === 0 }]} data-full={img} aria-label={`View ${i + 1}`}>
-              <img src={img} alt="" loading="lazy" width="76" height="101" />
-            </button>
-          ))}
-        </div>
-        <div class="as-pdp-main">
-          {product.badge && <span class:list={['as-badge', { 'as-badge--clay': product.badge === 'LIMITED' }]}>{product.badge}</span>}
-          <img id="as-pdp-main-img" src={images[0]} alt={product.name} width="900" height="1200" fetchpriority="high" />
-        </div>
+      <div class="as-pdp-gallery" id="as-pdp-gallery">
+        {product.badge && <span class:list={['as-badge', 'as-pdp-badge', { 'as-badge--clay': product.badge === 'LIMITED' }]}>{product.badge}</span>}
+        {photos.map((ph, i) => (
+          <figure class="as-pdp-fig" data-colour={ph.colour}>
+            <img src={ph.src} alt={ph.colour ? `${product.name} in ${ph.colour}` : product.name} width="900" height="1200" loading={i < 2 ? 'eager' : 'lazy'} fetchpriority={i === 0 ? 'high' : undefined} />
+          </figure>
+        ))}
       </div>
 
       <div class="as-pdp-info">
@@ -131,14 +135,11 @@ const images = product.images.length > 1 ? product.images : [product.images[0], 
 
   <script define:vars={{ productData: product }}>
     // Gallery thumbs, colour/size selection, add to bag via the shared cart API.
-    const mainImg = document.getElementById('as-pdp-main-img');
-    document.querySelectorAll('.as-thumb').forEach((btn) => {
-      btn.addEventListener('click', () => {
-        document.querySelectorAll('.as-thumb').forEach((b) => b.classList.remove('is-active'));
-        btn.classList.add('is-active');
-        mainImg.src = btn.dataset.full;
-      });
-    });
+    const gallery = document.getElementById('as-pdp-gallery');
+    const showColourPhoto = (name) => {
+      const fig = [...gallery.querySelectorAll('.as-pdp-fig')].find((f) => f.dataset.colour === name);
+      if (fig && fig !== gallery.querySelector('.as-pdp-fig')) gallery.insertBefore(fig, gallery.querySelector('.as-pdp-fig'));
+    };
 
     let color = productData.colors[0].name;
     let size = null;
@@ -172,9 +173,7 @@ const images = product.images.length > 1 ? product.images : [product.images[0], 
         document.getElementById('as-color-name').textContent = color;
         document.querySelectorAll('.as-swatch').forEach((s) => s.classList.remove('is-active'));
         sw.classList.add('is-active');
-        // Show this colour's photo when the product has one.
-        const colourImage = productData.colors.find((c) => c.name === color)?.image;
-        if (colourImage && mainImg) { mainImg.src = colourImage; mainImg.removeAttribute('srcset'); }
+        showColourPhoto(color);
         // Refresh SKU mapping for the new colour.
         document.querySelectorAll('#as-size-row .as-size').forEach((btn) => {
           const variant = productData.variants.find((v) => v.size === btn.dataset.size && v.color === color);

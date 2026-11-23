@@ -28,7 +28,8 @@
         "XL"
       ],
       "images": [
-        "/images/garments/w-coat-sand.jpg"
+        "/images/garments/w-coat-sand.jpg",
+        "/images/garments/placeholders/w-coat-sand-detail.jpg"
       ],
       "description": "Hand-stitched channel quilting over organic cotton wadding — a coat that behaves like a shawl. Each piece takes three days at the quilt frame.",
       "details": [
@@ -65,7 +66,8 @@
         "XL"
       ],
       "images": [
-        "/images/products/trench-stone.jpg"
+        "/images/products/trench-stone.jpg",
+        "/images/garments/placeholders/trench-stone-detail.jpg"
       ],
       "description": "Trench, available in Stone and Black.",
       "details": [],
@@ -97,7 +99,8 @@
         "XL"
       ],
       "images": [
-        "/images/products/wool-jacket-black.jpg"
+        "/images/products/wool-jacket-black.jpg",
+        "/images/garments/placeholders/wool-jacket-black-detail.jpg"
       ],
       "description": "Wool Jacket, available in Black and Charcoal.",
       "details": [],
@@ -129,7 +132,8 @@
         "XL"
       ],
       "images": [
-        "/images/products/quilted-gilet-olive.jpg"
+        "/images/products/quilted-gilet-olive.jpg",
+        "/images/garments/placeholders/quilted-gilet-olive-detail.jpg"
       ],
       "description": "Quilted Gilet, available in Olive and Navy.",
       "details": [],

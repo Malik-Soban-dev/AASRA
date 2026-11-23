@@ -28,7 +28,8 @@
         "XXL"
       ],
       "images": [
-        "/images/garments/m-crew-charcoal.jpg"
+        "/images/garments/m-crew-charcoal.jpg",
+        "/images/garments/placeholders/m-crew-charcoal-detail.jpg"
       ],
       "description": "Fine-gauge merino, knitted in a family workshop in Lahore. Clean enough for the office, soft enough for Sundays.",
       "details": [
@@ -64,7 +65,8 @@
         "XL"
       ],
       "images": [
-        "/images/products/cable-knit-oat.jpg"
+        "/images/products/cable-knit-oat.jpg",
+        "/images/garments/placeholders/cable-knit-oat-detail.jpg"
       ],
       "description": "Cable Knit, available in Oat and Navy.",
       "details": [],
@@ -96,7 +98,8 @@
         "XL"
       ],
       "images": [
-        "/images/products/half-zip-knit-grey.jpg"
+        "/images/products/half-zip-knit-grey.jpg",
+        "/images/garments/placeholders/half-zip-knit-grey-detail.jpg"
       ],
       "description": "Half-Zip Knit, available in Grey and Black.",
       "details": [],
@@ -128,7 +131,8 @@
         "XL"
       ],
       "images": [
-        "/images/products/v-neck-knit-navy.jpg"
+        "/images/products/v-neck-knit-navy.jpg",
+        "/images/garments/placeholders/v-neck-knit-navy-detail.jpg"
       ],
       "description": "V-Neck Knit, available in Navy and Oat.",
       "details": [],

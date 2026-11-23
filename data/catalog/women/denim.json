@@ -22,7 +22,9 @@
         "XL"
       ],
       "images": [
-        "/images/garments/w-denim-wide-indigo.jpg"
+        "/images/garments/w-denim-wide-indigo.jpg",
+        "/images/garments/placeholders/w-denim-wide-indigo-detail.jpg",
+        "/images/garments/placeholders/w-denim-wide-indigo-close.jpg"
       ],
       "description": "High-rise wide-leg jeans in a rigid indigo denim that softens with wear.",
       "details": [
@@ -54,7 +56,9 @@
         "XL"
       ],
       "images": [
-        "/images/garments/w-denim-straight-black.jpg"
+        "/images/garments/w-denim-straight-black.jpg",
+        "/images/garments/placeholders/w-denim-straight-black-detail.jpg",
+        "/images/garments/placeholders/w-denim-straight-black-close.jpg"
       ],
       "description": "Straight-leg black jeans with a clean line from hip to hem.",
       "details": [
@@ -86,7 +90,9 @@
         "XL"
       ],
       "images": [
-        "/images/garments/w-denim-barrel-stone.jpg"
+        "/images/garments/w-denim-barrel-stone.jpg",
+        "/images/garments/placeholders/w-denim-barrel-stone-detail.jpg",
+        "/images/garments/placeholders/w-denim-barrel-stone-close.jpg"
       ],
       "description": "Barrel-leg jeans in a soft stone wash, cut roomy through the hip and tapered at the ankle.",
       "details": [

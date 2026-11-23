@@ -28,7 +28,8 @@
         "XXL"
       ],
       "images": [
-        "/images/garments/m-shirt-slate.jpg"
+        "/images/garments/m-shirt-slate.jpg",
+        "/images/garments/placeholders/m-shirt-slate-detail.jpg"
       ],
       "description": "Our everyday shirt, cut generous in washed European linen. It softens with every wash and keeps its line.",
       "details": [
@@ -66,7 +67,8 @@
         "XXL"
       ],
       "images": [
-        "/images/garments/m-kurta-indigo.jpg"
+        "/images/garments/m-kurta-indigo.jpg",
+        "/images/garments/placeholders/m-kurta-indigo-detail.jpg"
       ],
       "description": "A short kurta in handloom cotton-linen, indigo-dyed in small vats. Mandarin collar, wooden buttons, slub texture that catches the light.",
       "details": [
@@ -103,7 +105,8 @@
         "XL"
       ],
       "images": [
-        "/images/products/oxford-shirt-white.jpg"
+        "/images/products/oxford-shirt-white.jpg",
+        "/images/garments/placeholders/oxford-shirt-white-detail.jpg"
       ],
       "description": "Oxford Shirt, available in White and Blue.",
       "details": [],
@@ -135,7 +138,8 @@
         "XL"
       ],
       "images": [
-        "/images/products/chambray-shirt-blue.jpg"
+        "/images/products/chambray-shirt-blue.jpg",
+        "/images/garments/placeholders/chambray-shirt-blue-detail.jpg"
       ],
       "description": "Chambray Shirt, available in Blue and Stone.",
       "details": [],
@@ -167,7 +171,8 @@
         "XL"
       ],
       "images": [
-        "/images/products/camp-collar-shirt-sage.jpg"
+        "/images/products/camp-collar-shirt-sage.jpg",
+        "/images/garments/placeholders/camp-collar-shirt-sage-detail.jpg"
       ],
       "description": "Camp Collar Shirt, available in Sage and Ecru.",
       "details": [],

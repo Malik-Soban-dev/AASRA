@@ -1131,3 +1131,18 @@ html.hdr-hidden .as-plp-toolbar { top: 0; }
   .as-breadcrumb > * { flex: none; }
   .as-breadcrumb > [aria-current] { flex: 0 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
 }
+
+/* Product page: photos in a two-column grid on the left; the info column stays in view while they scroll. */
+.as-pdp { align-items: start; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); }
+.as-pdp-gallery { position: relative; display: grid; grid-template-columns: 1fr 1fr; gap: var(--as-s4); align-items: start; }
+.as-pdp-fig { margin: 0; background: var(--as-sand); overflow: hidden; }
+.as-pdp-fig img { display: block; width: 100%; height: auto; aspect-ratio: 3 / 4; object-fit: cover; }
+.as-pdp-gallery .as-pdp-fig:last-of-type:nth-of-type(odd) { grid-column: 1 / -1; }
+.as-pdp-gallery .as-pdp-fig:last-of-type:nth-of-type(odd) img { aspect-ratio: 4 / 5; }
+.as-pdp-badge { position: absolute; top: 12px; left: 12px; z-index: 2; }
+.as-pdp-info { position: sticky; top: calc(var(--as-header-h, 104px) + var(--as-s5)); align-self: start; }
+@media (max-width: 860px) {
+  .as-pdp { grid-template-columns: 1fr; }
+  .as-pdp-gallery { grid-template-columns: 1fr; }
+  .as-pdp-info { position: static; }
+}
