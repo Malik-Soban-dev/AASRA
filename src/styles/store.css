@@ -97,10 +97,15 @@ ul, ol { list-style: none; }
 }
 /* Scroll up: header slides away. Scroll down: it returns (solid over the hero). */
 .as-header.is-hidden { transform: translateY(-100%); }
+/* Coloured state is semi-transparent white with a soft blur, so it reads lighter over the page. */
 .as-header.is-solid {
-  background: var(--as-paper); color: var(--as-ink); border-bottom-color: var(--as-line);
+  background: rgba(255, 255, 255, 0.86); color: var(--as-ink); border-bottom-color: rgba(229, 229, 229, 0.8);
+  -webkit-backdrop-filter: blur(12px) saturate(1.1); backdrop-filter: blur(12px) saturate(1.1);
 }
-.as-header.is-open { background: var(--as-paper); color: var(--as-ink); }
+.as-header.is-open {
+  background: rgba(255, 255, 255, 0.92); color: var(--as-ink);
+  -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px);
+}
 .as-header-inner {
   display: grid; grid-template-columns: 1fr auto 1fr; align-items: center;
   height: 72px;
