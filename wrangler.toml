@@ -69,10 +69,11 @@ binding = "DB"
 database_name = "AASRA_DB"
 database_id = "29fd9574-2636-4f49-aab9-b1aa72de49e7"
 
-# Cron triggers — daily 09:00 UTC: balance reminders, reservation expiry,
-# unpaid-order cancellation, gateway reconciliation (functions/scheduled.js)
+# Cron triggers. Every 15 min: reconcile recent pending payments with Safepay
+# (missed webhooks). Daily 09:00 UTC: balance reminders, reservation expiry,
+# unpaid-order cancellation, and a wider payment reconciliation (functions/scheduled.js)
 [triggers]
-crons = ["0 9 * * *"]
+crons = ["0 9 * * *", "*/15 * * * *"]
 
 # WAF rate limiting rules for /api/* endpoints
 # Applied via Cloudflare dashboard > Security > WAF > Rate limiting rules

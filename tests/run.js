@@ -504,6 +504,8 @@ t('wrapEmail produces full HTML layout', () => {
 // ============================================================
 import { createHmac } from 'node:crypto';
 import { processPayment } from '../functions/api/webhook.js';
+import { fetchTrackerState } from '../functions/lib/gateway.js';
+import { reconcilePayment } from '../functions/lib/reconcile.js';
 import { onRequestPost as payOrderPost } from '../functions/api/pay-order.js';
 
 t('webhook signature: HMAC-SHA512 over raw body verifies', async () => {
@@ -660,6 +662,89 @@ t('order lookup takes phone in POST body, not the URL', () => {
   const page = readFileSync(new URL('../src/pages/order-lookup.astro', import.meta.url), 'utf8');
   assert.ok(!/order-lookup\?order_id=/.test(page), 'lookup page must not put the phone in the URL');
   assert.ok(/method: 'POST'[\s\S]{0,300}\/api\/order-lookup/.test(page) || /\/api\/order-lookup'[\s\S]{0,200}method: 'POST'/.test(page), 'lookup page must POST to /api/order-lookup');
+});
+
+const SAFEPAY_TEST_ENV = {
+  SAFEPAY_ENABLED: 'true',
+  SAFEPAY_SECRET_KEY: 'sec_test',
+  SAFEPAY_BASE_URL: 'https://sandbox.api.getsafepay.com',
+};
+
+function mockSafepayTracker(tracker) {
+  const calls = [];
+  globalThis.fetch = async (url, init) => {
+    calls.push({ url: String(url), init });
+    return new Response(JSON.stringify({ tracker }), { status: 200, headers: { 'Content-Type': 'application/json' } });
+  };
+  return calls;
+}
+
+t('fetchTrackerState reads state and amount using the merchant secret', async () => {
+  const realFetch = globalThis.fetch;
+  try {
+    const calls = mockSafepayTracker({ state: 'TRACKER_ENDED', amount: 37800 });
+    const out = await fetchTrackerState(SAFEPAY_TEST_ENV, 'track_abc');
+    assert.deepStrictEqual(out, { state: 'TRACKER_ENDED', amount: 37800 });
+    assert.strictEqual(calls[0].url, 'https://sandbox.api.getsafepay.com/reporter/api/v1/payments/track_abc');
+    assert.strictEqual(calls[0].init.method, 'GET');
+    assert.strictEqual(calls[0].init.headers['X-SFPY-MERCHANT-SECRET'], 'sec_test');
+  } finally {
+    globalThis.fetch = realFetch;
+  }
+});
+
+t('reconcile settles a pending full payment that Safepay reports as ended', async () => {
+  const realFetch = globalThis.fetch;
+  try {
+    mockSafepayTracker({ state: 'TRACKER_ENDED', amount: 37800 });
+    const payment = { id: 'pay-rec-1', order_id: 'AAS-REC-1', kind: 'full', status: 'pending', amount: 37800, tracker_token: 'track_rec1' };
+    const order = { id: 'AAS-REC-1', status: 'pending-payment', payment_type: 'full', total: 37800, email: 'c@example.com', customer_name: 'Test' };
+    const db = fakeDb([
+      ['FROM payments WHERE raw_event_id', null],
+      ['FROM payments WHERE tracker_token = ? AND status = ?', payment],
+      ['FROM orders WHERE id = ?', order],
+    ]);
+    const out = await reconcilePayment(SAFEPAY_TEST_ENV, db, payment);
+    assert.strictEqual(out.status, 'settled');
+    assert.ok(db.writes.some((w) => w.sql.startsWith('UPDATE orders') && w.args.includes('paid')), 'order marked paid');
+    assert.ok(db.writes.some((w) => w.sql.startsWith('UPDATE payments') && w.args.includes('paid')), 'payment marked paid');
+  } finally {
+    globalThis.fetch = realFetch;
+  }
+});
+
+t('reconcile does nothing while Safepay says the payment has not ended', async () => {
+  const realFetch = globalThis.fetch;
+  try {
+    mockSafepayTracker({ state: 'TRACKER_AUTHORIZED', amount: 37800 });
+    const payment = { id: 'pay-rec-2', order_id: 'AAS-REC-2', kind: 'full', status: 'pending', amount: 37800, tracker_token: 'track_rec2' };
+    const db = fakeDb([]);
+    const out = await reconcilePayment(SAFEPAY_TEST_ENV, db, payment);
+    assert.strictEqual(out.status, 'not_settled');
+    assert.strictEqual(db.writes.length, 0, 'nothing written');
+  } finally {
+    globalThis.fetch = realFetch;
+  }
+});
+
+t('reconcile refuses to settle when the amount does not match our record', async () => {
+  const realFetch = globalThis.fetch;
+  try {
+    mockSafepayTracker({ state: 'TRACKER_ENDED', amount: 1000 });
+    const payment = { id: 'pay-rec-3', order_id: 'AAS-REC-3', kind: 'full', status: 'pending', amount: 37800, tracker_token: 'track_rec3' };
+    const order = { id: 'AAS-REC-3', status: 'pending-payment', payment_type: 'full', total: 37800 };
+    const db = fakeDb([
+      ['FROM payments WHERE raw_event_id', null],
+      ['FROM payments WHERE tracker_token = ? AND status = ?', payment],
+      ['FROM orders WHERE id = ?', order],
+    ]);
+    const out = await reconcilePayment(SAFEPAY_TEST_ENV, db, payment);
+    assert.strictEqual(out.status, 'rejected');
+    assert.strictEqual(out.error, 'amount_mismatch');
+    assert.ok(!db.writes.some((w) => w.sql.startsWith('UPDATE orders')), 'order must not be settled');
+  } finally {
+    globalThis.fetch = realFetch;
+  }
 });
 
 // ============================================================

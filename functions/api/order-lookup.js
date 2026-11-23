@@ -1,3 +1,5 @@
+import { reconcileOrderPayments } from '../lib/reconcile.js';
+
 /**
  * POST /api/order-lookup  body: { "order_id": "...", "phone": "..." }
  *
@@ -41,13 +43,26 @@ export async function onRequestPost(context) {
   if (normalized.startsWith('+92')) normalized = '0' + normalized.slice(3);
   else if (normalized.startsWith('92') && normalized.length === 12) normalized = '0' + normalized.slice(2);
 
-  const order = await context.env.DB.prepare(
+  let order = await context.env.DB.prepare(
     'SELECT * FROM orders WHERE id = ? AND phone = ?'
   ).bind(orderId, normalized).first();
 
   if (!order) {
     // Do not reveal whether order_id exists but phone mismatched
     return errorResponse('order_not_found', 404, 'order_not_found');
+  }
+
+  // Paid at Safepay but the webhook has not arrived yet? Ask Safepay now, so the
+  // customer sees PAID without waiting. Runs only after the phone matched.
+  if (order.status === 'pending-payment') {
+    try {
+      const outcomes = await reconcileOrderPayments(env, env.DB, order.id);
+      if (outcomes.some((o) => o.status === 'settled')) {
+        order = (await env.DB.prepare('SELECT * FROM orders WHERE id = ?').bind(order.id).first()) || order;
+      }
+    } catch (e) {
+      console.warn('[LOOKUP] reconcile failed', order.id, e.message);
+    }
   }
 
   // Build safe response (no full address/phone logging concerns — this is the customer's own lookup)
