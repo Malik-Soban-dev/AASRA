@@ -890,23 +890,26 @@ main table { display: block; max-width: 100%; overflow-x: auto; }
 .as-home-hero ~ * { position: relative; z-index: 1; background: var(--as-paper); box-shadow: 0 0 0 100vmax var(--as-paper); clip-path: inset(0 -100vmax); }
 main:has(> .as-home-hero) { overflow-x: clip; }
 
-/* ---- Home: Categories in Focus (reference layout: stacked category list above a row of cards) ---- */
-.as-focus { padding: var(--as-s9) var(--as-gutter) var(--as-s7); }
-.as-focus-title { font-family: var(--as-display); font-size: clamp(1.9rem, 3.2vw, 2.6rem); font-weight: 500; margin: 0 0 var(--as-s5); }
+/* ---- Home: Categories in Focus (reference layout: photo left, title and category list right, cards running off the right edge) ---- */
+.as-focus { display: grid; grid-template-columns: minmax(0, 36%) minmax(0, 1fr); background: var(--as-paper); }
+.as-focus-feature { position: relative; min-height: 680px; overflow: hidden; background: #ebebeb; }
+.as-focus-feature img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center top; }
+.as-focus-main { min-width: 0; padding: var(--as-s9) 0 var(--as-s7) var(--as-s7); }
+.as-focus-title { font-family: var(--as-display); font-size: clamp(2rem, 3.4vw, 2.8rem); font-weight: 600; letter-spacing: -0.01em; margin: 0 0 var(--as-s5); }
 [hidden] { display: none !important; }
-.as-focus-list ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+.as-focus-list ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
 .as-focus-link {
   background: none; border: 0; padding: 0; cursor: pointer; text-align: left;
-  font-family: var(--as-display); font-size: 1.25rem; color: #666666;
+  font-family: var(--as-display); font-size: 1.3rem; color: #666666;
 }
 .as-focus-link:hover { color: var(--as-ink); }
-.as-focus-link.is-active { color: var(--as-ink); text-decoration: underline; text-underline-offset: 6px; }
+.as-focus-link.is-active { color: var(--as-ink); font-weight: 600; text-decoration: underline; text-underline-offset: 6px; }
 .as-focus-track {
-  display: grid; grid-auto-flow: column; grid-auto-columns: minmax(230px, 260px); gap: 24px;
-  overflow-x: auto; scroll-snap-type: x mandatory; padding: var(--as-s6) 0 var(--as-s3); scrollbar-width: thin;
+  display: grid; grid-auto-flow: column; grid-auto-columns: minmax(200px, 230px); gap: 16px;
+  overflow-x: auto; scroll-snap-type: x mandatory; padding: var(--as-s6) var(--as-gutter) var(--as-s3) 0; scrollbar-width: thin;
 }
-.as-focus-card { display: flex; flex-direction: column; gap: 6px; color: var(--as-ink); text-decoration: none; scroll-snap-align: start; min-width: 0; }
-.as-focus-img { display: block; overflow: hidden; background: #ebebeb; }
+.as-focus-card { display: flex; flex-direction: column; gap: 4px; color: var(--as-ink); text-decoration: none; scroll-snap-align: start; min-width: 0; }
+.as-focus-img { display: block; overflow: hidden; background: #efefef; }
 .as-focus-img img { width: 100%; aspect-ratio: 3 / 4; object-fit: cover; display: block; transition: transform 0.5s ease; }
 .as-focus-card:hover .as-focus-img img { transform: scale(1.03); }
 .as-focus-name { margin-top: 10px; font-size: 0.8rem; font-weight: 500; letter-spacing: 0.04em; text-transform: uppercase; }
@@ -915,8 +918,10 @@ main:has(> .as-home-hero) { overflow-x: clip; }
 .as-focus-swatches { display: flex; gap: 6px; margin-top: 2px; }
 .as-focus-swatches i { width: 12px; height: 12px; border-radius: 50%; border: 1px solid #d9d9d9; display: inline-block; }
 @media (max-width: 720px) {
-  .as-focus { padding: var(--as-s7) var(--as-gutter) var(--as-s6); }
-  .as-focus-list ul { flex-direction: row; overflow-x: auto; gap: 22px; padding-bottom: 4px; }
+  .as-focus { grid-template-columns: 1fr; }
+  .as-focus-feature { min-height: 0; aspect-ratio: 4 / 5; }
+  .as-focus-main { padding: var(--as-s7) 0 var(--as-s6) var(--as-gutter); }
+  .as-focus-list ul { flex-direction: row; overflow-x: auto; gap: 22px; padding-bottom: 4px; padding-right: var(--as-gutter); }
   .as-focus-link { white-space: nowrap; font-size: 1.05rem; }
   .as-focus-track { grid-auto-columns: 62vw; }
 }
