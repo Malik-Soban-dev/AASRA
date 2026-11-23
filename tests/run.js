@@ -24,6 +24,7 @@ import {
   orderReceivedEmail,
   depositPaidEmail,
   balancePaidEmail,
+  paymentPaidEmail,
   balanceReminderEmail,
   shippedEmail,
   deliveredEmail,
@@ -409,6 +410,44 @@ t('balancePaidEmail has subject and html', () => {
   assert.ok(e.html.includes('paid in full'), 'mentions paid in full');
 });
 
+t('full payment sends a receipt with items, totals and paid status', () => {
+  const order = {
+    ...sampleOrder,
+    items: JSON.stringify([
+      { name: 'Linen Wrap Dress — Clay', sku: 'AS-W002-CLA-S', qty: 2, unit_price_pkr: 22500, line_total_pkr: 45000 },
+    ]),
+    subtotal: 45000, discount: 0, shipping_fee: 0, total: 45000,
+    deposit_amount: 0, balance_amount: 0, balance_token: 'bal_test123',
+  };
+  const e = paymentPaidEmail({ order, kind: 'full', amount: 45000, env: testEnv, trackerToken: 'track_abc', paidAt: '2026-11-22T02:00:00Z' });
+  assert.ok(e.subject.startsWith('Order paid in full'), 'subject');
+  assert.ok(!e.subject.includes('Deposit'), 'subject must not say Deposit');
+  assert.ok(!e.html.includes('Remaining balance'), 'must not mention remaining balance');
+  assert.ok(e.html.includes('AS-W002-CLA-S'), 'lists item SKU');
+  assert.ok(e.html.includes('Linen Wrap Dress'), 'lists item name');
+  assert.ok(e.html.includes('PAID'), 'shows PAID status');
+  assert.ok(e.html.includes('track_abc'), 'shows payment reference');
+  assert.ok(e.html.includes('Amount paid'), 'shows amount paid');
+  assert.ok(e.html.includes('Shipping to'), 'shows shipping address block');
+  assert.ok(e.html.includes('House 12'), 'shows address');
+  assert.ok(e.btnUrl && e.btnUrl.includes('type=final'), 'links to final invoice');
+  const copy = (e.subject + e.html + e.intro + e.outro).toLowerCase();
+  assert.ok(!copy.includes('received'), 'paid email must not say "received"');
+  assert.ok(!copy.includes('deposit'), 'paid email must not say "deposit"');
+});
+
+t('full payment with a discount shows the discount line', () => {
+  const order = { ...sampleOrder, items: JSON.stringify([{ name: 'A', sku: 'X', qty: 1, unit_price_pkr: 10000, line_total_pkr: 10000 }]), subtotal: 10000, discount: 1000, shipping_fee: 0, total: 9000, coupon_code: 'WELCOME10' };
+  const e = paymentPaidEmail({ order, kind: 'full', amount: 9000, env: testEnv });
+  assert.ok(e.html.includes('WELCOME10'), 'shows coupon');
+  assert.ok(e.html.includes('-'), 'shows discount sign');
+});
+
+t('deposit and balance payments keep their own emails', () => {
+  assert.ok(paymentPaidEmail({ order: sampleOrder, kind: 'deposit', amount: 3975, env: testEnv }).subject.startsWith('Deposit received'));
+  assert.ok(paymentPaidEmail({ order: sampleOrder, kind: 'balance', amount: 9275, env: testEnv }).subject.startsWith('Order paid in full'));
+});
+
 t('balanceReminderEmail has subject and html', () => {
   const e = balanceReminderEmail({ order: sampleOrder, env: testEnv });
   assert.ok(e.subject, 'has subject');
@@ -464,6 +503,10 @@ t('wrapEmail produces full HTML layout', () => {
 // Safepay signature verification (contract lock, 2026-11)
 // ============================================================
 import { createHmac } from 'node:crypto';
+import { processPayment } from '../functions/api/webhook.js';
+import { fetchTrackerState } from '../functions/lib/gateway.js';
+import { reconcilePayment } from '../functions/lib/reconcile.js';
+import { onRequestPost as payOrderPost } from '../functions/api/pay-order.js';
 
 t('webhook signature: HMAC-SHA512 over raw body verifies', async () => {
   const env = { SAFEPAY_WEBHOOK_SECRET: 'whsec_test_123' };
@@ -503,6 +546,205 @@ t('redirect signature: HMAC-SHA256 hex of tracker with v1 secret verifies', asyn
     true,
     'secret-key fallback verifies'
   );
+});
+
+// ============================================================
+// Payment safety: duplicate settlement and pay-now guards
+// (small fake D1: routes by SQL text; records every write)
+// ============================================================
+function fakeDb(routes) {
+  const writes = [];
+  return {
+    writes,
+    prepare(sql) {
+      return {
+        bind(...args) {
+          const lookup = () => {
+            for (const [needle, value] of routes) {
+              if (sql.includes(needle)) return typeof value === 'function' ? value(args) : value;
+            }
+            return null;
+          };
+          return {
+            first: async () => lookup(),
+            all: async () => ({ results: lookup() ? [lookup()].flat() : [] }),
+            run: async () => {
+              writes.push({ sql, args });
+              return { success: true, results: [] };
+            },
+          };
+        },
+      };
+    },
+    async batch(stmts) {
+      return stmts.map(() => ({ success: true, results: [] }));
+    },
+  };
+}
+
+t('duplicate full payment on a paid order is not settled again', async () => {
+  const payment = { id: 'pay-2', order_id: 'AAS-DUP-1', kind: 'full', status: 'pending', amount: 37800, tracker_token: 'trk_2' };
+  const order = { id: 'AAS-DUP-1', status: 'paid', payment_type: 'full', total: 37800, deposit_status: 'paid', balance_status: 'paid' };
+  const db = fakeDb([
+    ['FROM payments WHERE raw_event_id', null],
+    ['FROM payments WHERE tracker_token = ? AND status = ?', payment],
+    ['FROM orders WHERE id = ?', order],
+  ]);
+  const res = await processPayment({}, db, { eventId: 'evt_dup_1', trackerToken: 'trk_2', orderId: 'AAS-DUP-1', amount: 37800, kind: 'full' });
+  assert.strictEqual(res.status, 200);
+  assert.strictEqual(res.body.duplicate_payment, true);
+  assert.ok(!db.writes.some((w) => w.sql.startsWith('UPDATE orders')), 'order must not be re-settled');
+  assert.ok(db.writes.some((w) => w.sql.startsWith('UPDATE payments') && w.args.includes('duplicate')), 'payment marked duplicate');
+  assert.ok(db.writes.some((w) => w.args.includes('duplicate_payment')), 'duplicate logged for refund');
+});
+
+t('pay-now refuses an order whose phone does not match (no hint about the order)', async () => {
+  const db = fakeDb([['FROM orders WHERE id = ? AND phone = ?', null]]);
+  const req = new Request('https://aasra.shop/api/pay-order', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ order_id: 'AAS-X', phone: '03000000000' }),
+  });
+  const res = await payOrderPost({ request: req, env: { DB: db } });
+  const body = await res.json();
+  assert.strictEqual(res.status, 404);
+  assert.strictEqual(body.code, 'order_not_found');
+});
+
+t('pay-now blocks a second payment while one is in progress', async () => {
+  const order = { id: 'AAS-P-1', phone: '03001234567', email: 'a@example.com', status: 'pending-payment', payment_type: 'full', total: 37800, items: '[]' };
+  const db = fakeDb([
+    ['FROM orders WHERE id = ? AND phone = ?', order],
+    ["AND status = 'pending' AND created_at > ?", { id: 'pay-old' }],
+  ]);
+  const req = new Request('https://aasra.shop/api/pay-order', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ order_id: 'AAS-P-1', phone: '03001234567' }),
+  });
+  const res = await payOrderPost({ request: req, env: { DB: db } });
+  const body = await res.json();
+  assert.strictEqual(res.status, 409);
+  assert.strictEqual(body.code, 'payment_in_progress');
+  assert.ok(!db.writes.some((w) => w.sql.startsWith('INSERT INTO payments')), 'no second session recorded');
+});
+
+t('pay-now refuses an order that has nothing left to pay', async () => {
+  const order = { id: 'AAS-P-2', phone: '03001234567', status: 'paid', payment_type: 'full', total: 37800, items: '[]' };
+  const db = fakeDb([['FROM orders WHERE id = ? AND phone = ?', order]]);
+  const req = new Request('https://aasra.shop/api/pay-order', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ order_id: 'AAS-P-2', phone: '03001234567' }),
+  });
+  const res = await payOrderPost({ request: req, env: { DB: db } });
+  const body = await res.json();
+  assert.strictEqual(res.status, 409);
+  assert.strictEqual(body.code, 'nothing_to_pay');
+});
+
+t('checkout only accepts full payment (deposit disabled)', () => {
+  // checkout.js imports JSON without an import attribute, so it cannot be
+  // loaded by plain Node here. Check the guard in the source instead.
+  const src = readFileSync(new URL('../functions/api/checkout.js', import.meta.url), 'utf8');
+  assert.ok(
+    /if \(payment_type !== 'full'\)[\s\S]{0,200}deposit_disabled/.test(src),
+    'checkout must reject any payment_type other than full'
+  );
+  const checkoutPage = readFileSync(new URL('../src/pages/checkout.astro', import.meta.url), 'utf8');
+  assert.ok(!/value="deposit"/.test(checkoutPage), 'checkout page must not offer deposit');
+});
+
+t('order lookup takes phone in POST body, not the URL', () => {
+  const api = readFileSync(new URL('../functions/api/order-lookup.js', import.meta.url), 'utf8');
+  assert.ok(/export async function onRequestPost\(/.test(api), 'lookup must be a POST handler');
+  assert.ok(!/onRequestGet/.test(api), 'lookup must not accept GET (phone would appear in URL logs)');
+  const page = readFileSync(new URL('../src/pages/order-lookup.astro', import.meta.url), 'utf8');
+  assert.ok(!/order-lookup\?order_id=/.test(page), 'lookup page must not put the phone in the URL');
+  assert.ok(/method: 'POST'[\s\S]{0,300}\/api\/order-lookup/.test(page) || /\/api\/order-lookup'[\s\S]{0,200}method: 'POST'/.test(page), 'lookup page must POST to /api/order-lookup');
+});
+
+const SAFEPAY_TEST_ENV = {
+  SAFEPAY_ENABLED: 'true',
+  SAFEPAY_SECRET_KEY: 'sec_test',
+  SAFEPAY_BASE_URL: 'https://sandbox.api.getsafepay.com',
+};
+
+function mockSafepayTracker(tracker) {
+  const calls = [];
+  globalThis.fetch = async (url, init) => {
+    calls.push({ url: String(url), init });
+    return new Response(JSON.stringify({ tracker }), { status: 200, headers: { 'Content-Type': 'application/json' } });
+  };
+  return calls;
+}
+
+t('fetchTrackerState reads state and amount using the merchant secret', async () => {
+  const realFetch = globalThis.fetch;
+  try {
+    const calls = mockSafepayTracker({ state: 'TRACKER_ENDED', amount: 37800 });
+    const out = await fetchTrackerState(SAFEPAY_TEST_ENV, 'track_abc');
+    assert.deepStrictEqual(out, { state: 'TRACKER_ENDED', amount: 37800 });
+    assert.strictEqual(calls[0].url, 'https://sandbox.api.getsafepay.com/reporter/api/v1/payments/track_abc');
+    assert.strictEqual(calls[0].init.method, 'GET');
+    assert.strictEqual(calls[0].init.headers['X-SFPY-MERCHANT-SECRET'], 'sec_test');
+  } finally {
+    globalThis.fetch = realFetch;
+  }
+});
+
+t('reconcile settles a pending full payment that Safepay reports as ended', async () => {
+  const realFetch = globalThis.fetch;
+  try {
+    mockSafepayTracker({ state: 'TRACKER_ENDED', amount: 37800 });
+    const payment = { id: 'pay-rec-1', order_id: 'AAS-REC-1', kind: 'full', status: 'pending', amount: 37800, tracker_token: 'track_rec1' };
+    const order = { id: 'AAS-REC-1', status: 'pending-payment', payment_type: 'full', total: 37800, email: 'c@example.com', customer_name: 'Test' };
+    const db = fakeDb([
+      ['FROM payments WHERE raw_event_id', null],
+      ['FROM payments WHERE tracker_token = ? AND status = ?', payment],
+      ['FROM orders WHERE id = ?', order],
+    ]);
+    const out = await reconcilePayment(SAFEPAY_TEST_ENV, db, payment);
+    assert.strictEqual(out.status, 'settled');
+    assert.ok(db.writes.some((w) => w.sql.startsWith('UPDATE orders') && w.args.includes('paid')), 'order marked paid');
+    assert.ok(db.writes.some((w) => w.sql.startsWith('UPDATE payments') && w.args.includes('paid')), 'payment marked paid');
+  } finally {
+    globalThis.fetch = realFetch;
+  }
+});
+
+t('reconcile does nothing while Safepay says the payment has not ended', async () => {
+  const realFetch = globalThis.fetch;
+  try {
+    mockSafepayTracker({ state: 'TRACKER_AUTHORIZED', amount: 37800 });
+    const payment = { id: 'pay-rec-2', order_id: 'AAS-REC-2', kind: 'full', status: 'pending', amount: 37800, tracker_token: 'track_rec2' };
+    const db = fakeDb([]);
+    const out = await reconcilePayment(SAFEPAY_TEST_ENV, db, payment);
+    assert.strictEqual(out.status, 'not_settled');
+    assert.strictEqual(db.writes.length, 0, 'nothing written');
+  } finally {
+    globalThis.fetch = realFetch;
+  }
+});
+
+t('reconcile refuses to settle when the amount does not match our record', async () => {
+  const realFetch = globalThis.fetch;
+  try {
+    mockSafepayTracker({ state: 'TRACKER_ENDED', amount: 1000 });
+    const payment = { id: 'pay-rec-3', order_id: 'AAS-REC-3', kind: 'full', status: 'pending', amount: 37800, tracker_token: 'track_rec3' };
+    const order = { id: 'AAS-REC-3', status: 'pending-payment', payment_type: 'full', total: 37800 };
+    const db = fakeDb([
+      ['FROM payments WHERE raw_event_id', null],
+      ['FROM payments WHERE tracker_token = ? AND status = ?', payment],
+      ['FROM orders WHERE id = ?', order],
+    ]);
+    const out = await reconcilePayment(SAFEPAY_TEST_ENV, db, payment);
+    assert.strictEqual(out.status, 'rejected');
+    assert.strictEqual(out.error, 'amount_mismatch');
+    assert.ok(!db.writes.some((w) => w.sql.startsWith('UPDATE orders')), 'order must not be settled');
+  } finally {
+    globalThis.fetch = realFetch;
+  }
 });
 
 // ============================================================

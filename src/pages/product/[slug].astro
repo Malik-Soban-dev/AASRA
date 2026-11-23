@@ -146,10 +146,22 @@ const images = product.images.length > 1 ? product.images : [product.images[0], 
     const stickyAdd = document.getElementById('as-sticky-add');
     const skuFor = () => productData.variants.find((v) => v.size === size && v.color === color)?.sku;
 
+    // The bag is the source of truth: if this SKU is already in it (from this
+    // visit, an earlier visit, or another tab), say so and never add it again.
+    const CART_KEY = 'aasra_cart_v1';
+    const inBag = (sku) => {
+      try {
+        return JSON.parse(localStorage.getItem(CART_KEY) || '[]').some((i) => i.sku === sku);
+      } catch {
+        return false;
+      }
+    };
+
     const refresh = () => {
-      const label = size ? `Add to bag — ${size}` : 'Select a size';
-      addBtn.textContent = label;
-      stickyAdd.textContent = size ? 'Add to bag' : 'Select a size';
+      const sku = skuFor();
+      const isInBag = !!sku && inBag(sku);
+      addBtn.textContent = !size ? 'Select a size' : isInBag ? 'Already in your bag — view bag' : `Add to bag — ${size}`;
+      stickyAdd.textContent = !size ? 'Select a size' : isInBag ? 'In your bag' : 'Add to bag';
       addBtn.disabled = !size;
       stickyAdd.disabled = !size;
     };
@@ -165,6 +177,7 @@ const images = product.images.length > 1 ? product.images : [product.images[0], 
           const variant = productData.variants.find((v) => v.size === btn.dataset.size && v.color === color);
           btn.dataset.sku = variant?.sku;
         });
+        refresh();
       });
     });
 
@@ -180,13 +193,19 @@ const images = product.images.length > 1 ? product.images : [product.images[0], 
     const addToBag = () => {
       const sku = skuFor();
       if (!sku) return;
+      if (inBag(sku)) {
+        window.location.href = '/cart';
+        return;
+      }
       window.__aasra_addToCart?.(sku, productData.name, productData.price_pkr, 1, productData.images[0]);
-      addBtn.textContent = 'Added — view bag';
-      addBtn.onclick = () => { window.location.href = '/cart'; };
-      stickyAdd.textContent = 'Added';
+      refresh();
     };
     addBtn.addEventListener('click', addToBag);
     stickyAdd.addEventListener('click', addToBag);
+    // Keep the label honest when the bag changes elsewhere or the page is restored from history.
+    window.addEventListener('storage', refresh);
+    window.addEventListener('aasra:cart', refresh);
+    window.addEventListener('pageshow', refresh);
     refresh();
   </script>
 </StoreLayout>

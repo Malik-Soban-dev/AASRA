@@ -14,7 +14,7 @@
 
 // ---- Tax configuration (VERIFY before launch) ----
 // Default 0% — replace with the actual sales-tax rate applicable to your goods.
-const TAX_RATE_PCT = Number(process.env.TAX_RATE_PCT || 0);
+export const TAX_RATE_PCT = Number(process.env.TAX_RATE_PCT || 0);
 // Your business tax / GST registration number (shown on invoices).
 const TAX_REGISTRATION_NO = process.env.TAX_REGISTRATION_NO || '';
 // Business name / address shown on invoices — replace with real details.
@@ -47,7 +47,7 @@ function moneyPlain(amount) {
 /**
  * Compute tax from an amount (integer PKR, floored).
  */
-function taxAmount(amount) {
+export function taxAmount(amount) {
   return Math.floor((amount * TAX_RATE_PCT) / 100);
 }
 

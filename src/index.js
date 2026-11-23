@@ -36,6 +36,7 @@ export default {
       env,
       params: {},
       data: {},
+      cron: controller && controller.cron,
       waitUntil: (promise) => ctx.waitUntil(promise),
       next: () => Promise.resolve(new Response(null, { status: 204 })),
     };

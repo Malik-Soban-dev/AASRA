@@ -11,6 +11,11 @@
  * VERIFY: actual intervals (N1, N2, N days) and gateway reconciliation endpoint.
  */
 
+import { reconcilePendingPayments } from '../lib/reconcile.js';
+
+// The daily job (reminders, auto-cancel, stock release) must only run once a day.
+const DAILY_CRON = '0 9 * * *';
+
 function nowIso() {
   return new Date().toISOString();
 }
@@ -35,6 +40,20 @@ export async function onRequestScheduled(context) {
   const now = new Date();
   const nowIso = now.toISOString();
   const results = [];
+
+  // Frequent run (every 15 minutes): only reconcile recent pending payments.
+  if (context.cron && context.cron !== DAILY_CRON) {
+    let reconciliation;
+    try {
+      reconciliation = await reconcilePendingPayments(env, env.DB, { maxAgeHours: 6 });
+    } catch (e) {
+      reconciliation = { error: e.message };
+    }
+    return new Response(
+      JSON.stringify({ ok: true, ran_at: nowIso, results: [{ reconciliation }] }),
+      { headers: { 'Content-Type': 'application/json' } }
+    );
+  }
 
   // ---- 1. Release expired reservations (older than 15-minute hold) ----
   try {
@@ -129,10 +148,13 @@ export async function onRequestScheduled(context) {
     results.push({ cancel_error: e.message });
   }
 
-  // ---- 4. Reconcile pending payments against gateway ----
-  // VERIFY: Safepay reconciliation endpoint to list pending/failed payments.
-  // This is a placeholder; implement against Safepay's payment list/lookup API.
-  results.push({ reconciliation: 'not_implemented_verify_gateway_api' });
+  // ---- 4. Reconcile pending payments against Safepay (missed webhooks) ----
+  // Wider window than the 15-minute run: payments up to 72 hours old.
+  try {
+    results.push({ reconciliation: await reconcilePendingPayments(env, env.DB, { maxAgeHours: 72 }) });
+  } catch (e) {
+    results.push({ reconciliation_error: e.message });
+  }
 
   return new Response(
     JSON.stringify({ ok: true, ran_at: nowIso, results }),

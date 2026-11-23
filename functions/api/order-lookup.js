@@ -1,8 +1,12 @@
+import { reconcileOrderPayments } from '../lib/reconcile.js';
+
 /**
- * GET /api/order-lookup?order_id=...&phone=...
+ * POST /api/order-lookup  body: { "order_id": "...", "phone": "..." }
  *
  * Order status lookup (no customer account required).
  * Requires order ID + phone (both must match). Returns status and balance due.
+ * The phone number is sent in the POST body, not the URL, so it does not end
+ * up in request logs. CSRF-protected like the other POST endpoints.
  * Rate-limited; no exposure of other customers' data.
  */
 
@@ -17,12 +21,18 @@ function errorResponse(message, status = 400, code) {
   return jsonResponse({ ok: false, error: message, code }, status);
 }
 
-export async function onRequestGet(context) {
+export async function onRequestPost(context) {
   const { env } = context;
-  const url = context.url || new URL(context.request.url);
 
-  const orderId = url.searchParams.get('order_id');
-  const phone = url.searchParams.get('phone');
+  let body;
+  try {
+    body = await context.request.json();
+  } catch {
+    return errorResponse('invalid_json', 400, 'invalid_json');
+  }
+
+  const orderId = typeof body?.order_id === 'string' ? body.order_id.trim() : '';
+  const phone = typeof body?.phone === 'string' ? body.phone.trim() : '';
 
   if (!orderId || !phone) {
     return errorResponse('order_id and phone are required', 400, 'missing_fields');
@@ -33,13 +43,26 @@ export async function onRequestGet(context) {
   if (normalized.startsWith('+92')) normalized = '0' + normalized.slice(3);
   else if (normalized.startsWith('92') && normalized.length === 12) normalized = '0' + normalized.slice(2);
 
-  const order = await context.env.DB.prepare(
+  let order = await context.env.DB.prepare(
     'SELECT * FROM orders WHERE id = ? AND phone = ?'
   ).bind(orderId, normalized).first();
 
   if (!order) {
     // Do not reveal whether order_id exists but phone mismatched
     return errorResponse('order_not_found', 404, 'order_not_found');
+  }
+
+  // Paid at Safepay but the webhook has not arrived yet? Ask Safepay now, so the
+  // customer sees PAID without waiting. Runs only after the phone matched.
+  if (order.status === 'pending-payment') {
+    try {
+      const outcomes = await reconcileOrderPayments(env, env.DB, order.id);
+      if (outcomes.some((o) => o.status === 'settled')) {
+        order = (await env.DB.prepare('SELECT * FROM orders WHERE id = ?').bind(order.id).first()) || order;
+      }
+    } catch (e) {
+      console.warn('[LOOKUP] reconcile failed', order.id, e.message);
+    }
   }
 
   // Build safe response (no full address/phone logging concerns — this is the customer's own lookup)
@@ -50,6 +73,9 @@ export async function onRequestGet(context) {
     order.balance_status === 'unpaid' &&
     order.status !== 'cancelled' &&
     order.status !== 'refunded';
+  // What the customer can pay right now from the lookup page (see pay-order.js).
+  const canPayFull = order.payment_type === 'full' && order.status === 'pending-payment';
+  const amountDue = canPayFull ? Number(order.total) : canPayBalance ? Number(order.balance_amount) : 0;
 
   return jsonResponse({
     ok: true,
@@ -64,6 +90,8 @@ export async function onRequestGet(context) {
     balance_status: order.balance_status,
     balance_due_at: order.balance_due_at,
     can_pay_balance: canPayBalance,
+    can_pay: canPayFull || canPayBalance,
+    amount_due: amountDue,
     courier: order.courier,
     tracking_number: order.tracking_number,
     created_at: order.created_at,

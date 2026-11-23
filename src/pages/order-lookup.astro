@@ -8,7 +8,7 @@ import { formatPKR } from '../lib/products.js';
   <section class="section">
     <div class="container" style="max-width:560px;">
       <h1>Order lookup</h1>
-      <p>Enter your order ID and phone number to check your order status and pay any outstanding balance.</p>
+      <p>Enter your order ID and phone number to check your order status and pay any amount still due.</p>
 
       <form id="lookup-form" style="max-width:400px; margin-bottom:2rem;">
         <div class="form-group">
@@ -35,16 +35,13 @@ import { formatPKR } from '../lib/products.js';
             <div style="font-size:1.1rem; font-weight:600;" id="res-total">0 PKR</div>
           </div>
           <div style="flex:1; min-width:140px;">
-            <div style="font-size:0.7rem; text-transform:uppercase; letter-spacing:0.12em; color:var(--muted);">Balance due</div>
+            <div style="font-size:0.7rem; text-transform:uppercase; letter-spacing:0.12em; color:var(--muted);">Amount due</div>
             <div style="font-size:1.1rem; font-weight:600;" id="res-balance">0 PKR</div>
           </div>
         </div>
-        <div style="margin:1rem 0;">
-          <div style="font-size:0.7rem; text-transform:uppercase; letter-spacing:0.12em; color:var(--muted); margin-bottom:0.4rem;">Deposit</div>
-          <div style="font-size:0.9rem;" id="res-deposit">—</div>
-        </div>
-        <div id="pay-balance-wrapper" style="margin-top:1.5rem; display:none;">
-          <a class="btn btn-primary btn-full" id="pay-balance-btn">Pay balance</a>
+        <div id="pay-now-wrapper" style="margin-top:1.5rem; display:none;">
+          <button type="button" class="btn btn-primary btn-full" id="pay-now-btn">Pay now</button>
+          <p id="pay-now-error" class="form-error" style="display:none; margin-top:0.75rem;"></p>
         </div>
         {''}
       </div>
@@ -57,6 +54,58 @@ import { formatPKR } from '../lib/products.js';
     const errorEl = document.getElementById('lookup-error');
     const resultEl = document.getElementById('lookup-result');
 
+    let payContext = null;
+
+    // CSRF double-submit: cookie and header must match (same contract as StoreLayout).
+    const csrfToken = async () => {
+      const read = () => {
+        const m = document.cookie.match('(?:^|;\\s*)csrf_token=([^;]*)');
+        return m ? m[1] : '';
+      };
+      let token = read();
+      if (!token) {
+        try {
+          const res = await fetch('/api/csrf-token', { credentials: 'same-origin' });
+          if (res.ok) {
+            const data = await res.json();
+            if (data.csrf_token) {
+              token = data.csrf_token;
+              document.cookie = 'csrf_token=' + token + '; Path=/; SameSite=Strict; Secure';
+            }
+          }
+        } catch (e) {}
+      }
+      return token;
+    };
+
+    document.getElementById('pay-now-btn').addEventListener('click', async () => {
+      const errEl = document.getElementById('pay-now-error');
+      const btn = document.getElementById('pay-now-btn');
+      if (!payContext) return;
+      errEl.style.display = 'none';
+      btn.disabled = true;
+      btn.textContent = 'Opening secure payment…';
+      try {
+        const token = await csrfToken();
+        const res = await fetch('/api/pay-order', {
+          method: 'POST',
+          credentials: 'same-origin',
+          headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': token },
+          body: JSON.stringify(payContext),
+        });
+        const data = await res.json();
+        if (!res.ok || !data.ok || !data.checkout_url) {
+          throw new Error(data.error || 'Could not start payment. Please try again.');
+        }
+        window.location.href = data.checkout_url;
+      } catch (err) {
+        errEl.textContent = err.message || 'Could not start payment. Please try again.';
+        errEl.style.display = 'block';
+        btn.disabled = false;
+        btn.textContent = 'Pay now';
+      }
+    });
+
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
       errorEl.style.display = 'none';
@@ -66,7 +115,13 @@ import { formatPKR } from '../lib/products.js';
       const phone = form.elements.phone.value.trim();
 
       try {
-        const res = await fetch(`/api/order-lookup?order_id=${encodeURIComponent(orderId)}&phone=${encodeURIComponent(phone)}`);
+        const token = await csrfToken();
+        const res = await fetch('/api/order-lookup', {
+          method: 'POST',
+          credentials: 'same-origin',
+          headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': token },
+          body: JSON.stringify({ order_id: orderId, phone }),
+        });
         const data = await res.json();
 
         if (!res.ok || !data.ok) {
@@ -81,19 +136,14 @@ import { formatPKR } from '../lib/products.js';
         statusEl.textContent = data.status;
         statusEl.className = 'status-badge' + (data.status === 'paid' ? ' status-paid' : ' status-pending');
         document.getElementById('res-total').textContent = (data.total || 0).toLocaleString() + ' PKR';
-        document.getElementById('res-deposit').textContent = (data.deposit_amount || 0).toLocaleString() + ' PKR';
-        const balanceEl = document.getElementById('res-balance');
-        const bal = data.balance_due || 0;
-        balanceEl.textContent = bal.toLocaleString() + ' PKR';
+        const due = data.amount_due || 0;
+        document.getElementById('res-balance').textContent = due.toLocaleString() + ' PKR';
 
-        const wrapper = document.getElementById('pay-balance-wrapper');
-        const btn = document.getElementById('pay-balance-btn');
-        if (data.can_pay_balance && bal > 0) {
-          wrapper.style.display = 'block';
-          btn.href = `/pay-balance?order=${encodeURIComponent(data.order_id)}&token=${encodeURIComponent(data.order_id)}`;
-        } else {
-          wrapper.style.display = 'none';
-        }
+        // Pay now is shown only when the server says this order can be paid.
+        const wrapper = document.getElementById('pay-now-wrapper');
+        wrapper.style.display = data.can_pay && due > 0 ? 'block' : 'none';
+        payContext = { order_id: data.order_id, phone };
+        document.getElementById('pay-now-error').style.display = 'none';
 
         resultEl.style.display = 'block';
       } catch (err) {

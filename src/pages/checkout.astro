@@ -10,7 +10,7 @@ const threshold = shipping.free_shipping_threshold_pkr;
 const cities = shipping.rates.map((r) => r.city);
 ---
 
-<StoreLayout title="Checkout — AASRA" description="Complete your order. Guest checkout, no account needed. Pay in full or deposit and balance. PKR.">
+<StoreLayout title="Checkout — AASRA" description="Complete your order. Guest checkout, no account needed. Pay in full online. PKR.">
   <section class="as-cc">
     <div class="as-cc-wrap">
       <p class="as-kicker">Checkout</p>
@@ -66,17 +66,8 @@ const cities = shipping.rates.map((r) => r.city);
 
             <fieldset class="as-fieldset">
               <legend>Payment</legend>
-              <div class="as-choices">
-                <label class="as-choice">
-                  <input type="radio" name="payment_type" value="full" checked />
-                  <span><strong>Pay in full</strong><span class="as-hint">Pay the whole order online now.</span></span>
-                </label>
-                <label class="as-choice">
-                  <input type="radio" name="payment_type" value="deposit" />
-                  <span><strong>Deposit + balance</strong><span class="as-hint">30% now, balance online before shipping.</span></span>
-                </label>
-              </div>
-              <p id="deposit-info" class="as-hint" style="margin-top:var(--as-s3)">Deposit: 30%. Balance is due online before shipping. Cash on delivery is not accepted.</p>
+              <input type="hidden" name="payment_type" value="full" />
+              <p class="as-hint" style="margin-top:var(--as-s3)">Pay the whole order online now. Cash on delivery is not accepted.</p>
             </fieldset>
 
             <div class="as-field">
@@ -86,7 +77,7 @@ const cities = shipping.rates.map((r) => r.city);
 
             <label class="as-check">
               <input type="checkbox" name="terms" id="terms" required />
-              <span>I agree to the <a href="/terms">Terms of Service</a>, <a href="/return-policy">Return and Refund Policy</a>, and <a href="/deposit-policy">Deposit and Cancellation Policy</a>.</span>
+              <span>I agree to the <a href="/terms">Terms of Service</a> and <a href="/return-policy">Return and Refund Policy</a>.</span>
             </label>
 
             <div>

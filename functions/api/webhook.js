@@ -18,7 +18,7 @@
  */
 
 import { verifyWebhookSignature } from '../lib/gateway.js';
-import { sendEmail, paymentPaidEmail } from '../lib/email.js';
+import { sendEmail, paymentPaidEmail, wrapEmail } from '../lib/email.js';
 
 function jsonResponse(data, status = 200) {
   return new Response(JSON.stringify(data), {
@@ -133,6 +133,22 @@ export async function processPayment(env, db, { eventId, trackerToken, orderId, 
   const order = await db.prepare('SELECT * FROM orders WHERE id = ?').bind(payment.order_id).first();
   if (!order) return { status: 404, body: { ok: false, error: 'order_not_found' } };
 
+  // Money safety: a second full payment for an order that is already paid is
+  // recorded as a duplicate and flagged for refund. It is not settled again and
+  // the customer is not emailed twice.
+  if (payment.kind === 'full' && order.status === 'paid') {
+    const dupNow = nowIso();
+    await db
+      .prepare('UPDATE payments SET status = ?, raw_event_id = ?, updated_at = ? WHERE id = ?')
+      .bind('duplicate', idempotencyId, dupNow, payment.id).run();
+    await createOrderEvent(db, payment.order_id, 'duplicate_payment', {
+      amount: payment.amount,
+      tracker: trackerToken,
+      action: 'refund_required',
+    });
+    return { status: 200, body: { ok: true, duplicate_payment: true, order_id: payment.order_id } };
+  }
+
   let transition;
   try {
     transition = transitionOrder(order, payment.kind);
@@ -171,10 +187,24 @@ export async function processPayment(env, db, { eventId, trackerToken, orderId, 
 
   // Email customer
   try {
-    await sendEmail(env, {
-      to: order.email,
-      ...paymentPaidEmail({ order, kind: payment.kind, amount: payment.amount, env }),
+    const tpl = paymentPaidEmail({
+      order,
+      kind: payment.kind,
+      amount: payment.amount,
+      env,
+      trackerToken,
+      paidAt: new Date().toISOString(),
     });
+    const mail = wrapEmail(env, {
+      subject: tpl.subject,
+      title: tpl.title || 'Payment confirmation',
+      body: tpl.html,
+      intro: tpl.intro,
+      outro: tpl.outro,
+      btnText: tpl.btnText,
+      btnUrl: tpl.btnUrl,
+    });
+    await sendEmail(env, { to: order.email, subject: mail.subject, html: mail.html, text: mail.text });
   } catch (e) {
     // Email failure must not fail settlement; log and continue.
     console.warn('[WEBHOOK] email failed', payment.order_id, e.message);

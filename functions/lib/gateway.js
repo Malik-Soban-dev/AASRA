@@ -203,3 +203,29 @@ export async function verifyRedirectSignature(env, trackerToken, signature) {
 export async function refundPayment(env, { trackerToken, amountPkr, reason }) {
   throw new Error('refund_payment_not_implemented');
 }
+
+/**
+ * Read a payment's state straight from Safepay. Used when a webhook never
+ * arrives. Same endpoint and header as the Safepay SDK's fetch_payment:
+ * GET /reporter/api/v1/payments/{tracker}, authenticated with the merchant secret.
+ * Returns { state, amount }. amount is null when Safepay does not report one.
+ */
+export async function fetchTrackerState(env, trackerToken) {
+  const cfg = gatewayConfig(env);
+  if (!cfg.enabled || !cfg.secretKey) throw new Error('safepay_not_configured');
+  if (!trackerToken) throw new Error('tracker_required');
+  const response = await fetch(
+    `${cfg.baseUrl}/reporter/api/v1/payments/${encodeURIComponent(String(trackerToken))}`,
+    {
+      method: 'GET',
+      headers: { 'X-SFPY-MERCHANT-SECRET': cfg.secretKey, Accept: 'application/json' },
+    }
+  );
+  if (!response.ok) throw new Error(`safepay_api_http_${response.status}`);
+  const json = await response.json();
+  const root = json && typeof json === 'object' ? (json.data && typeof json.data === 'object' ? json.data : json) : {};
+  const tracker = root.tracker && typeof root.tracker === 'object' ? root.tracker : {};
+  const state = typeof tracker.state === 'string' ? tracker.state : null;
+  const rawAmount = tracker.amount ?? root.amount ?? null;
+  return { state, amount: rawAmount == null ? null : Number(rawAmount) };
+}

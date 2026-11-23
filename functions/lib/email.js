@@ -1,3 +1,5 @@
+import { taxAmount, TAX_RATE_PCT } from './invoice.js';
+
 /**
  * Transactional email layer for AASRA.
  * Called from the Worker, sending from the merchant's domain.
@@ -227,7 +229,7 @@ export function cancelledEmail({ order, reason, env }) {
       <p>Hello ${escapeHtml(order.customer_name)},</p>
       <p>Order <span class="hl">${escapeHtml(order.id)}</span> has been cancelled.</p>
       ${reason ? `<p>Reason: ${escapeHtml(reason)}</p>` : ''}
-      <p>Any amounts paid will be refunded per our <a href="${b}/deposit-policy">Deposit &amp; Cancellation Policy</a>.</p>
+      <p>Any amounts paid will be refunded per our <a href="${b}/return-policy">Return &amp; Refund Policy</a>.</p>
     `,
     intro: 'Your order has been cancelled.',
     outro: 'We are sorry to see the order go. Please contact us if you have questions.',
@@ -254,9 +256,109 @@ export function refundedEmail({ order, amount, reason, env }) {
 /**
  * Generic payment confirmation (delegate to deposit/balance template).
  */
-export function paymentPaidEmail({ order, kind, amount, env }) {
+export function paymentPaidEmail({ order, kind, amount, env, trackerToken, paidAt }) {
+  if (kind === 'full') return fullPaidEmail({ order, amount, env, trackerToken, paidAt });
   if (kind === 'balance') return balancePaidEmail({ order, amount, env });
   return depositPaidEmail({ order, amount, env });
+}
+
+/**
+ * Full payment confirmed in one go (no deposit / balance split).
+ * Renders a receipt: items, totals, amount paid, shipping address, payment ref.
+ * Wording says "paid", never "received" or "deposit".
+ * Returned fields are wrapped by the caller with wrapEmail().
+ */
+function parseItems(raw) {
+  if (Array.isArray(raw)) return raw;
+  try {
+    return JSON.parse(raw || '[]');
+  } catch {
+    return [];
+  }
+}
+
+function receiptDate(value) {
+  const d = value ? new Date(value) : new Date();
+  return d.toLocaleDateString('en-PK', { day: 'numeric', month: 'short', year: 'numeric' });
+}
+
+export function fullPaidEmail({ order, amount, env, trackerToken, paidAt }) {
+  const items = parseItems(order.items);
+  const subtotal = Number(order.subtotal) || 0;
+  const discount = Number(order.discount) || 0;
+  const shipping = Number(order.shipping_fee) || 0;
+  const total = Number(order.total) || 0;
+  const paid = amount != null ? Number(amount) : total;
+  const tax = taxAmount(Math.max(0, subtotal - discount)); // same rule as the invoice
+  const balanceDue = Math.max(0, total - paid);
+
+  const cell = 'padding:8px 0;border-bottom:1px solid #ececec;vertical-align:top;';
+  const itemRows = items
+    .map(
+      (it) => `
+      <tr>
+        <td style="${cell}">${escapeHtml(it.name)}<br/><span style="color:#777;font-size:12px;">SKU ${escapeHtml(it.sku)}</span></td>
+        <td style="${cell}text-align:center;">${Number(it.qty) || 1}</td>
+        <td style="${cell}text-align:right;">${money(it.line_total_pkr)}</td>
+      </tr>`
+    )
+    .join('');
+
+  const totalRow = (label, value, strong = false) =>
+    `<tr><td style="padding:5px 0;color:#555;">${label}</td><td style="padding:5px 0;text-align:right;${strong ? 'font-weight:600;color:#1a1a1a;' : ''}">${value}</td></tr>`;
+  const infoRow = (label, value) =>
+    `<tr><td style="padding:3px 16px 3px 0;color:#777;white-space:nowrap;">${label}</td><td style="padding:3px 0;">${value}</td></tr>`;
+
+  const address = [order.address, order.city].filter(Boolean).map(escapeHtml).join(', ');
+
+  const html = `
+    <p>Hello ${escapeHtml(order.customer_name)},</p>
+    <p>Your order <span class="hl">${escapeHtml(order.id)}</span> is <span class="hl">paid in full</span>. Your receipt is below.</p>
+
+    <table style="width:100%;border-collapse:collapse;font-size:13px;margin:14px 0;">
+      ${infoRow('Order number', escapeHtml(order.id))}
+      ${infoRow('Order date', receiptDate(order.created_at))}
+      ${infoRow('Payment status', '<strong>PAID</strong>')}
+      ${infoRow('Paid on', receiptDate(paidAt))}
+      ${infoRow('Payment method', 'Secure online payment (Safepay)')}
+      ${trackerToken ? infoRow('Payment reference', escapeHtml(trackerToken)) : ''}
+    </table>
+
+    <table style="width:100%;border-collapse:collapse;font-size:13px;">
+      <tr>
+        <td style="padding:6px 0;border-bottom:1px solid #1a1a1a;font-size:11px;letter-spacing:0.08em;text-transform:uppercase;color:#555;">Item</td>
+        <td style="padding:6px 0;border-bottom:1px solid #1a1a1a;font-size:11px;letter-spacing:0.08em;text-transform:uppercase;color:#555;text-align:center;">Qty</td>
+        <td style="padding:6px 0;border-bottom:1px solid #1a1a1a;font-size:11px;letter-spacing:0.08em;text-transform:uppercase;color:#555;text-align:right;">Amount</td>
+      </tr>
+      ${itemRows}
+    </table>
+
+    <table style="width:100%;border-collapse:collapse;font-size:13px;margin-top:12px;">
+      ${totalRow('Subtotal', money(subtotal))}
+      ${discount > 0 ? totalRow('Discount' + (order.coupon_code ? ` (${escapeHtml(order.coupon_code)})` : ''), `-${money(discount)}`) : ''}
+      ${totalRow('Shipping', shipping > 0 ? money(shipping) : 'Free')}
+      ${TAX_RATE_PCT > 0 ? totalRow(`Sales tax (${TAX_RATE_PCT}%)`, money(tax)) : ''}
+      ${totalRow('Total', money(total), true)}
+      ${totalRow('Amount paid', money(paid), true)}
+      ${totalRow('Balance due', money(balanceDue))}
+    </table>
+
+    <p style="margin-top:18px;"><strong>Shipping to</strong><br/>
+      ${escapeHtml(order.customer_name)}<br/>
+      ${address}<br/>
+      ${escapeHtml(order.phone || '')}
+    </p>
+  `;
+
+  return {
+    subject: `Order paid in full — ${order.id}`,
+    title: 'Payment receipt',
+    html,
+    intro: 'Thank you for your order. Your payment is confirmed and your order is paid in full.',
+    outro: 'Keep this email as your receipt. We will send tracking details when your order ships.',
+    btnText: order.balance_token ? 'View full invoice' : undefined,
+    btnUrl: order.balance_token ? invoiceLink(env, order.id, order.balance_token, 'final') : undefined,
+  };
 }
 
 /**
