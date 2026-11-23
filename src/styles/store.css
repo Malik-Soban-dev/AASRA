@@ -340,8 +340,9 @@ ul, ol { list-style: none; }
 }
 /* Colour dots on cards show that colour's photo (see StoreLayout). */
 [data-colour-image] { cursor: pointer; }
-[data-colour-image]:focus-visible { outline: 2px solid var(--as-ink); outline-offset: 2px; }
-[data-colour-image].is-active { box-shadow: 0 0 0 2px #fff, 0 0 0 3px var(--as-ink); }
+/* Selected dot: ring drawn inside the dot, so the carousel's overflow does not clip it. */
+[data-colour-image]:focus-visible { outline: 2px solid var(--as-ink); outline-offset: -2px; }
+[data-colour-image].is-active { border: 2px solid var(--as-ink); box-shadow: inset 0 0 0 2px #fff; }
 
 .as-rail { position: relative; }
 .as-rail-track {
