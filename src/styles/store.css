@@ -861,7 +861,8 @@ main table { display: block; max-width: 100%; overflow-x: auto; }
 .as-tiles { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 48px 32px; }
 .as-tile { display: block; color: var(--as-ink); text-decoration: none; }
 .as-tile-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-.as-tile-pair img { width: 100%; aspect-ratio: 3 / 4; object-fit: cover; background: #ebebeb; display: block; }
+/* height: auto overrides the HTML height attribute; max-height keeps photo and title on one screen. */
+.as-tile-pair img { width: 100%; height: auto; aspect-ratio: 3 / 4; max-height: calc(100svh - 230px); align-self: start; object-fit: cover; background: #ebebeb; display: block; }
 .as-tile-meta { display: flex; flex-direction: column; gap: 4px; margin-top: 16px; }
 .as-tile-kicker { font-size: 0.72rem; letter-spacing: 0.14em; text-transform: uppercase; color: #666666; }
 .as-tile-title { font-family: var(--as-display); font-size: 1.5rem; font-weight: 500; }
@@ -890,12 +891,13 @@ main table { display: block; max-width: 100%; overflow-x: auto; }
 .as-home-hero ~ * { position: relative; z-index: 1; background: var(--as-paper); box-shadow: 0 0 0 100vmax var(--as-paper); clip-path: inset(0 -100vmax); }
 main:has(> .as-home-hero) { overflow-x: clip; }
 
-/* ---- Home: Categories in Focus (reference layout: photo left, title and category list right, cards running off the right edge) ---- */
-.as-focus { display: grid; grid-template-columns: minmax(0, 36%) minmax(0, 1fr); background: var(--as-paper); }
-.as-focus-feature { position: relative; min-height: 680px; overflow: hidden; background: #ebebeb; }
+/* ---- Home: Categories in Focus (reference layout: photo left, title and category list right, cards running off the right edge).
+   Desktop fits one screen: the section is at least one viewport tall and the card photos take the space left under the list. ---- */
+.as-focus { display: grid; grid-template-columns: minmax(0, 36%) minmax(0, 1fr); background: var(--as-paper); min-height: 100vh; min-height: 100svh; }
+.as-focus-feature { position: relative; min-height: 420px; overflow: hidden; background: #ebebeb; }
 .as-focus-feature img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center top; }
-.as-focus-main { min-width: 0; padding: var(--as-s9) 0 var(--as-s7) var(--as-s7); }
-.as-focus-title { font-family: var(--as-display); font-size: clamp(2.2rem, 3.4vw, 2.9rem); font-weight: 600; letter-spacing: -0.01em; margin: 0 0 var(--as-s5); }
+.as-focus-main { min-width: 0; display: flex; flex-direction: column; padding: 112px 0 32px var(--as-s7); }
+.as-focus-title { font-family: var(--as-display); font-size: clamp(2.2rem, 3.4vw, 2.9rem); font-weight: 600; letter-spacing: -0.01em; margin: 0 0 var(--as-s4); }
 [hidden] { display: none !important; }
 .as-focus-list ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 2px; }
 .as-focus-link {
@@ -904,13 +906,15 @@ main:has(> .as-home-hero) { overflow-x: clip; }
 }
 .as-focus-link:hover { color: var(--as-ink); }
 .as-focus-link.is-active { color: var(--as-ink); font-weight: 600; text-decoration: underline; text-underline-offset: 6px; }
+.as-focus-panels { flex: 1 1 0; min-height: 0; display: flex; flex-direction: column; margin-top: var(--as-s4); }
+.as-focus-panel:not([hidden]) { flex: 1 1 0; min-height: 0; display: flex; flex-direction: column; }
 .as-focus-track {
-  display: grid; grid-auto-flow: column; grid-auto-columns: minmax(250px, 280px); gap: 14px;
-  overflow-x: auto; scroll-snap-type: x mandatory; padding: var(--as-s6) var(--as-gutter) var(--as-s3) 0; scrollbar-width: thin;
+  flex: 1 1 0; min-height: 0; display: grid; grid-auto-flow: column; grid-auto-columns: minmax(250px, 280px); gap: 14px;
+  overflow-x: auto; scroll-snap-type: x mandatory; padding: var(--as-s3) var(--as-gutter) 0 0; scrollbar-width: thin;
 }
-.as-focus-card { display: flex; flex-direction: column; gap: 4px; color: var(--as-ink); text-decoration: none; scroll-snap-align: start; min-width: 0; }
-.as-focus-img { display: block; overflow: hidden; background: #efefef; }
-.as-focus-img img { width: 100%; aspect-ratio: 3 / 4; object-fit: cover; display: block; transition: transform 0.5s ease; }
+.as-focus-card { display: flex; flex-direction: column; min-height: 0; gap: 4px; color: var(--as-ink); text-decoration: none; scroll-snap-align: start; min-width: 0; }
+.as-focus-img { flex: 1 1 0; min-height: 200px; position: relative; overflow: hidden; background: #efefef; }
+.as-focus-img img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; transition: transform 0.5s ease; }
 .as-focus-card:hover .as-focus-img img { transform: scale(1.03); }
 .as-focus-name { margin-top: 10px; font-size: 0.8rem; font-weight: 500; letter-spacing: 0.04em; text-transform: uppercase; }
 .as-focus-meta { font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase; color: #666666; }
@@ -918,12 +922,15 @@ main:has(> .as-home-hero) { overflow-x: clip; }
 .as-focus-swatches { display: flex; gap: 6px; margin-top: 2px; }
 .as-focus-swatches i { width: 12px; height: 12px; border-radius: 50%; border: 1px solid #d9d9d9; display: inline-block; }
 @media (max-width: 720px) {
-  .as-focus { grid-template-columns: 1fr; }
+  .as-focus { grid-template-columns: 1fr; min-height: 0; }
   .as-focus-feature { min-height: 0; aspect-ratio: 4 / 5; }
   .as-focus-main { padding: var(--as-s7) 0 var(--as-s6) var(--as-gutter); }
   .as-focus-list ul { flex-direction: row; overflow-x: auto; gap: 22px; padding-bottom: 4px; padding-right: var(--as-gutter); }
   .as-focus-link { white-space: nowrap; font-size: 1.05rem; }
-  .as-focus-track { grid-auto-columns: 62vw; }
+  .as-focus-panels, .as-focus-panel:not([hidden]) { flex: none; display: block; }
+  .as-focus-track { flex: none; display: grid; grid-auto-columns: 62vw; overflow-x: auto; }
+  .as-focus-img { flex: none; min-height: 0; position: relative; }
+  .as-focus-img img { position: static; height: auto; aspect-ratio: 3 / 4; }
 }
 
 /* Phone full-screen pass: the home hero and each collection tile fill one screen
