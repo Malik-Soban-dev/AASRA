@@ -1148,3 +1148,9 @@ html.hdr-hidden .as-plp-toolbar { top: 0; }
   .as-pdp-gallery { grid-template-columns: 1fr; }
   .as-pdp-info { position: static; }
 }
+
+/* Full-screen campaign carousel: fill the screen, arrows + dots (RunwayHero). */
+.as-hero { height: 100vh; height: 100svh; min-height: 620px; }
+.as-hero-controls { display: flex; align-items: center; gap: var(--as-s3); }
+.as-hero .as-hero-arrow { border-color: rgba(255, 255, 255, 0.7); color: var(--as-paper); }
+.as-hero .as-hero-arrow:hover { background: var(--as-paper); color: var(--as-ink); }

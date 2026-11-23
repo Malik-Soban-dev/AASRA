@@ -1,29 +1,38 @@
 ---
 /**
- * RunwayHero — one unified cinematic hero (user direction):
- * crossfading campaign slides with slow Ken Burns ("runway" motion), kinetic
- * staggered headline, two CTAs, caption + slide indicators, marquee at the
- * base. Auto-advances slowly; static first frame under reduced motion.
+ * RunwayHero — full-screen campaign carousel (used on the home page and on the
+ * women's and men's pages):
+ * crossfading campaign slides with slow Ken Burns motion, kinetic headline,
+ * CTAs, caption, arrows and dots, marquee at the base. Auto-advances every 6s;
+ * static first frame under reduced motion.
+ * Props default to the home-page campaign; gender pages pass their own.
  */
 import Marquee from './Marquee.astro';
 import site from '../../../data/catalog/site.json';
 
 const { hero } = site;
-const words = [hero.line1, hero.line2].join(' ').split(' ');
-const slides = [
-  { img: '/images/look/banner-runway.jpg', caption: 'The campaign — Spring / Summer' },
-  { img: '/images/look/hero-women.jpg', caption: 'The handloom edit — Women' },
-  { img: '/images/look/hero-men.jpg', caption: 'Quiet menswear — Men' },
+const defaultSlides = [
+  { img: '/images/look/banner-runway.jpg', caption: 'The campaign — Spring / Summer', alt: 'Two models in handloom linen on a sunlit runway' },
+  { img: '/images/look/hero-women.jpg', caption: 'The handloom edit — Women', alt: '' },
+  { img: '/images/look/hero-men.jpg', caption: 'Quiet menswear — Men', alt: '' },
 ];
+const {
+  slides = defaultSlides,
+  kicker = hero.kicker,
+  headline = [hero.line1, hero.line2].join(' '),
+  ctas = [{ label: hero.women.label, href: hero.women.href }, { label: hero.men.label, href: hero.men.href }],
+  label = 'Spring Summer — the handloom edit',
+} = Astro.props;
+const words = headline.split(' ');
 ---
 
-<section class="as-hero as-snap-section" data-hero aria-label="Spring Summer — the handloom edit">
+<section class="as-hero as-snap-section" data-hero aria-label={label}>
   <div class="as-hero-media" data-hero-media>
     {slides.map((s, i) => (
       <img
         class:list={['as-hero-slide', { 'is-active': i === 0 }]}
         src={s.img}
-        alt={i === 0 ? 'Two models in handloom linen on a sunlit runway' : ''}
+        alt={i === 0 ? (s.alt ?? '') : ''}
         fetchpriority={i === 0 ? 'high' : 'auto'}
         width="2000" height="1125"
       />
@@ -32,7 +41,7 @@ const slides = [
   </div>
 
   <div class="as-hero-copy">
-    <p class="as-kicker">{hero.kicker}</p>
+    <p class="as-kicker">{kicker}</p>
     <h1 class="as-display-xl">
       {words.map((word, i) => (
         <Fragment>
@@ -42,8 +51,7 @@ const slides = [
       ))}
     </h1>
     <div class="as-hero-actions">
-      <a class="as-btn as-btn--light" href={hero.women.href}>{hero.women.label}</a>
-      <a class="as-btn as-btn--light" href={hero.men.href}>{hero.men.label}</a>
+      {ctas.map((c) => <a class="as-btn as-btn--light" href={c.href}>{c.label}</a>)}
     </div>
   </div>
 
@@ -53,16 +61,24 @@ const slides = [
       <span class="as-hero-cue-line"></span>
       <span>Scroll</span>
     </div>
-    <div class="as-hero-dots" role="group" aria-label="Campaign slides">
-      {slides.map((s, i) => (
-        <button
-          type="button"
-          class:list={['as-hero-dot', { 'is-active': i === 0 }]}
-          data-slide={i}
-          data-caption={s.caption}
-          aria-label={`Show ${s.caption}`}
-        ></button>
-      ))}
+    <div class="as-hero-controls">
+      <button type="button" class="as-rail-btn as-hero-arrow" data-hero-prev aria-label="Previous slide">
+        <svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7" /></svg>
+      </button>
+      <div class="as-hero-dots" role="group" aria-label="Campaign slides">
+        {slides.map((s, i) => (
+          <button
+            type="button"
+            class:list={['as-hero-dot', { 'is-active': i === 0 }]}
+            data-slide={i}
+            data-caption={s.caption}
+            aria-label={`Show ${s.caption}`}
+          ></button>
+        ))}
+      </div>
+      <button type="button" class="as-rail-btn as-hero-arrow" data-hero-next aria-label="Next slide">
+        <svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7" /></svg>
+      </button>
     </div>
   </div>
 
@@ -70,7 +86,7 @@ const slides = [
 </section>
 
 <script>
-  // Hero slideshow: slow auto-advance (6s), manual dots, caption swap.
+  // Hero slideshow: auto-advance (6s), arrows and dots, caption swap.
   // Reduced motion: first slide stays, no animation.
   (() => {
     const hero = document.querySelector('[data-hero]');
@@ -96,6 +112,8 @@ const slides = [
     dots.forEach((dot) => {
       dot.addEventListener('click', () => { show(Number(dot.dataset.slide)); start(); });
     });
+    hero.querySelector('[data-hero-prev]')?.addEventListener('click', () => { show(current - 1); start(); });
+    hero.querySelector('[data-hero-next]')?.addEventListener('click', () => { show(current + 1); start(); });
     start();
 
     // Subtle cursor parallax on the media (±8px), design-system hero pattern.
