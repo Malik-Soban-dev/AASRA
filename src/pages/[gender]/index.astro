@@ -19,6 +19,13 @@ const title = isWomen ? 'Women' : 'Men';
 const kicker = isWomen ? 'The handloom edit' : 'Quiet menswear';
 const cats = categories[gender].filter((c) => c.category !== 'new-in');
 const newIn = newArrivals(gender);
+// Rows: [large | small], then [left | right (staggered)]. With three collections the last tile spans the full row.
+const tileClass = (i) => {
+  if (i === 0) return 'as-tile-a';
+  if (i === 1) return 'as-tile-b';
+  if (i === 2) return cats.length - 1 === 2 ? 'as-tile-full' : 'as-tile-d';
+  return 'as-tile-c';
+};
 const tiles = cats.map((c) => {
   const first = categoryProducts(gender, c.category)[0];
   return { ...c, img: first?.images[0] || heroImg, alt: first?.name || c.label };
@@ -46,7 +53,7 @@ const tiles = cats.map((c) => {
     </div>
     <div class="as-edit-grid" data-stagger>
       {tiles.map((t, i) => (
-        <a class:list={['as-edit-tile', i === 0 ? 'as-tile-a' : i === 1 ? 'as-tile-b' : 'as-tile-c', 'as-reveal']} style={`--i:${i}`} href={t.href}>
+        <a class:list={['as-edit-tile', tileClass(i), 'as-reveal']} style={`--i:${i}`} href={t.href}>
           <img src={t.img} alt={t.alt} loading="lazy" width="900" height="1125" />
           <div class="as-edit-label">
             <p class="as-kicker">{t.category === 'new-in' ? 'Just landed' : 'Collection'}</p>
