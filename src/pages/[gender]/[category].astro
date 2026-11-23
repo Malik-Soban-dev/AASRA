@@ -1,8 +1,8 @@
 ---
 /**
  * PLP — /women/dresses, /men/new-in, …
- * Breadcrumb → title → sub-category chips → sticky filter bar (color/size/sort,
- * client-side) → product grid → empty state.
+ * Breadcrumb → title → sub-category chips → toolbar with a filter panel (color/size,
+ * client-side) and sort → product grid → empty state.
  */
 import StoreLayout from '../../components/layout/StoreLayout.astro';
 import ProductCard from '../../components/store/ProductCard.astro';
@@ -52,33 +52,55 @@ const allSizes = [...new Set(items.flatMap((p) => p.sizes))];
       ))}
     </div>
 
-    <div class="as-filterbar" data-filterbar>
-      <div class="as-filter-group">
-        <span class="as-filter-legend">Colour</span>
-        {allColors.map((c) => (
-          <button type="button" class="as-chip" data-filter-color={c.name} title={c.name}>
-            <i style={`background:${c.hex};width:11px;height:11px;border-radius:50%;margin-right:6px;display:inline-block`}></i>{c.name}
-          </button>
-        ))}
+    <div class="as-plp-bar" data-plp-bar>
+      <div class="as-plp-toolbar">
+        <button type="button" class="as-filter-toggle" aria-expanded="false" aria-controls="as-filter-panel" data-filter-toggle>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h9M17 7h3M4 17h3M11 17h9" /><circle cx="15" cy="7" r="2" /><circle cx="9" cy="17" r="2" /></svg>
+          <span>Filter</span>
+          <span class="as-filter-count" data-filter-count hidden>0</span>
+        </button>
+        <p class="as-plp-count" id="as-count" aria-live="polite">{items.length} {items.length === 1 ? 'item' : 'items'}</p>
+        <div class="as-sort-wrap">
+          <label class="as-filter-legend" for="as-sort">Sort</label>
+          <select class="as-sort" id="as-sort">
+            <option value="featured">Featured</option>
+            <option value="price-asc">Price: low to high</option>
+            <option value="price-desc">Price: high to low</option>
+            <option value="name">Name</option>
+          </select>
+        </div>
       </div>
-      <div class="as-filter-group">
-        <span class="as-filter-legend">Size</span>
-        {allSizes.map((s) => (
-          <button type="button" class="as-chip" data-filter-size={s}>{s}</button>
-        ))}
+
+      <div class="as-filter-panel" id="as-filter-panel" data-filter-panel hidden>
+        <div class="as-facet">
+          <p class="as-facet-legend">Colour</p>
+          <div class="as-facet-opts">
+            {allColors.map((c) => (
+              <button type="button" class="as-opt as-opt--colour" aria-pressed="false" data-filter-color={c.name}>
+                <i style={`background:${c.hex}`} aria-hidden="true"></i>{c.name}
+              </button>
+            ))}
+          </div>
+        </div>
+        <div class="as-facet">
+          <p class="as-facet-legend">Size</p>
+          <div class="as-facet-opts">
+            {allSizes.map((s) => (
+              <button type="button" class="as-opt as-opt--size" aria-pressed="false" data-filter-size={s}>{s}</button>
+            ))}
+          </div>
+        </div>
+        <div class="as-facet-foot">
+          <button type="button" class="as-filter-clear" data-filter-clear disabled>Clear all</button>
+          <button type="button" class="as-btn as-btn--solid as-filter-done" data-filter-done>Done</button>
+        </div>
       </div>
-      <div class="as-filter-group">
-        <label class="as-filter-legend" for="as-sort">Sort</label>
-        <select class="as-sort" id="as-sort">
-          <option value="featured">Featured</option>
-          <option value="price-asc">Price: low to high</option>
-          <option value="price-desc">Price: high to low</option>
-          <option value="name">Name</option>
-        </select>
+
+      <div class="as-plp-empty" id="as-nomatch" hidden>
+        <p>Nothing matches these filters.</p>
+        <button type="button" class="as-btn as-btn--outline" data-filter-clear-inline>Clear filters</button>
       </div>
     </div>
-
-    <p class="as-kicker" id="as-count" style="margin:var(--as-s4) 0">{items.length} items</p>
 
     <div class="as-grid" id="as-grid" data-stagger>
       {items.map((p, i) => (
@@ -101,11 +123,28 @@ const allSizes = [...new Set(items.flatMap((p) => p.sizes))];
   </div>
 
   <script>
-    // Client-side filter + sort (no reload) — design system PLP rules.
+    // Client-side filter + sort (no reload). Filter panel toggles open/closed; the count and Clear all track the selection.
     const grid = document.getElementById('as-grid');
     const items = [...grid.querySelectorAll('.as-grid-item')];
     const countEl = document.getElementById('as-count');
+    const toggle = document.querySelector('[data-filter-toggle]');
+    const panel = document.getElementById('as-filter-panel');
+    const badge = document.querySelector('[data-filter-count]');
+    const clearBtn = document.querySelector('[data-filter-clear]');
+    const noMatch = document.getElementById('as-nomatch');
     const active = { color: null, size: null };
+
+    const setOpen = (open) => {
+      panel.hidden = !open;
+      toggle.setAttribute('aria-expanded', String(open));
+    };
+    toggle.addEventListener('click', () => setOpen(panel.hidden));
+    document.querySelector('[data-filter-done]')?.addEventListener('click', () => { setOpen(false); toggle.focus(); });
+
+    const syncPressed = () => {
+      document.querySelectorAll('[data-filter-color]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.filterColor === active.color)));
+      document.querySelectorAll('[data-filter-size]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.filterSize === active.size)));
+    };
 
     const apply = () => {
       let visible = 0;
@@ -117,13 +156,23 @@ const allSizes = [...new Set(items.flatMap((p) => p.sizes))];
         if (ok) visible++;
       });
       countEl.textContent = `${visible} item${visible === 1 ? '' : 's'}`;
+      const n = (active.color ? 1 : 0) + (active.size ? 1 : 0);
+      badge.textContent = String(n);
+      badge.hidden = n === 0;
+      toggle.classList.toggle('has-filters', n > 0);
+      clearBtn.disabled = n === 0;
+      noMatch.hidden = visible > 0;
+      syncPressed();
     };
+
+    const clearAll = () => { active.color = null; active.size = null; apply(); };
+    clearBtn.addEventListener('click', clearAll);
+    document.querySelector('[data-filter-clear-inline]')?.addEventListener('click', clearAll);
 
     document.querySelectorAll('[data-filter-color]').forEach((btn) => {
       btn.addEventListener('click', () => {
         const value = btn.dataset.filterColor;
         active.color = active.color === value ? null : value;
-        document.querySelectorAll('[data-filter-color]').forEach((b) => b.classList.toggle('is-active', b.dataset.filterColor === active.color));
         apply();
       });
     });
@@ -131,7 +180,6 @@ const allSizes = [...new Set(items.flatMap((p) => p.sizes))];
       btn.addEventListener('click', () => {
         const value = btn.dataset.filterSize;
         active.size = active.size === value ? null : value;
-        document.querySelectorAll('[data-filter-size]').forEach((b) => b.classList.toggle('is-active', b.dataset.filterSize === active.size));
         apply();
       });
     });
