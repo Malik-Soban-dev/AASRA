@@ -92,9 +92,11 @@ ul, ol { list-style: none; }
   position: fixed; inset: 0 0 auto 0; z-index: 60;
   color: var(--as-paper);
   transition: background var(--as-med) var(--as-ease), color var(--as-med) var(--as-ease),
-    border-color var(--as-med) var(--as-ease);
+    border-color var(--as-med) var(--as-ease), transform var(--as-med) var(--as-ease);
   border-bottom: 1px solid transparent;
 }
+/* Scroll up: header slides away. Scroll down: it returns (solid over the hero). */
+.as-header.is-hidden { transform: translateY(-100%); }
 .as-header.is-solid {
   background: var(--as-paper); color: var(--as-ink); border-bottom-color: var(--as-line);
 }
