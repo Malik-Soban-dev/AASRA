@@ -980,3 +980,21 @@ main:has(> .as-home-hero) { overflow-x: clip; }
   .as-tile-pair img { height: 100%; aspect-ratio: auto; min-height: 0; }
   .as-tile-meta { flex: none; margin: var(--as-s4) 0 0; }
 }
+
+/* Home: New Denim Drop — full-width banner, then a denim product rail. */
+.as-denim-banner { position: relative; height: 82vh; min-height: 460px; overflow: hidden; background: var(--as-ink); color: var(--as-paper); }
+.as-denim-banner img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center 35%; }
+.as-denim-banner::after { content: ''; position: absolute; inset: 0; background: linear-gradient(90deg, rgba(17, 17, 17, 0.55) 0%, rgba(17, 17, 17, 0.1) 60%, rgba(17, 17, 17, 0) 100%); }
+.as-denim-banner-copy { position: absolute; left: 0; bottom: 0; z-index: 1; max-width: 640px; padding: var(--as-s9) var(--as-gutter) var(--as-s8); }
+.as-denim-banner .as-kicker { color: rgba(255, 255, 255, 0.85); }
+.as-denim-title { font-family: var(--as-display); font-weight: 450; font-size: clamp(3rem, 7vw, 6rem); line-height: 0.98; letter-spacing: -0.01em; margin: var(--as-s3) 0 var(--as-s5); color: var(--as-paper); }
+.as-denim-actions { display: flex; flex-wrap: wrap; gap: var(--as-s3); }
+.as-denim-banner .as-btn--solid { background: var(--as-paper); color: var(--as-ink); border-color: var(--as-paper); }
+.as-denim-banner .as-btn--outline { color: var(--as-paper); border-color: rgba(255, 255, 255, 0.8); }
+.as-denim-banner .as-btn--outline:hover { background: var(--as-paper); color: var(--as-ink); }
+@media (max-width: 720px) {
+  .as-denim-banner { height: 78svh; min-height: 420px; }
+  .as-denim-title { font-size: clamp(2.4rem, 11vw, 3.2rem); }
+  .as-denim-banner-copy { padding: var(--as-s6) var(--as-gutter) var(--as-s7); }
+  .as-denim-actions .as-btn { flex: 1 1 calc(50% - var(--as-s3)); }
+}

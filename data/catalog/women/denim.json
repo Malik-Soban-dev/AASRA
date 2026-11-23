@@ -1,0 +1,102 @@
+{
+  "category": "denim",
+  "label": "Denim",
+  "products": [
+    {
+      "id": "W101",
+      "slug": "wide-leg-denim-indigo",
+      "name": "Wide-Leg Denim — Indigo",
+      "price_pkr": 13900,
+      "colors": [
+        {
+          "name": "Indigo",
+          "hex": "#2f3f5c",
+          "image": "/images/garments/w-denim-wide-indigo.jpg"
+        }
+      ],
+      "sizes": [
+        "XS",
+        "S",
+        "M",
+        "L",
+        "XL"
+      ],
+      "images": [
+        "/images/garments/w-denim-wide-indigo.jpg"
+      ],
+      "description": "High-rise wide-leg jeans in a rigid indigo denim that softens with wear.",
+      "details": [
+        "High rise",
+        "Wide leg",
+        "Five pockets",
+        "Button fly"
+      ],
+      "fabric": "100% cotton denim, 12 oz",
+      "care": "Wash inside out, cold. Line dry. Do not bleach."
+    },
+    {
+      "id": "W102",
+      "slug": "straight-denim-black",
+      "name": "Straight Denim — Black",
+      "price_pkr": 12400,
+      "colors": [
+        {
+          "name": "Black",
+          "hex": "#1d1d1f",
+          "image": "/images/garments/w-denim-straight-black.jpg"
+        }
+      ],
+      "sizes": [
+        "XS",
+        "S",
+        "M",
+        "L",
+        "XL"
+      ],
+      "images": [
+        "/images/garments/w-denim-straight-black.jpg"
+      ],
+      "description": "Straight-leg black jeans with a clean line from hip to hem.",
+      "details": [
+        "Mid rise",
+        "Straight leg",
+        "Five pockets",
+        "Zip fly"
+      ],
+      "fabric": "98% cotton, 2% elastane denim",
+      "care": "Wash inside out, cold. Line dry. Do not bleach."
+    },
+    {
+      "id": "W103",
+      "slug": "barrel-denim-stone-wash",
+      "name": "Barrel Denim — Stone Wash",
+      "price_pkr": 14500,
+      "colors": [
+        {
+          "name": "Stone Wash",
+          "hex": "#9aa3ab",
+          "image": "/images/garments/w-denim-barrel-stone.jpg"
+        }
+      ],
+      "sizes": [
+        "XS",
+        "S",
+        "M",
+        "L",
+        "XL"
+      ],
+      "images": [
+        "/images/garments/w-denim-barrel-stone.jpg"
+      ],
+      "description": "Barrel-leg jeans in a soft stone wash, cut roomy through the hip and tapered at the ankle.",
+      "details": [
+        "High rise",
+        "Barrel leg",
+        "Stone wash",
+        "Button fly"
+      ],
+      "fabric": "100% cotton denim, 11 oz",
+      "care": "Wash inside out, cold. Line dry. Do not bleach."
+    }
+  ]
+}

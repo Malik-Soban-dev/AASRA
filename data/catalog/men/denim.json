@@ -1,0 +1,102 @@
+{
+  "category": "denim",
+  "label": "Denim",
+  "products": [
+    {
+      "id": "M101",
+      "slug": "relaxed-denim-mid-blue",
+      "name": "Relaxed Denim — Mid Blue",
+      "price_pkr": 11900,
+      "colors": [
+        {
+          "name": "Mid Blue",
+          "hex": "#4a6482",
+          "image": "/images/garments/m-denim-relaxed-mid.jpg"
+        }
+      ],
+      "sizes": [
+        "S",
+        "M",
+        "L",
+        "XL",
+        "XXL"
+      ],
+      "images": [
+        "/images/garments/m-denim-relaxed-mid.jpg"
+      ],
+      "description": "Relaxed-fit jeans in a mid-blue wash, with room through the seat and thigh.",
+      "details": [
+        "Relaxed fit",
+        "Tapered leg",
+        "Five pockets",
+        "Zip fly"
+      ],
+      "fabric": "100% cotton denim, 12 oz",
+      "care": "Wash inside out, cold. Line dry. Do not bleach."
+    },
+    {
+      "id": "M102",
+      "slug": "slim-denim-black",
+      "name": "Slim Denim — Black",
+      "price_pkr": 11400,
+      "colors": [
+        {
+          "name": "Black",
+          "hex": "#1d1d1f",
+          "image": "/images/garments/m-denim-slim-black.jpg"
+        }
+      ],
+      "sizes": [
+        "S",
+        "M",
+        "L",
+        "XL",
+        "XXL"
+      ],
+      "images": [
+        "/images/garments/m-denim-slim-black.jpg"
+      ],
+      "description": "Slim-fit black jeans that sit close without pulling at the knee.",
+      "details": [
+        "Slim fit",
+        "Mid rise",
+        "Five pockets",
+        "Zip fly"
+      ],
+      "fabric": "98% cotton, 2% elastane denim",
+      "care": "Wash inside out, cold. Line dry. Do not bleach."
+    },
+    {
+      "id": "M103",
+      "slug": "denim-overshirt-indigo",
+      "name": "Denim Overshirt — Indigo",
+      "price_pkr": 12900,
+      "colors": [
+        {
+          "name": "Indigo",
+          "hex": "#2f3f5c",
+          "image": "/images/garments/m-denim-overshirt-indigo.jpg"
+        }
+      ],
+      "sizes": [
+        "S",
+        "M",
+        "L",
+        "XL",
+        "XXL"
+      ],
+      "images": [
+        "/images/garments/m-denim-overshirt-indigo.jpg"
+      ],
+      "description": "A layering overshirt in indigo denim, with two chest pockets and a relaxed body.",
+      "details": [
+        "Relaxed fit",
+        "Two chest pockets",
+        "Snap front",
+        "Curved hem"
+      ],
+      "fabric": "100% cotton denim, 10 oz",
+      "care": "Wash inside out, cold. Line dry. Do not bleach."
+    }
+  ]
+}
