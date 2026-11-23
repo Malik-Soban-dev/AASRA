@@ -5,19 +5,19 @@
 
 :root {
   /* Color */
-  --as-paper: #f7f5ef;
+  --as-paper: #ffffff;
   --as-canvas: #ffffff;
-  --as-ink: #23211d;
-  --as-graphite: #5f5b52;
-  --as-clay-ink: #94503a;
-  --as-line: #e3ddd2;
-  --as-sand: #eee7da;
-  --as-clay: #a65e45;
-  --as-olive: #36433a;
+  --as-ink: #111111;
+  --as-graphite: #666666;
+  --as-clay-ink: #111111;
+  --as-line: #e5e5e5;
+  --as-sand: #ebebeb;
+  --as-clay: #111111;
+  --as-olive: #111111;
   --as-error: #8c2f2f;
 
   /* Type */
-  --as-display: 'Fraunces', Georgia, 'Times New Roman', serif;
+  --as-display: 'Inter Tight', 'Helvetica Neue', Helvetica, Arial, sans-serif;
   --as-ui: 'Inter', 'Helvetica Neue', Helvetica, Arial, sans-serif;
   --as-t-display-xl: clamp(3.5rem, 9vw, 7.5rem);
   --as-t-display-l: clamp(2.25rem, 4.5vw, 4rem);

@@ -65,7 +65,7 @@
 .as-ship-text { font-size: 0.9rem; margin: 0 0 var(--as-s2); }
 .as-ship-bar { height: 4px; background: var(--as-line); overflow: hidden; }
 .as-ship-bar span { display: block; height: 100%; width: 0; background: var(--as-clay); transition: width 0.4s var(--as-ease, ease); }
-.as-ship-bar span.is-done { background: var(--as-olive, #36433a); }
+.as-ship-bar span.is-done { background: var(--as-olive, #111111); }
 
 .as-assure { list-style: none; margin: var(--as-s5) 0 0; padding: var(--as-s4) 0 0; border-top: 1px solid var(--as-line); }
 .as-assure li { font-size: 0.85rem; color: var(--as-graphite); padding: 0.3rem 0 0.3rem 1.1rem; position: relative; }
@@ -86,7 +86,7 @@
 .as-label { font-size: 0.85rem; color: var(--as-ink); }
 .as-input {
   width: 100%; min-height: 48px; padding: 0.75rem 0.9rem; font: inherit; font-size: 1rem;
-  color: var(--as-ink); background: #fff; border: 1px solid #8a8377; border-radius: 0;
+  color: var(--as-ink); background: #fff; border: 1px solid #666666; border-radius: 0;
   appearance: none;
 }
 textarea.as-input { min-height: 96px; resize: vertical; }
@@ -95,7 +95,7 @@ textarea.as-input { min-height: 96px; resize: vertical; }
 
 .as-choice {
   display: flex; gap: var(--as-s3); align-items: flex-start; padding: var(--as-s4);
-  border: 1px solid #8a8377; cursor: pointer; background: #fff; min-height: 48px;
+  border: 1px solid #666666; cursor: pointer; background: #fff; min-height: 48px;
 }
 .as-choice:has(input:checked) { border-color: var(--as-ink); box-shadow: inset 0 0 0 1px var(--as-ink); }
 .as-choice input { margin-top: 4px; width: 18px; height: 18px; accent-color: var(--as-ink); flex: none; }
@@ -109,7 +109,7 @@ textarea.as-input { min-height: 96px; resize: vertical; }
 
 .as-msg { padding: var(--as-s4); border: 1px solid; font-size: 0.95rem; margin: 0; }
 .as-msg--error { border-color: #9b2b1f; color: #7d2118; background: #fdf3f1; }
-.as-msg--ok { border-color: var(--as-olive, #36433a); color: var(--as-ink); background: #f1f4ef; }
+.as-msg--ok { border-color: var(--as-olive, #111111); color: var(--as-ink); background: #ffffff; }
 .as-msg[hidden] { display: none; }
 
 .as-submit { width: 100%; min-height: 56px; font-size: 0.9rem; }

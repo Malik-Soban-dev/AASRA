@@ -9,15 +9,124 @@
       "price_pkr": 32000,
       "badge": "LIMITED",
       "colors": [
-        { "name": "Sand", "hex": "#d6c9b2" },
-        { "name": "Charcoal", "hex": "#3c3a36" }
+        {
+          "name": "Sand",
+          "hex": "#d6c9b2"
+        },
+        {
+          "name": "Charcoal",
+          "hex": "#3c3a36"
+        }
       ],
-      "sizes": ["XS", "S", "M", "L", "XL"],
-      "images": ["/images/garments/w-coat-sand.jpg"],
+      "sizes": [
+        "XS",
+        "S",
+        "M",
+        "L",
+        "XL"
+      ],
+      "images": [
+        "/images/garments/w-coat-sand.jpg"
+      ],
       "description": "Hand-stitched channel quilting over organic cotton wadding — a coat that behaves like a shawl. Each piece takes three days at the quilt frame.",
-      "details": ["Shawl collar", "Hand-stitched quilting", "Two side pockets", "Cotton binding at edges"],
+      "details": [
+        "Shawl collar",
+        "Hand-stitched quilting",
+        "Two side pockets",
+        "Cotton binding at edges"
+      ],
       "fabric": "Organic cotton shell and wadding",
       "care": "Dry clean only."
+    },
+    {
+      "id": "W011",
+      "slug": "trench-stone",
+      "name": "Trench — Stone",
+      "price_pkr": 28500,
+      "badge": "NEW",
+      "colors": [
+        {
+          "name": "Stone",
+          "hex": "#cfc6b4"
+        },
+        {
+          "name": "Black",
+          "hex": "#1d1d1b"
+        }
+      ],
+      "sizes": [
+        "S",
+        "M",
+        "L",
+        "XL"
+      ],
+      "images": [
+        "/images/products/trench-stone.jpg"
+      ],
+      "description": "Trench, available in Stone and Black.",
+      "details": [],
+      "fabric": "To be confirmed",
+      "care": "Follow the care label inside the garment."
+    },
+    {
+      "id": "W012",
+      "slug": "wool-jacket-black",
+      "name": "Wool Jacket — Black",
+      "price_pkr": 26900,
+      "badge": null,
+      "colors": [
+        {
+          "name": "Black",
+          "hex": "#1d1d1b"
+        },
+        {
+          "name": "Charcoal",
+          "hex": "#3c3a36"
+        }
+      ],
+      "sizes": [
+        "S",
+        "M",
+        "L",
+        "XL"
+      ],
+      "images": [
+        "/images/products/wool-jacket-black.jpg"
+      ],
+      "description": "Wool Jacket, available in Black and Charcoal.",
+      "details": [],
+      "fabric": "To be confirmed",
+      "care": "Follow the care label inside the garment."
+    },
+    {
+      "id": "W013",
+      "slug": "quilted-gilet-olive",
+      "name": "Quilted Gilet — Olive",
+      "price_pkr": 14900,
+      "badge": null,
+      "colors": [
+        {
+          "name": "Olive",
+          "hex": "#5b5a3c"
+        },
+        {
+          "name": "Navy",
+          "hex": "#1f2a3d"
+        }
+      ],
+      "sizes": [
+        "S",
+        "M",
+        "L",
+        "XL"
+      ],
+      "images": [
+        "/images/products/quilted-gilet-olive.jpg"
+      ],
+      "description": "Quilted Gilet, available in Olive and Navy.",
+      "details": [],
+      "fabric": "To be confirmed",
+      "care": "Follow the care label inside the garment."
     }
   ]
 }

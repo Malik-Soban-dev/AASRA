@@ -104,7 +104,7 @@ import Layout from '../components/Layout.astro';
         });
         const data = await res.json();
         if (data.ok) {
-          msg.style.color = '#1f5a1f';
+          msg.style.color = '#111111';
           msg.textContent = 'Message sent — we will reply soon.';
           form.reset();
         } else {
