@@ -386,7 +386,7 @@ ul, ol { list-style: none; }
 .as-breadcrumb {
   display: flex; gap: 0.5em; font-size: var(--as-t-micro);
   letter-spacing: var(--as-track-micro); text-transform: uppercase; color: var(--as-graphite);
-  padding-top: calc(72px + var(--as-s5));
+  padding-top: calc(var(--as-header-h, 104px) + var(--as-s4)); /* clears the fixed header on every width */
 }
 .as-breadcrumb a:hover { color: var(--as-clay); }
 .as-plp-head { padding: var(--as-s7) 0 var(--as-s5); }
