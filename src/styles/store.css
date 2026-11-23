@@ -940,8 +940,8 @@ main:has(> .as-home-hero) { overflow-x: clip; }
   .as-focus-list ul::-webkit-scrollbar { display: none; }
   .as-focus-link { white-space: nowrap; font-size: 1.05rem; }
   .as-focus-panels, .as-focus-panel:not([hidden]) { flex: none; display: block; }
-  .as-focus-track { flex: none; display: grid; grid-auto-columns: 70vw; overflow-x: auto; }
-  .as-focus-img { height: auto; position: relative; }
+  .as-focus-track { flex: none; display: grid; grid-auto-columns: 70vw; overflow-x: auto; overflow-y: visible; }
+  .as-focus-img { flex: none; min-height: 0; height: auto; position: relative; }
   .as-focus-img img { position: static; height: auto; aspect-ratio: 2 / 3; }
 }
 
