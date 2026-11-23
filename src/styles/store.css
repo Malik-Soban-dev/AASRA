@@ -338,9 +338,10 @@ ul, ol { list-style: none; }
   width: 11px; height: 11px; border-radius: 50%; display: inline-block;
   border: 1px solid rgba(17, 17, 17, 0.18);
 }
-/* Colour dots on cards open the product in that colour (see StoreLayout). */
-[data-colour][data-href] { cursor: pointer; }
-[data-colour][data-href]:focus-visible { outline: 2px solid var(--as-ink); outline-offset: 2px; }
+/* Colour dots on cards show that colour's photo (see StoreLayout). */
+[data-colour-image] { cursor: pointer; }
+[data-colour-image]:focus-visible { outline: 2px solid var(--as-ink); outline-offset: 2px; }
+[data-colour-image].is-active { box-shadow: 0 0 0 2px #fff, 0 0 0 3px var(--as-ink); }
 
 .as-rail { position: relative; }
 .as-rail-track {

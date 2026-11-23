@@ -94,21 +94,33 @@ const {
       })();
     </script>
     <script>
-      // Colour dots on cards (listing, home, Categories in Focus) open the product in that colour.
-      const openInColour = (dot) => { location.href = `${dot.dataset.href}?colour=${encodeURIComponent(dot.dataset.colour)}`; };
+      // Colour dots on cards (listing, home, Categories in Focus): show that colour's photo on the card.
+      const showColour = (dot) => {
+        const card = dot.closest('.as-card, .as-focus-card');
+        const img = card && card.querySelector('.as-card-media img, .as-focus-img img');
+        if (img) { img.src = dot.dataset.colourImage; img.removeAttribute('srcset'); }
+        dot.parentElement.querySelectorAll('[data-colour-image]').forEach((d) => {
+          const on = d === dot;
+          d.classList.toggle('is-active', on);
+          d.setAttribute('aria-pressed', on ? 'true' : 'false');
+        });
+        const map = card && card.dataset.colourSkus ? JSON.parse(card.dataset.colourSkus) : null;
+        const skus = map && map[dot.dataset.colour];
+        if (skus) card.querySelectorAll('[data-quick-add]').forEach((b) => { b.dataset.sku = skus[b.textContent.trim()] || ''; });
+      };
       document.addEventListener('click', (e) => {
-        const dot = e.target.closest('[data-colour][data-href]');
+        const dot = e.target.closest('[data-colour-image]');
         if (!dot) return;
         e.preventDefault();
         e.stopPropagation();
-        openInColour(dot);
+        showColour(dot);
       });
       document.addEventListener('keydown', (e) => {
-        if (e.key !== 'Enter') return;
-        const dot = e.target.closest && e.target.closest('[data-colour][data-href]');
+        if (e.key !== 'Enter' && e.key !== ' ') return;
+        const dot = e.target.closest && e.target.closest('[data-colour-image]');
         if (!dot) return;
         e.preventDefault();
-        openInColour(dot);
+        showColour(dot);
       });
     </script>
     <script>

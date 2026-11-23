@@ -6,9 +6,11 @@
 const { product } = Astro.props;
 const price = `PKR ${product.price_pkr.toLocaleString('en-PK')}`;
 const firstColor = product.colors[0];
+// SKU per colour and size, so quick-add follows the colour shown on the card.
+const skusByColour = Object.fromEntries(product.colors.map((c) => [c.name, Object.fromEntries(product.variants.filter((v) => v.color === c.name).map((v) => [v.size, v.sku]))]));
 ---
 
-<article class="as-card">
+<article class="as-card" data-colour-skus={JSON.stringify(skusByColour)}>
   <a class="as-card-media" href={`/product/${product.slug}`} aria-label={product.name}>
     {product.badge && (
       <span class:list={['as-badge', { 'as-badge--clay': product.badge === 'LIMITED' }]}>{product.badge}</span>
@@ -39,7 +41,7 @@ const firstColor = product.colors[0];
     <div class="as-card-meta">
       <span class="as-price">{price}</span>
       <span class="as-card-colors" aria-label={`${product.colors.length} colours`}>
-        {product.colors.map((c) => <i style={`background:${c.hex}`} title={c.name} data-colour={c.name} data-href={`/product/${product.slug}`} role="link" tabindex="0" aria-label={`${c.name}: open in this colour`}></i>)}
+        {product.colors.map((c, i) => <i style={`background:${c.hex}`} title={c.name} data-colour-image={c.image || product.images[0]} data-colour={c.name} role="button" tabindex="0" aria-label={`Show ${c.name}`} aria-pressed={i === 0 ? 'true' : 'false'} class:list={['as-dot', { 'is-active': i === 0 }]}></i>)}
       </span>
     </div>
   </div>
