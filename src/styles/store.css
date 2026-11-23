@@ -558,7 +558,7 @@ html.hdr-hidden .as-filterbar { top: 0; }
 }
 @media (max-width: 640px) {
   .as-grid { grid-template-columns: repeat(2, 1fr); gap: var(--as-s5) var(--as-s3); }
-  .as-rail-track > * { flex-basis: calc((100% - var(--as-s5)) / 2); }
+  .as-rail-track > * { flex-basis: 74%; }
   .as-footer-cols { grid-template-columns: 1fr 1fr; gap: var(--as-s6); }
   .as-stickybar.is-on { display: flex; align-items: center; justify-content: space-between; gap: var(--as-s4); }
   .as-hero-actions { flex-direction: column; gap: var(--as-s4); }
@@ -1003,10 +1003,6 @@ main:has(> .as-home-hero) { overflow-x: clip; }
   .as-denim-actions .as-btn { flex: 1 1 calc(50% - var(--as-s3)); }
 }
 
-/* Phone denim rail: one large card per screen, next card peeks in. */
-@media (max-width: 640px) {
-  .as-denim-rail .as-rail-track > * { flex-basis: 74%; }
-}
 
 /* ---------- Category (PLP) toolbar: one compact sticky row, filter panel opens below it ---------- */
 .as-plp-body { position: relative; }
