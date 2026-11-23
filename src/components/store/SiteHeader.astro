@@ -125,8 +125,9 @@ const megaFeature = {
     const y = window.scrollY;
     const open = header.classList.contains('is-open');
     header.classList.toggle('is-solid', !hasHero || y > 40 || open);
-    if (open || y <= 40 || y > lastY + 2) header.classList.remove('is-hidden');
-    else if (y < lastY - 2) header.classList.add('is-hidden');
+    // Scrolling down hides the header; scrolling up brings it back.
+    if (open || y <= 40 || y < lastY - 2) header.classList.remove('is-hidden');
+    else if (y > lastY + 2) header.classList.add('is-hidden');
     if (Math.abs(y - lastY) > 2) lastY = y;
     document.documentElement.classList.toggle('hdr-hidden', header.classList.contains('is-hidden'));
   };
