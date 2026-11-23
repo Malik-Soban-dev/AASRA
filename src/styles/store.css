@@ -295,10 +295,12 @@ ul, ol { list-style: none; }
 .as-edit-label { position: absolute; z-index: 2; left: var(--as-s5); bottom: var(--as-s5); color: var(--as-paper); }
 .as-edit-label h3 { font-family: var(--as-display); font-size: 1.9rem; font-weight: 450; margin: 0.35rem 0 0.65rem; }
 .as-edit-label .as-kicker { color: rgba(255, 255, 255, 0.8); }
-.as-tile-a { grid-column: span 7; aspect-ratio: 4 / 5; }
-.as-tile-b { grid-column: span 5; aspect-ratio: 4 / 3; align-self: end; }
-.as-tile-c { grid-column: 6 / span 5; aspect-ratio: 16 / 10; margin-top: var(--as-s7); }
-.as-tile-d { grid-column: 1 / span 5; aspect-ratio: 4 / 5; }
+/* Collection tiles: two full rows, no gaps. Row 1 = a (sets height) + b (stretches). Row 2 = e (sets height) + f (stretches). A lone third tile spans the row. */
+.as-tile-a { grid-column: 1 / span 7; aspect-ratio: 4 / 5; }
+.as-tile-b { grid-column: 8 / span 5; }
+.as-tile-e { grid-column: 1 / span 5; aspect-ratio: 4 / 5; }
+.as-tile-f { grid-column: 6 / span 7; }
+.as-tile-full { grid-column: 1 / -1; aspect-ratio: 16 / 7; }
 
 /* ---------- product card & rail ---------- */
 .as-card { position: relative; }
@@ -547,7 +549,7 @@ html.hdr-hidden .as-filterbar { top: 0; }
   .as-hero-panel:hover { flex-grow: 1; }
   .as-hero-copy { position: absolute; inset: 0; }
   .as-edit-grid { display: flex; flex-direction: column; }
-  .as-tile-a, .as-tile-b, .as-tile-c, .as-tile-d { aspect-ratio: 4 / 5; margin: 0; }
+  .as-tile-a, .as-tile-b, .as-tile-e, .as-tile-f, .as-tile-full { aspect-ratio: 4 / 5; margin: 0; }
   .as-look { grid-template-columns: 1fr; }
   .as-pdp { grid-template-columns: 1fr; padding-top: var(--as-s4); }
   .as-pdp-info, .as-thumbs { position: static; }
