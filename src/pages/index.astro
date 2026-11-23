@@ -6,6 +6,7 @@
  * Styles: .as-home-*, .as-tiles, .as-labels (store.css).
  */
 import StoreLayout from '../components/layout/StoreLayout.astro';
+import ProductCard from '../components/store/ProductCard.astro';
 import ProductRail from '../components/store/ProductRail.astro';
 import { newArrivals, categoryProducts, categories, categoryLabel } from '../lib/catalog.js';
 import site from '../../data/catalog/site.json';
@@ -20,18 +21,14 @@ const collections = [
   { title: 'Knitwear', kicker: 'Men', href: '/men/knitwear', imgs: ['/images/garments/m-crew-charcoal.jpg', '/images/garments/m-shirt-slate.jpg'], alt: 'Charcoal knit and slate shirt' },
 ];
 
-// Category grid: every category per gender, labelled, with the first product photo.
-const fallback = '/images/garments/w-kurta-ivory.jpg';
-const labelTiles = ['women', 'men'].flatMap((gender) =>
-  (categories[gender] || []).filter((c) => c.category !== 'new-in').map((c) => {
-    const first = categoryProducts(gender, c.category)[0];
-    return {
-      gender,
-      label: categoryLabel(gender, c.category),
-      href: `/${gender}/${c.category}`,
-      img: first?.images?.[0] || fallback,
-    };
-  })
+// Categories in Focus: each category with its products (a row of cards on the right).
+const focusGroups = ['women', 'men'].flatMap((gender) =>
+  (categories[gender] || []).filter((c) => c.category !== 'new-in').map((c) => ({
+    key: `${gender}-${c.category}`,
+    gender,
+    label: categoryLabel(gender, c.category),
+    products: categoryProducts(gender, c.category).slice(0, 10),
+  }))
 );
 ---
 
@@ -71,26 +68,50 @@ const labelTiles = ['women', 'men'].flatMap((gender) =>
     </ul>
   </section>
 
-  <section class="as-home-section container" aria-labelledby="labels-title">
-    <div class="as-home-head">
-      <div>
-        <p class="as-kicker">Shop by category</p>
-        <h2 class="as-h2" id="labels-title">Women and men</h2>
+  <section class="as-focus container" aria-labelledby="focus-title">
+    <h2 class="as-h2 as-focus-title" id="focus-title">Categories in Focus</h2>
+    <div class="as-focus-body">
+      <nav class="as-focus-list" aria-label="Categories">
+        <ul role="list">
+          {focusGroups.map((g, i) => (
+            <li>
+              <button type="button" class:list={['as-focus-link', { 'is-active': i === 0 }]} data-focus={g.key} aria-pressed={i === 0 ? 'true' : 'false'}>
+                {g.label}
+                <span>{g.gender === 'women' ? 'Women' : 'Men'}</span>
+              </button>
+            </li>
+          ))}
+        </ul>
+      </nav>
+      <div class="as-focus-panels">
+        {focusGroups.map((g, i) => (
+          <div class="as-focus-panel" data-focus-panel={g.key} hidden={i !== 0}>
+            <div class="as-focus-track">
+              {g.products.map((p) => (
+                <div class="as-focus-card"><ProductCard product={p} /></div>
+              ))}
+            </div>
+          </div>
+        ))}
       </div>
-      <a class="as-link" href="/shop">Shop all</a>
     </div>
-    <ul class="as-labels" role="list">
-      {labelTiles.map((t) => (
-        <li class="as-reveal">
-          <a class="as-label" href={t.href}>
-            <span class="as-label-img"><img src={t.img} alt="" loading="lazy" width="600" height="800" /></span>
-            <span class="as-label-name">{t.label}</span>
-            <span class="as-label-gender">{t.gender === 'women' ? 'Women' : 'Men'}</span>
-          </a>
-        </li>
-      ))}
-    </ul>
   </section>
+
+  <script>
+    document.querySelectorAll('[data-focus]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const key = btn.dataset.focus;
+        document.querySelectorAll('[data-focus]').forEach((b) => {
+          const on = b === btn;
+          b.classList.toggle('is-active', on);
+          b.setAttribute('aria-pressed', on ? 'true' : 'false');
+        });
+        document.querySelectorAll('[data-focus-panel]').forEach((panel) => {
+          panel.hidden = panel.dataset.focusPanel !== key;
+        });
+      });
+    });
+  </script>
 
   <ProductRail
     class="as-home-rail"
