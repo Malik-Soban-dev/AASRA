@@ -881,3 +881,8 @@ main table { display: block; max-width: 100%; overflow-x: auto; }
 @media (max-width: 720px) {
   .as-labels > li:last-child:nth-child(odd) { grid-column: span 2; }
 }
+
+/* Home: the hero stays in place and the sections slide over it (parallax reveal). */
+.as-home-hero { position: sticky; top: 0; z-index: 0; }
+.as-home-hero ~ * { position: relative; z-index: 1; background: var(--as-paper); box-shadow: 0 0 0 100vmax var(--as-paper); clip-path: inset(0 -100vmax); }
+main:has(> .as-home-hero) { overflow-x: clip; }
