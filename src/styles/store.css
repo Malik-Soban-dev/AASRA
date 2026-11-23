@@ -947,9 +947,18 @@ main:has(> .as-home-hero) { overflow-x: clip; }
 /* Phone full-screen pass: the home hero and each collection tile fill one screen
    height, including their copy. Overrides the 600px rules above. */
 @media (max-width: 720px) {
-  .as-home-hero { height: 100vh; height: 100svh; min-height: 0; display: flex; flex-direction: column; }
-  .as-home-hero-media { flex: 1 1 auto; min-height: 0; }
-  .as-home-hero-copy { flex: none; }
+  /* Hero: the photo fills the whole phone screen; copy sits over its lower part. */
+  .as-home-hero { position: relative; height: 100vh; height: 100svh; min-height: 0; display: block; background: var(--as-ink); color: var(--as-paper); overflow: hidden; }
+  .as-home-hero-media { position: absolute; inset: 0; }
+  .as-home-hero-media img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center 30%; }
+  .as-home-hero-media::after { background: linear-gradient(180deg, rgba(17, 17, 17, 0.35) 0%, rgba(17, 17, 17, 0) 30%, rgba(17, 17, 17, 0) 45%, rgba(17, 17, 17, 0.82) 100%); }
+  .as-home-hero-copy { position: absolute; left: 0; right: 0; bottom: 0; z-index: 1; max-width: none; padding: var(--as-s6) var(--as-gutter) var(--as-s8); }
+  .as-home-hero .as-kicker { color: rgba(255, 255, 255, 0.85); }
+  .as-home-hero .as-home-title { color: var(--as-paper); }
+  .as-home-hero .as-home-lede { color: var(--as-paper); }
+  .as-home-hero .as-btn--solid { background: var(--as-paper); color: var(--as-ink); border-color: var(--as-paper); }
+  .as-home-hero .as-home-men { color: var(--as-paper); border-color: rgba(255, 255, 255, 0.8); }
+  .as-home-hero .as-home-men:hover { background: var(--as-paper); color: var(--as-ink); }
   .as-home-section { padding: 0; }
   .as-tiles { gap: 0; margin: 0; }
   .as-tiles > li { height: 100vh; height: 100svh; }
