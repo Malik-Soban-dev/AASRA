@@ -38,6 +38,28 @@ const {
     </main>
     <SiteFooter />
 
+    <!-- Added-to-bag confirmation: slides in after an add, like the reference's cart drawer -->
+    <aside class="as-added" id="as-added" role="dialog" aria-modal="false" aria-labelledby="as-added-title" aria-hidden="true" inert>
+      <div class="as-added-head">
+        <h2 id="as-added-title">Item added to your cart</h2>
+        <button type="button" class="as-icon-btn" id="as-added-close" aria-label="Close">
+          <svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18" /></svg>
+        </button>
+      </div>
+      <div class="as-added-item">
+        <img id="as-added-img" src="" alt="" width="96" height="120" />
+        <div>
+          <p class="as-added-name" id="as-added-name"></p>
+          <p class="as-added-meta" id="as-added-meta"></p>
+        </div>
+      </div>
+      <div class="as-added-actions">
+        <a class="as-btn as-btn--solid" href="/cart">View cart</a>
+        <a class="as-btn as-btn--outline" href="/checkout">Check out</a>
+        <button type="button" class="as-added-continue" id="as-added-continue">Continue shopping</button>
+      </div>
+    </aside>
+
     <script>
       // CSRF shim — same contract as the legacy Layout (__AASRA_CSRF).
       (() => {
@@ -81,11 +103,34 @@ const {
           localStorage.setItem(KEY, JSON.stringify(cart));
           window.dispatchEvent(new Event('aasra:cart'));
         };
+        const panel = document.getElementById('as-added');
+        const showAdded = (name, price, image) => {
+          if (!panel) return;
+          document.getElementById('as-added-name').textContent = name;
+          document.getElementById('as-added-meta').textContent = `PKR ${Number(price).toLocaleString('en-PK')} · 1 in your bag`;
+          const img = document.getElementById('as-added-img');
+          img.src = image || '/images/placeholder.svg';
+          img.alt = name;
+          panel.classList.add('is-open');
+          panel.removeAttribute('inert');
+          panel.setAttribute('aria-hidden', 'false');
+          document.getElementById('as-added-continue')?.focus();
+        };
+        const hideAdded = () => {
+          if (!panel) return;
+          panel.classList.remove('is-open');
+          panel.setAttribute('inert', '');
+          panel.setAttribute('aria-hidden', 'true');
+        };
+        document.getElementById('as-added-close')?.addEventListener('click', hideAdded);
+        document.getElementById('as-added-continue')?.addEventListener('click', hideAdded);
+        document.addEventListener('keydown', (e) => { if (e.key === 'Escape') hideAdded(); });
         window.__aasra_addToCart = (sku, name, price, qty = 1, image = '') => {
           const cart = read();
           const hit = cart.find((i) => i.sku === sku);
           if (hit) hit.qty += qty; else cart.push({ sku, name, price, qty, image });
           write(cart);
+          showAdded(name, price, image);
         };
         window.addEventListener('aasra:cart:clear', () => write([]));
         // Same contract as the legacy CartDrawer, so bag pages work on the store layout.
