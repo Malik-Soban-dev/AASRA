@@ -1188,3 +1188,21 @@ html.hdr-hidden .as-plp-toolbar { top: 0; }
   .as-cat-strip li { flex: 0 0 62vw; scroll-snap-align: start; }
   .as-foot-feature { height: 70vh; }
 }
+
+/* Product photos: phone slider. Swipe between photos; dots show position. Desktop keeps the two-column grid. */
+.as-pdp-dots { display: none; }
+.as-pdp-dot {
+  width: 28px; height: 2px; padding: 10px 0; background: rgba(17, 17, 17, 0.22); background-clip: content-box;
+  transition: background var(--as-med) var(--as-ease);
+}
+.as-pdp-dot.is-active { background: var(--as-ink); background-clip: content-box; }
+@media (max-width: 860px) {
+  .as-pdp-gallery {
+    display: flex; min-width: 0; gap: 10px; overflow-x: auto; overscroll-behavior-x: contain;
+    scroll-snap-type: x mandatory; scrollbar-width: none;
+  }
+  .as-pdp-gallery::-webkit-scrollbar { display: none; }
+  .as-pdp-gallery .as-pdp-fig { flex: 0 0 84%; scroll-snap-align: start; }
+  .as-pdp-gallery .as-pdp-fig:last-of-type:nth-of-type(odd) img { aspect-ratio: 3 / 4; }
+  .as-pdp-dots { display: flex; justify-content: center; gap: 6px; margin-top: var(--as-s3); }
+}
