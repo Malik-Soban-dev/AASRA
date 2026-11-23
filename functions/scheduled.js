@@ -11,7 +11,7 @@
  * VERIFY: actual intervals (N1, N2, N days) and gateway reconciliation endpoint.
  */
 
-import { reconcilePendingPayments } from '../lib/reconcile.js';
+import { reconcilePendingPayments } from './lib/reconcile.js';
 
 // The daily job (reminders, auto-cancel, stock release) must only run once a day.
 const DAILY_CRON = '0 9 * * *';
