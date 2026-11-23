@@ -181,6 +181,10 @@ const images = product.images.length > 1 ? product.images : [product.images[0], 
       });
     });
 
+    // Colour chosen on a card (?colour=Clay) opens with that colour preselected.
+    const presetColour = new URLSearchParams(location.search).get('colour');
+    if (presetColour) document.querySelector(`.as-swatch[data-color="${CSS.escape(presetColour)}"]`)?.click();
+
     document.querySelectorAll('#as-size-row .as-size').forEach((btn) => {
       btn.addEventListener('click', () => {
         size = btn.dataset.size;

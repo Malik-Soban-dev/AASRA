@@ -94,6 +94,24 @@ const {
       })();
     </script>
     <script>
+      // Colour dots on cards (listing, home, Categories in Focus) open the product in that colour.
+      const openInColour = (dot) => { location.href = `${dot.dataset.href}?colour=${encodeURIComponent(dot.dataset.colour)}`; };
+      document.addEventListener('click', (e) => {
+        const dot = e.target.closest('[data-colour][data-href]');
+        if (!dot) return;
+        e.preventDefault();
+        e.stopPropagation();
+        openInColour(dot);
+      });
+      document.addEventListener('keydown', (e) => {
+        if (e.key !== 'Enter') return;
+        const dot = e.target.closest && e.target.closest('[data-colour][data-href]');
+        if (!dot) return;
+        e.preventDefault();
+        openInColour(dot);
+      });
+    </script>
+    <script>
       // Cart shim — same contract as the legacy CartDrawer:
       // localStorage aasra_cart_v1 = [{ sku, name, price, qty, image }]
       (() => {
