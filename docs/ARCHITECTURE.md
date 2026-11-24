@@ -1,5 +1,7 @@
 # AASRA Store — Architecture
 
+> **Start here:** `docs/PLAYBOOK.md` is the full guide (setup, recipes, navigation, payments, deploy, pitfalls). This file is the short reference for the data model and routes.
+
 Fashion e-commerce (women + men, sub-categories) on the existing AASRA stack:
 Astro static pages → Cloudflare Workers (static + API) → D1, Safepay/PayFast.
 No admin dashboard exists: **the catalog is edited as plain JSON files** (below).
@@ -22,7 +24,9 @@ src/styles/store.css          ← the system styles (uses tokens only)
 
 src/pages/index.astro         ← home (runway hero, the edit, new-in rail, campaign)
 src/pages/[gender]/index.astro        ← women/ men landing
-src/pages/[gender]/[category].astro   ← PLP incl. "new-in" pseudo-category
+src/pages/[gender]/[category]/index.astro ← category + "new-in" PLP
+src/pages/[gender]/[category]/[sub].astro ← sub-category PLP
+src/components/store/CategoryPage.astro   ← the PLP body both pages render
 src/pages/product/[slug].astro        ← PDP
 
 src/lib/catalog.js            ← reads data/products.json (single source at runtime)
@@ -45,6 +49,10 @@ Product (in category files — keep them small and readable):
   "description": "…", "details": ["…"], "fabric": "…", "care": "…"
 }
 ```
+
+Category files may also declare sub-categories (`"subcategories": [{ "key": "boots", "label": "Boots" }]`).
+Each product in such a category must set `"subcategory": "<key>"`; the build fails otherwise.
+`deposit_eligible` is a legacy field: deposits were removed (see PLAYBOOK §11).
 
 `npm run catalog:build` expands `sizes × colors` into `variants[{sku,size,color,stock_key}]`
 (`AS-W001-IVO-XS`) and writes the generated aggregate. It runs automatically
@@ -73,6 +81,8 @@ and order APIs key off `sku`/`stock_key`, unchanged from the previous system.
 | `/women`, `/men` | Gender landing | catalog + category tiles |
 | `/women/new-in`, `/men/new-in` | New-in PLP | products with `badge: "NEW"` |
 | `/women/dresses`, `/men/shirts`, … | PLP | category file |
+| `/women/footwear/boots`, `/men/knitwear/cable-knit`, … | Sub-category PLP | category file `subcategories` |
+| `/shop?category=…&type=…&q=…&sort=…` | Shop | all products; filters applied in the browser (static site) |
 | `/product/<slug>` | PDP | product lookup |
 
 Legacy pages (`/shop`, `/gifts`, old `/product/*` slugs from the home-goods

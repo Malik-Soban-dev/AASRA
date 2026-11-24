@@ -61,9 +61,9 @@ Design reference: https://shop.brunellocucinelli.com (layout and feel only — n
 | Currency | PKR (whole rupees, no floats) |
 | Countries served | Pakistan only |
 | Cash on Delivery | Not accepted |
-| Payment options | Pay in full online, or deposit + balance online |
-| Deposit percentage | 30% of order total (deposit-eligible products only) |
-| Balance deadline | 7 days from deposit; auto-cancel if unpaid |
+| Payment options | Pay in full online only (deposits removed) |
+| Deposit percentage | Not used (deposits removed) |
+| Balance deadline | Not used (deposits removed) |
 | Stock reservation hold | 15 minutes at checkout |
 | Free shipping threshold | 20,000 PKR |
 | Courier | TCS (Pakistan) |
@@ -190,8 +190,8 @@ npm run deploy       # npx wrangler deploy
 4. Browser redirects to the gateway. The **webhook** (not the redirect) is the source of truth.
 5. `POST /api/webhook` verifies the signature on the raw body, matches tracker + amount, is idempotent, marks payment paid, updates order state, confirms stock reservation, emails customer.
 
-### Deposit orders
-Two payments per order: deposit then balance. `POST /api/pay-balance` creates the second session using the unguessable `balance_token`. Ship only when paid in full.
+### Deposit orders (removed)
+Deposits were removed: checkout accepts only `payment_type=full`. `POST /api/pay-balance` and its page still exist in code but are not linked; `src/pages/pay-balance.astro` reads its parameters at build time and needs a decision before use. See `docs/PLAYBOOK.md` §11.
 
 ### Order lookup
 `GET /api/order-lookup?order_id=...&phone=...` — requires both order ID and phone. Returns only that customer's own order; no exposure of other customers' data.
