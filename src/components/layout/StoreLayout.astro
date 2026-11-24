@@ -5,6 +5,7 @@
  */
 import SiteHeader from '../store/SiteHeader.astro';
 import SiteFooter from '../store/SiteFooter.astro';
+import { ClientRouter } from 'astro:transitions';
 import '../../styles/tokens.css';
 import '../../styles/store.css';
 
@@ -12,6 +13,7 @@ const {
   title = 'AASRA — Slow made, in Pakistan',
   description = 'Handloom clothing for women and men, made slowly in Pakistan.',
   snap = false,
+  spa = false,
 } = Astro.props;
 ---
 
@@ -29,6 +31,7 @@ const {
       rel="stylesheet"
     />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    {spa && <ClientRouter fallback="swap" />}
   </head>
   <body>
     <div class="as-progress" id="as-progress" aria-hidden="true"></div>
@@ -39,7 +42,7 @@ const {
     <SiteFooter />
 
     <!-- Added-to-bag confirmation: slides in after an add, like the reference's cart drawer -->
-    <aside class="as-added" id="as-added" role="dialog" aria-modal="false" aria-labelledby="as-added-title" aria-hidden="true" inert>
+    <aside class="as-added" id="as-added" transition:persist role="dialog" aria-modal="false" aria-labelledby="as-added-title" aria-hidden="true" inert>
       <div class="as-added-head">
         <h2 id="as-added-title">Item added to your cart</h2>
         <button type="button" class="as-icon-btn" id="as-added-close" aria-label="Close">
@@ -178,9 +181,9 @@ const {
         };
       })();
 
-      // Reveal on scroll (design system §6), staggered via [data-stagger].
-      (() => {
-        const targets = document.querySelectorAll('.as-reveal');
+      // Reveal on scroll (design system §6), staggered via [data-stagger]. Runs on each page, including after client-side navigation.
+      const initReveal = () => {
+        const targets = document.querySelectorAll('.as-reveal:not(.is-in)');
         if (!('IntersectionObserver' in window)) {
           targets.forEach((t) => t.classList.add('is-in'));
           return;
@@ -197,42 +200,40 @@ const {
         document.querySelectorAll('[data-stagger]').forEach((group) => {
           [...group.children].forEach((child, i) => child.style.setProperty('--i', i));
         });
-      })();
+      };
+      initReveal();
+      document.addEventListener('astro:page-load', initReveal);
 
-      // Cursor parallax for hero panels (±10px) and scroll parallax for campaign banners.
-      (() => {
-        if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-        const campaigns = document.querySelectorAll('.as-campaign > img');
-        if (campaigns.length) {
-          const onScroll = () => {
-            campaigns.forEach((img) => {
-              const r = img.parentElement.getBoundingClientRect();
-              const progress = (r.top + r.height / 2 - innerHeight / 2) / innerHeight;
-              img.style.transform = `translateY(${progress * -40}px)`;
-            });
-          };
-          window.addEventListener('scroll', onScroll, { passive: true });
-          onScroll();
-        }
-      })();
+      // Scroll parallax for campaign banners. One page-level listener that finds the banners on each scroll.
+      if (!matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        window.addEventListener('scroll', () => {
+          document.querySelectorAll('.as-campaign > img').forEach((img) => {
+            const r = img.parentElement.getBoundingClientRect();
+            const progress = (r.top + r.height / 2 - innerHeight / 2) / innerHeight;
+            img.style.transform = `translateY(${progress * -40}px)`;
+          });
+        }, { passive: true });
+      }
 
       // Scrollable tables must be keyboard-reachable (axe: scrollable-region-focusable).
-      (() => {
+      const initTables = () => {
         document.querySelectorAll('main table').forEach((t) => {
           if (t.scrollWidth > t.clientWidth) { t.tabIndex = 0; t.setAttribute('role', 'region'); t.setAttribute('aria-label', 'Table, scroll sideways to see more'); }
         });
-      })();
-      // Scroll progress line (clay), tracks document scroll position.
-      (() => {
+      };
+      initTables();
+      document.addEventListener('astro:page-load', initTables);
+
+      // Scroll progress line (clay). Looked up on each update, so it keeps working after client-side navigation.
+      const updateProgress = () => {
         const bar = document.getElementById('as-progress');
         if (!bar) return;
-        const update = () => {
-          const max = document.documentElement.scrollHeight - innerHeight;
-          bar.style.width = (max > 0 ? (scrollY / max) * 100 : 0) + '%';
-        };
-        window.addEventListener('scroll', update, { passive: true });
-        update();
-      })();
+        const max = document.documentElement.scrollHeight - innerHeight;
+        bar.style.width = (max > 0 ? (scrollY / max) * 100 : 0) + '%';
+      };
+      window.addEventListener('scroll', updateProgress, { passive: true });
+      document.addEventListener('astro:page-load', updateProgress);
+      updateProgress();
     </script>
   </body>
 </html>

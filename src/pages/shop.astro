@@ -29,7 +29,7 @@ for (const gender of ['women', 'men']) {
 const label = (cat) => cat.charAt(0).toUpperCase() + cat.slice(1).replace('-', ' ');
 ---
 
-<StoreLayout title="Shop — AASRA" description="Browse the AASRA collection: handloom women's and men's clothing, made slowly in Pakistan. PKR.">
+<StoreLayout spa title="Shop — AASRA" description="Browse the AASRA collection: handloom women's and men's clothing, made slowly in Pakistan. PKR.">
   <div class="container">
     <nav class="as-breadcrumb" aria-label="Breadcrumb">
       <a href="/">Home</a><span>/</span>
@@ -88,18 +88,11 @@ const label = (cat) => cat.charAt(0).toUpperCase() + cat.slice(1).replace('-', '
   </div>
 
   <script>
-    const grid = document.getElementById('as-grid');
-    const items = grid ? [...grid.querySelectorAll('.as-grid-item')] : [];
-    const empty = document.getElementById('as-empty');
-    const heading = document.getElementById('as-heading');
-    const countHead = document.getElementById('as-count-head');
-    const countItems = document.getElementById('as-count-items');
-    const sortSel = document.getElementById('sort-select');
-    const chips = [...document.querySelectorAll('.as-subcats .as-chip[data-cat]')];
-
+    // Shop: category, type, search and sort are read from the URL and applied in the browser.
+    // Re-initialised on each client-side navigation; the back button re-applies the URL.
+    let cleanupShop = null;
     const plural = (n, one, many) => `${n} ${n === 1 ? one : many}`;
-
-    function readState() {
+    const readState = () => {
       const u = new URL(window.location.href);
       return {
         cat: u.searchParams.get('category') || '',
@@ -107,104 +100,129 @@ const label = (cat) => cat.charAt(0).toUpperCase() + cat.slice(1).replace('-', '
         sort: u.searchParams.get('sort') || '',
         type: u.searchParams.get('type') || '',
       };
-    }
+    };
 
-    function apply() {
-      if (!grid) return;
-      const s = readState();
-      const needle = s.q.toLowerCase();
+    const initShop = () => {
+      const grid = document.getElementById('as-grid');
+      if (!grid) return () => {};
+      const items = [...grid.querySelectorAll('.as-grid-item')];
+      const empty = document.getElementById('as-empty');
+      const heading = document.getElementById('as-heading');
+      const countHead = document.getElementById('as-count-head');
+      const countItems = document.getElementById('as-count-items');
+      const sortSel = document.getElementById('sort-select');
+      const chips = [...document.querySelectorAll('.as-subcats .as-chip[data-cat]')];
 
-      const shown = items.filter(
-        (el) =>
-          (!s.cat || el.dataset.cat === s.cat) &&
-          (!s.type || el.dataset.sub === s.type) &&
-          (!needle || el.dataset.search.includes(needle))
-      );
+      const apply = () => {
+        const s = readState();
+        const needle = s.q.toLowerCase();
 
-      let ordered = items.slice();
-      if (s.sort === 'price-asc') ordered.sort((a, b) => Number(a.dataset.price) - Number(b.dataset.price));
-      else if (s.sort === 'price-desc') ordered.sort((a, b) => Number(b.dataset.price) - Number(a.dataset.price));
-      else if (s.sort === 'name') ordered.sort((a, b) => a.dataset.name.localeCompare(b.dataset.name));
+        const shown = items.filter(
+          (el) =>
+            (!s.cat || el.dataset.cat === s.cat) &&
+            (!s.type || el.dataset.sub === s.type) &&
+            (!needle || el.dataset.search.includes(needle))
+        );
 
-      const visibleSet = new Set(shown);
-      ordered.forEach((el) => {
-        grid.insertBefore(el, empty);
-        el.style.display = visibleSet.has(el) ? '' : 'none';
-      });
+        const ordered = items.slice();
+        if (s.sort === 'price-asc') ordered.sort((a, b) => Number(a.dataset.price) - Number(b.dataset.price));
+        else if (s.sort === 'price-desc') ordered.sort((a, b) => Number(b.dataset.price) - Number(a.dataset.price));
+        else if (s.sort === 'name') ordered.sort((a, b) => a.dataset.name.localeCompare(b.dataset.name));
 
-      const n = shown.length;
-      if (heading) heading.textContent = needle ? `Results for “${s.q}”` : 'Shop';
-      if (countHead) countHead.textContent = `The collection · ${plural(n, 'piece', 'pieces')}`;
-      if (countItems) countItems.textContent = plural(n, 'item', 'items');
-      if (empty) empty.style.display = n === 0 ? '' : 'none';
+        const visibleSet = new Set(shown);
+        ordered.forEach((el) => {
+          grid.insertBefore(el, empty);
+          el.style.display = visibleSet.has(el) ? '' : 'none';
+        });
 
-      chips.forEach((c) => {
-        const on = c.dataset.cat === s.cat;
-        c.classList.toggle('is-active', on);
-        if (on) c.setAttribute('aria-current', 'page');
-        else c.removeAttribute('aria-current');
-      });
-      const allChip = document.querySelector('.as-subcats .as-chip[data-cat=""]');
-      if (allChip) {
-        const on = !s.cat;
-        allChip.classList.toggle('is-active', on);
-        if (on) allChip.setAttribute('aria-current', 'page');
-        else allChip.removeAttribute('aria-current');
-      }
-      document.querySelectorAll('[data-subrow]').forEach((row) => {
-        const open = row.dataset.subrow === s.cat;
-        row.style.display = open ? '' : 'none';
-        row.querySelectorAll('.as-chip').forEach((c) => {
-          const on = (c.dataset.sub || '') === (open ? s.type : '');
+        const n = shown.length;
+        if (heading) heading.textContent = needle ? `Results for “${s.q}”` : 'Shop';
+        if (countHead) countHead.textContent = `The collection · ${plural(n, 'piece', 'pieces')}`;
+        if (countItems) countItems.textContent = plural(n, 'item', 'items');
+        if (empty) empty.style.display = n === 0 ? '' : 'none';
+
+        chips.forEach((c) => {
+          const on = c.dataset.cat === s.cat;
           c.classList.toggle('is-active', on);
           if (on) c.setAttribute('aria-current', 'page');
           else c.removeAttribute('aria-current');
         });
-      });
-      if (sortSel) sortSel.value = s.sort;
-    }
+        const allChip = document.querySelector('.as-subcats .as-chip[data-cat=""]');
+        if (allChip) {
+          const on = !s.cat;
+          allChip.classList.toggle('is-active', on);
+          if (on) allChip.setAttribute('aria-current', 'page');
+          else allChip.removeAttribute('aria-current');
+        }
+        document.querySelectorAll('[data-subrow]').forEach((row) => {
+          const open = row.dataset.subrow === s.cat;
+          row.style.display = open ? '' : 'none';
+          row.querySelectorAll('.as-chip').forEach((c) => {
+            const on = (c.dataset.sub || '') === (open ? s.type : '');
+            c.classList.toggle('is-active', on);
+            if (on) c.setAttribute('aria-current', 'page');
+            else c.removeAttribute('aria-current');
+          });
+        });
+        if (sortSel) sortSel.value = s.sort;
+      };
 
-    function go(mutate) {
-      const u = new URL(window.location.href);
-      mutate(u.searchParams);
-      history.pushState({}, '', u.toString());
+      const go = (mutate) => {
+        const u = new URL(window.location.href);
+        mutate(u.searchParams);
+        history.pushState({}, '', u.toString());
+        apply();
+      };
+
+      const onClickCat = [];
+      document.querySelectorAll('.as-subcats .as-chip[data-cat]').forEach((a) => {
+        const handler = (e) => {
+          if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return;
+          e.preventDefault();
+          const cat = a.dataset.cat;
+          go((sp) => {
+            sp.delete('type');
+            if (cat) sp.set('category', cat);
+            else sp.delete('category');
+          });
+        };
+        a.addEventListener('click', handler);
+        onClickCat.push([a, handler]);
+      });
+
+      document.querySelectorAll('.as-subcats--types .as-chip[data-sub]').forEach((a) => {
+        a.addEventListener('click', (e) => {
+          if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return;
+          e.preventDefault();
+          const sub = a.dataset.sub;
+          go((sp) => {
+            if (sub) sp.set('type', sub);
+            else sp.delete('type');
+          });
+        });
+      });
+
+      const onSort = (e) => {
+        const value = e.target.value;
+        go((sp) => {
+          if (value) sp.set('sort', value);
+          else sp.delete('sort');
+        });
+      };
+      sortSel?.addEventListener('change', onSort);
+
+      const onPop = () => apply();
+      window.addEventListener('popstate', onPop);
+
       apply();
-    }
+      return () => {
+        window.removeEventListener('popstate', onPop);
+        onClickCat.forEach(([a, h]) => a.removeEventListener('click', h));
+      };
+    };
 
-    document.querySelectorAll('.as-subcats .as-chip[data-cat]').forEach((a) => {
-      a.addEventListener('click', (e) => {
-        if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return;
-        e.preventDefault();
-        const cat = a.dataset.cat;
-        go((sp) => {
-          sp.delete('type');
-          if (cat) sp.set('category', cat);
-          else sp.delete('category');
-        });
-      });
-    });
-
-    document.querySelectorAll('.as-subcats--types .as-chip[data-sub]').forEach((a) => {
-      a.addEventListener('click', (e) => {
-        if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return;
-        e.preventDefault();
-        const sub = a.dataset.sub;
-        go((sp) => {
-          if (sub) sp.set('type', sub);
-          else sp.delete('type');
-        });
-      });
-    });
-
-    sortSel?.addEventListener('change', (e) => {
-      const value = e.target.value;
-      go((sp) => {
-        if (value) sp.set('sort', value);
-        else sp.delete('sort');
-      });
-    });
-
-    window.addEventListener('popstate', apply);
-    apply();
+    const runShop = () => { cleanupShop?.(); cleanupShop = initShop(); };
+    document.addEventListener('astro:page-load', runShop);
+    runShop();
   </script>
 </StoreLayout>

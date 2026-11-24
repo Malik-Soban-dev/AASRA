@@ -23,7 +23,7 @@ const allColors = [...new Map(items.flatMap((p) => p.colors).map((c) => [c.name,
 const allSizes = [...new Set(items.flatMap((p) => p.sizes))];
 ---
 
-<StoreLayout title={`${label} — ${isWomen ? 'Women' : 'Men'} — AASRA`}>
+<StoreLayout spa title={`${label} — ${isWomen ? 'Women' : 'Men'} — AASRA`}>
   <div class="container">
     <nav class="as-breadcrumb" aria-label="Breadcrumb">
       <a href="/">Home</a><span>/</span>
@@ -130,7 +130,10 @@ const allSizes = [...new Set(items.flatMap((p) => p.sizes))];
 
   <script>
     // Client-side filter + sort (no reload). Filter panel toggles open/closed; the count and Clear all track the selection.
+    let cleanupCat = null;
+    const initCategory = () => {
     const grid = document.getElementById('as-grid');
+    if (!grid) return () => {};
     const items = [...grid.querySelectorAll('.as-grid-item')];
     const countEl = document.getElementById('as-count');
     const toggle = document.querySelector('[data-filter-toggle]');
@@ -148,7 +151,8 @@ const allSizes = [...new Set(items.flatMap((p) => p.sizes))];
     };
     toggle.addEventListener('click', () => setOpen(panel.hidden));
     backdrop.addEventListener('click', () => { setOpen(false); toggle.focus(); });
-    document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !panel.hidden) { setOpen(false); toggle.focus(); } });
+    const onKey = (e) => { if (e.key === 'Escape' && !panel.hidden) { setOpen(false); toggle.focus(); } };
+    document.addEventListener('keydown', onKey);
     document.querySelector('[data-filter-done]')?.addEventListener('click', () => { setOpen(false); toggle.focus(); });
 
     const syncPressed = () => {
@@ -203,5 +207,10 @@ const allSizes = [...new Set(items.flatMap((p) => p.sizes))];
       });
       sorted.forEach((el) => grid.appendChild(el));
     });
+    return () => document.removeEventListener('keydown', onKey);
+    };
+    const runCategory = () => { cleanupCat?.(); cleanupCat = initCategory(); };
+    document.addEventListener('astro:page-load', runCategory);
+    runCategory();
   </script>
 </StoreLayout>

@@ -33,11 +33,16 @@ const { title, kicker, products = [], link, class: cls } = Astro.props;
 </section>
 
 <script>
-  document.querySelectorAll('.as-rail-nav').forEach((nav) => {
-    const section = nav.closest('.as-section');
-    const track = section.querySelector('[data-rail]');
-    const step = () => track.firstElementChild.getBoundingClientRect().width + 24;
-    nav.querySelector('[data-rail-prev]')?.addEventListener('click', () => track.scrollBy({ left: -step(), behavior: 'smooth' }));
-    nav.querySelector('[data-rail-next]')?.addEventListener('click', () => track.scrollBy({ left: step(), behavior: 'smooth' }));
-  });
-</script>
+    // Rails: previous / next buttons scroll the track by one card. Re-initialised on each client-side navigation.
+    const initRails = () => {
+      document.querySelectorAll('.as-rail-nav').forEach((nav) => {
+        const section = nav.closest('.as-section');
+        const track = section.querySelector('[data-rail]');
+        const step = () => track.firstElementChild.getBoundingClientRect().width + 24;
+        nav.querySelector('[data-rail-prev]')?.addEventListener('click', () => track.scrollBy({ left: -step(), behavior: 'smooth' }));
+        nav.querySelector('[data-rail-next]')?.addEventListener('click', () => track.scrollBy({ left: step(), behavior: 'smooth' }));
+      });
+    };
+    initRails();
+    document.addEventListener('astro:page-load', initRails);
+  </script>
