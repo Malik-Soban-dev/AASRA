@@ -1,11 +1,26 @@
 {
   "category": "denim",
   "label": "Denim",
+  "subcategories": [
+    {
+      "key": "relaxed",
+      "label": "Relaxed"
+    },
+    {
+      "key": "slim",
+      "label": "Slim"
+    },
+    {
+      "key": "overshirts",
+      "label": "Overshirts"
+    }
+  ],
   "products": [
     {
       "id": "M101",
       "slug": "relaxed-denim-mid-blue",
       "name": "Relaxed Denim — Mid Blue",
+      "subcategory": "relaxed",
       "price_pkr": 11900,
       "colors": [
         {
@@ -40,6 +55,7 @@
       "id": "M102",
       "slug": "slim-denim-black",
       "name": "Slim Denim — Black",
+      "subcategory": "slim",
       "price_pkr": 11400,
       "colors": [
         {
@@ -74,6 +90,7 @@
       "id": "M103",
       "slug": "denim-overshirt-indigo",
       "name": "Denim Overshirt — Indigo",
+      "subcategory": "overshirts",
       "price_pkr": 12900,
       "colors": [
         {

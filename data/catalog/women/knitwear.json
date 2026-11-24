@@ -1,11 +1,22 @@
 {
   "category": "knitwear",
   "label": "Knitwear",
+  "subcategories": [
+    {
+      "key": "cardigans",
+      "label": "Cardigans"
+    },
+    {
+      "key": "tops-pullovers",
+      "label": "Tops & Pullovers"
+    }
+  ],
   "products": [
     {
       "id": "W003",
       "slug": "handloom-wool-cardigan-olive",
       "name": "Handloom Wool Cardigan — Olive",
+      "subcategory": "cardigans",
       "price_pkr": 26000,
       "badge": "HANDLOOM",
       "colors": [
@@ -45,6 +56,7 @@
       "id": "W008",
       "slug": "cropped-cardigan-cream",
       "name": "Cropped Cardigan — Cream",
+      "subcategory": "cardigans",
       "price_pkr": 16900,
       "badge": "NEW",
       "colors": [
@@ -78,6 +90,7 @@
       "id": "W009",
       "slug": "rib-knit-top-black",
       "name": "Rib Knit Top — Black",
+      "subcategory": "tops-pullovers",
       "price_pkr": 9800,
       "badge": null,
       "colors": [
@@ -111,6 +124,7 @@
       "id": "W010",
       "slug": "pullover-sage",
       "name": "Pullover — Sage",
+      "subcategory": "tops-pullovers",
       "price_pkr": 15400,
       "badge": null,
       "colors": [

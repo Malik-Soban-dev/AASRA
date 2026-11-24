@@ -1,11 +1,26 @@
 {
   "category": "outerwear",
   "label": "Outerwear & Shawls",
+  "subcategories": [
+    {
+      "key": "coats",
+      "label": "Coats"
+    },
+    {
+      "key": "jackets",
+      "label": "Jackets"
+    },
+    {
+      "key": "gilets-shawls",
+      "label": "Gilets & Shawls"
+    }
+  ],
   "products": [
     {
       "id": "W004",
       "slug": "quilted-shawl-coat-sand",
       "name": "Quilted Shawl Coat — Sand",
+      "subcategory": "coats",
       "price_pkr": 32000,
       "badge": "LIMITED",
       "colors": [
@@ -45,6 +60,7 @@
       "id": "W011",
       "slug": "trench-stone",
       "name": "Trench — Stone",
+      "subcategory": "coats",
       "price_pkr": 28500,
       "badge": "NEW",
       "colors": [
@@ -78,6 +94,7 @@
       "id": "W012",
       "slug": "wool-jacket-black",
       "name": "Wool Jacket — Black",
+      "subcategory": "jackets",
       "price_pkr": 26900,
       "badge": null,
       "colors": [
@@ -111,6 +128,7 @@
       "id": "W013",
       "slug": "quilted-gilet-olive",
       "name": "Quilted Gilet — Olive",
+      "subcategory": "gilets-shawls",
       "price_pkr": 14900,
       "badge": null,
       "colors": [

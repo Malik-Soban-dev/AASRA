@@ -1,11 +1,30 @@
 {
   "category": "dresses",
   "label": "Dresses & Kurtas",
+  "subcategories": [
+    {
+      "key": "kurtas",
+      "label": "Kurtas"
+    },
+    {
+      "key": "wrap-midi",
+      "label": "Wrap & Midi"
+    },
+    {
+      "key": "shirt-dresses",
+      "label": "Shirt Dresses"
+    },
+    {
+      "key": "kaftans",
+      "label": "Kaftans"
+    }
+  ],
   "products": [
     {
       "id": "W001",
       "slug": "chanderi-silk-kurta-ivory",
       "name": "Chanderi Silk Kurta — Ivory",
+      "subcategory": "kurtas",
       "price_pkr": 18900,
       "badge": "NEW",
       "colors": [
@@ -45,6 +64,7 @@
       "id": "W002",
       "slug": "linen-wrap-dress-clay",
       "name": "Linen Wrap Dress — Clay",
+      "subcategory": "wrap-midi",
       "price_pkr": 22500,
       "badge": "NEW",
       "colors": [
@@ -84,6 +104,7 @@
       "id": "W005",
       "slug": "midi-dress-indigo",
       "name": "Midi Dress — Indigo",
+      "subcategory": "wrap-midi",
       "price_pkr": 21500,
       "badge": "NEW",
       "colors": [
@@ -117,6 +138,7 @@
       "id": "W006",
       "slug": "shirt-dress-ecru",
       "name": "Shirt Dress — Ecru",
+      "subcategory": "shirt-dresses",
       "price_pkr": 19900,
       "badge": null,
       "colors": [
@@ -150,6 +172,7 @@
       "id": "W007",
       "slug": "kaftan-rust",
       "name": "Kaftan — Rust",
+      "subcategory": "kaftans",
       "price_pkr": 17800,
       "badge": null,
       "colors": [

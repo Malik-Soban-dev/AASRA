@@ -1,11 +1,26 @@
 {
   "category": "shirts",
   "label": "Shirts & Kurtas",
+  "subcategories": [
+    {
+      "key": "casual",
+      "label": "Casual"
+    },
+    {
+      "key": "formal",
+      "label": "Formal"
+    },
+    {
+      "key": "kurta",
+      "label": "Kurta"
+    }
+  ],
   "products": [
     {
       "id": "M001",
       "slug": "linen-shirt-slate",
       "name": "Linen Shirt — Slate",
+      "subcategory": "casual",
       "price_pkr": 12400,
       "badge": "NEW",
       "colors": [
@@ -45,6 +60,7 @@
       "id": "M002",
       "slug": "kurta-shirt-indigo",
       "name": "Kurta Shirt — Indigo",
+      "subcategory": "kurta",
       "price_pkr": 13900,
       "badge": "HANDLOOM",
       "colors": [
@@ -84,6 +100,7 @@
       "id": "M004",
       "slug": "oxford-shirt-white",
       "name": "Oxford Shirt — White",
+      "subcategory": "formal",
       "price_pkr": 11900,
       "badge": "NEW",
       "colors": [
@@ -117,6 +134,7 @@
       "id": "M005",
       "slug": "chambray-shirt-blue",
       "name": "Chambray Shirt — Blue",
+      "subcategory": "casual",
       "price_pkr": 12900,
       "badge": null,
       "colors": [
@@ -150,6 +168,7 @@
       "id": "M006",
       "slug": "camp-collar-shirt-sage",
       "name": "Camp Collar Shirt — Sage",
+      "subcategory": "casual",
       "price_pkr": 10900,
       "badge": null,
       "colors": [

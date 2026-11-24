@@ -1,27 +1,22 @@
 ---
 /**
- * PLP — /women/dresses, /men/new-in, …
- * Breadcrumb → title → sub-category chips → toolbar with a filter panel (color/size,
- * client-side) and sort → product grid → empty state.
+ * PLP body shared by /women/dresses (all of a category) and /women/footwear/boots (one sub-category).
+ * Breadcrumb → title → category chips → product-type chips → toolbar with a filter panel
+ * (colour/size, client-side) and sort → product grid → empty state.
  */
-import StoreLayout from '../../components/layout/StoreLayout.astro';
-import ProductCard from '../../components/store/ProductCard.astro';
+import StoreLayout from '../layout/StoreLayout.astro';
+import ProductCard from './ProductCard.astro';
 import { categories, categoryProducts, categoryLabel } from '../../lib/catalog.js';
 
-export function getStaticPaths() {
-  const paths = [];
-  for (const gender of ['women', 'men']) {
-    for (const cat of categories[gender]) {
-      paths.push({ params: { gender, category: cat.category } });
-    }
-  }
-  return paths;
-}
-
-const { gender, category } = Astro.params;
-const label = categoryLabel(gender, category);
-const items = categoryProducts(gender, category);
-const subcats = categories[gender];
+const { gender, category, sub = '' } = Astro.props;
+const parent = categoryLabel(gender, category);
+const subcats = categories[gender].find((c) => c.category === category)?.subcategories || [];
+const current = subcats.find((s) => s.key === sub);
+const label = current ? current.label : parent;
+const topCats = categories[gender];
+const items = current
+  ? categoryProducts(gender, category).filter((p) => p.subcategory === sub)
+  : categoryProducts(gender, category);
 const isWomen = gender === 'women';
 
 const allColors = [...new Map(items.flatMap((p) => p.colors).map((c) => [c.name, c])).values()];
@@ -33,6 +28,7 @@ const allSizes = [...new Set(items.flatMap((p) => p.sizes))];
     <nav class="as-breadcrumb" aria-label="Breadcrumb">
       <a href="/">Home</a><span>/</span>
       <a href={`/${gender}`}>{isWomen ? 'Women' : 'Men'}</a><span>/</span>
+      {current && (<><a href={`/${gender}/${category}`}>{parent}</a><span>/</span></>)}
       <span aria-current="page">{label}</span>
     </nav>
 
@@ -47,10 +43,19 @@ const allSizes = [...new Set(items.flatMap((p) => p.sizes))];
     </header>
 
     <div class="as-subcats" role="navigation" aria-label="Sub-categories">
-      {subcats.map((c) => (
+      {topCats.map((c) => (
         <a class:list={['as-chip', { 'is-active': c.category === category }]} href={c.href}>{c.label}</a>
       ))}
     </div>
+
+    {subcats.length > 0 && (
+      <nav class="as-subcats as-subcats--types" aria-label="Product types">
+        <a class:list={['as-chip', { 'is-active': !current }]} href={`/${gender}/${category}`} aria-current={!current ? 'page' : undefined}>All {parent}</a>
+        {subcats.map((s) => (
+          <a class:list={['as-chip', { 'is-active': current?.key === s.key }]} href={`/${gender}/${category}/${s.key}`} aria-current={current?.key === s.key ? 'page' : undefined}>{s.label}</a>
+        ))}
+      </nav>
+    )}
 
     <div class="as-plp-body" data-plp-bar>
       <div class="as-plp-toolbar">

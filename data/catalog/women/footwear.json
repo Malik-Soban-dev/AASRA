@@ -1,11 +1,26 @@
 {
   "category": "footwear",
   "label": "Footwear",
+  "subcategories": [
+    {
+      "key": "mules-sandals",
+      "label": "Mules & Sandals"
+    },
+    {
+      "key": "boots",
+      "label": "Boots"
+    },
+    {
+      "key": "sneakers",
+      "label": "Sneakers"
+    }
+  ],
   "products": [
     {
       "id": "W401",
       "slug": "leather-mule-tan",
       "name": "Leather Mule — Tan",
+      "subcategory": "mules-sandals",
       "price_pkr": 14900,
       "badge": "NEW",
       "colors": [
@@ -41,6 +56,7 @@
       "id": "W402",
       "slug": "ankle-boot-black",
       "name": "Ankle Boot — Black",
+      "subcategory": "boots",
       "price_pkr": 18500,
       "colors": [
         {
@@ -75,6 +91,7 @@
       "id": "W403",
       "slug": "canvas-sneaker-oat",
       "name": "Canvas Sneaker — Oat",
+      "subcategory": "sneakers",
       "price_pkr": 9900,
       "colors": [
         {

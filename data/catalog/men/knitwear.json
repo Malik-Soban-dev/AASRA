@@ -1,11 +1,26 @@
 {
   "category": "knitwear",
   "label": "Knitwear",
+  "subcategories": [
+    {
+      "key": "crewnecks-vnecks",
+      "label": "Crewnecks & V-necks"
+    },
+    {
+      "key": "half-zips",
+      "label": "Half-zips"
+    },
+    {
+      "key": "cable-knit",
+      "label": "Cable Knit"
+    }
+  ],
   "products": [
     {
       "id": "M003",
       "slug": "merino-crewneck-charcoal",
       "name": "Merino Crewneck — Charcoal",
+      "subcategory": "crewnecks-vnecks",
       "price_pkr": 19500,
       "badge": "NEW",
       "colors": [
@@ -44,6 +59,7 @@
       "id": "M007",
       "slug": "cable-knit-oat",
       "name": "Cable Knit — Oat",
+      "subcategory": "cable-knit",
       "price_pkr": 17500,
       "badge": "NEW",
       "colors": [
@@ -77,6 +93,7 @@
       "id": "M008",
       "slug": "half-zip-knit-grey",
       "name": "Half-Zip Knit — Grey",
+      "subcategory": "half-zips",
       "price_pkr": 18900,
       "badge": null,
       "colors": [
@@ -110,6 +127,7 @@
       "id": "M009",
       "slug": "v-neck-knit-navy",
       "name": "V-Neck Knit — Navy",
+      "subcategory": "crewnecks-vnecks",
       "price_pkr": 16500,
       "badge": null,
       "colors": [
