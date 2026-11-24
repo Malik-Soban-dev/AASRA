@@ -38,6 +38,11 @@ export function wearItWith(product) {
     .slice(0, 4);
 }
 
+export function subcategoryLabel(gender, category, key) {
+  const cat = (categories[gender] || []).find((c) => c.category === category);
+  return cat?.subcategories?.find((s) => s.key === key)?.label || '';
+}
+
 export function categoryLabel(gender, category) {
   if (category === 'new-in') return 'New In';
   return (categories[gender] || []).find((c) => c.category === category)?.label || category;
