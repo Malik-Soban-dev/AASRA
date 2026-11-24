@@ -1,110 +1,103 @@
 # AASRA Store — Architecture
 
-> **Start here:** `docs/PLAYBOOK.md` is the full guide (setup, recipes, navigation, payments, deploy, pitfalls). This file is the short reference for the data model and routes.
+Short reference for the shape of the system. Read `PLAYBOOK.md` to build one, `BACKEND.md` for every endpoint and money rule, `OPERATIONS.md` to run it, and `KNOWN_ISSUES.md` for defects.
 
-Fashion e-commerce (women + men, sub-categories) on the existing AASRA stack:
-Astro static pages → Cloudflare Workers (static + API) → D1, Safepay/PayFast.
-No admin dashboard exists: **the catalog is edited as plain JSON files** (below).
+## What it is
+
+A fashion store for women and men in Pakistan (PKR, prepaid only, Pakistan delivery). Static pages built by Astro, one Cloudflare Worker that serves the pages and the API, one D1 database, a hosted card payment page (Safepay), and transactional email (Resend). There is no admin dashboard. Products are JSON files.
+
+```
+Browser ──► Cloudflare Worker "aasra"
+             ├─ static assets (dist/)            Astro pages, CSS, JS, images
+             ├─ /api/* (compiled functions/)     checkout, webhook, lookup, invoice, …
+             ├─ cron triggers (scheduled.js)     reconciliation, stock release, daily jobs
+             └─ D1 "AASRA_DB"                    stock, orders, payments, events, coupons
+
+Checkout ──► Safepay hosted page (card data never touches our servers)
+Safepay  ──► POST /api/webhook  and  POST /api/safepay-return   (server to server)
+Worker   ──► Resend API (email)     ──► Cloudflare Turnstile (bot checks)
+```
 
 ## Directory map
 
 ```
-data/catalog/                 ← HUMANS EDIT THESE (one file per category)
-  site.json                     nav, hero copy, marquee, footer
-  women/{dresses,knitwear,outerwear}.json
-  men/{shirts,knitwear}.json
-data/products.json            ← GENERATED (do not hand-edit)
-public/data/products.json     ← GENERATED mirror (client-side cart pages)
-scripts/build-catalog.js      ← merges catalog/ → products.json
+data/catalog/site.json              brand text, hero, marquee, nav, footer   ← edit
+data/catalog/<gender>/<cat>.json    one file per category (9 files)         ← edit
+data/products.json                  GENERATED from the catalogue, do not edit
+data/shipping-rates.json            shipping fee by city, free over PKR 20,000 ← edit
+public/data/products.json           GENERATED copy served to the browser
+scripts/build-catalog.js            validates and builds the generated catalogue
 
-src/components/store/         ← design-system components (see DESIGN_SYSTEM.md)
-src/components/layout/StoreLayout.astro   ← new storefront layout (fonts CDN, cart lib)
-src/styles/tokens.css         ← the tokens (only place raw values appear)
-src/styles/store.css          ← the system styles (uses tokens only)
+src/index.js                        Worker entry: API router + scheduled handler
+src/pages/                          routes (Astro, static)
+src/components/layout/              StoreLayout (head, header, footer, bag helpers)
+src/components/store/               storefront components
+src/styles/tokens.css               design values (the only raw values)
+src/styles/store.css                storefront styles (tokens only)
 
-src/pages/index.astro         ← home (runway hero, the edit, new-in rail, campaign)
-src/pages/[gender]/index.astro        ← women/ men landing
-src/pages/[gender]/[category]/index.astro ← category + "new-in" PLP
-src/pages/[gender]/[category]/[sub].astro ← sub-category PLP
-src/components/store/CategoryPage.astro   ← the PLP body both pages render
-src/pages/product/[slug].astro        ← PDP
+functions/api/*.js                  API handlers (see BACKEND.md §3)
+functions/api/_middleware.js        CORS, origin, CSRF, headers for /api/*
+functions/lib/                      pricing, stock, gateway, email, invoice, reconcile, validation
+functions/scheduled.js              cron jobs
 
-src/lib/catalog.js            ← reads data/products.json (single source at runtime)
-functions/                    ← API: checkout, order-lookup, invoice, stock, newsletter
-tests/run.js                  ← node tests (API + catalog integrity)
+migrations/                         D1 schema (0001, 0002)
+tests/run.js                        46 checks
+scripts/                            seed, smoke test, Safepay smoke test, catalogue build
+docs/                               this set of documents
+skills/                             rules for editing the project (see below)
 ```
+
+## Pages
+
+The route table is in `PLAYBOOK.md` §6. In short:
+
+- `/` home, `/women`, `/men` gender landing pages.
+- `/<gender>/<category>` and `/<gender>/<category>/<sub>` category and sub-category pages, both rendered by `CategoryPage.astro`.
+- `/<gender>/new-in` the New In list.
+- `/shop` all products. Category, type, search and sort are URL parameters applied in the browser.
+- `/product/<slug>` product page.
+- `/cart`, `/checkout`, `/order-success`, `/payment-cancelled`, `/order-lookup`, `/pay-balance` (legacy) bag and payment pages.
+- Content and policy pages, including `/faq`, `/shipping`, `/size-guide`, `/deposit-policy` (legacy, to be rewritten).
+
+**Navigation:** pages marked `spa` use Astro's client router, so moving between browse pages does not reload the whole site. Cart, checkout and payment pages do full loads. Details in `PLAYBOOK.md` §9.
 
 ## Data model
 
-Product (in category files — keep them small and readable):
+- **Catalogue (files):** category, label, optional sub-categories, products. A product has `id`, `slug`, `name`, `price_pkr`, `colors`, `sizes`, `images`, and optional `subcategory`, `badge`, `visible`, `compare_at_pkr`. Full schema in `PLAYBOOK.md` §5 and `CATALOG_INDEX.md` for the current list.
+- **Variants (generated):** every size × colour pair gets a SKU `AS-<ID>-<COLOUR3>-<SIZE>`. Stock, bag and orders key off the SKU.
+- **Database (D1):** `stock`, `reservations`, `orders`, `payments`, `order_events`, `coupons`, `newsletter`. Schema and states in `BACKEND.md` §7 and §11.
 
-```json
-{
-  "id": "W001", "slug": "chanderi-silk-kurta-ivory",
-  "name": "Chanderi Silk Kurta — Ivory", "price_pkr": 18900,
-  "badge": "NEW",
-  "colors": [{ "name": "Ivory", "hex": "#efe9dc" }],
-  "sizes": ["XS","S","M","L","XL"],
-  "images": ["/images/garments/w-kurta-ivory.jpg"],
-  "description": "…", "details": ["…"], "fabric": "…", "care": "…"
-}
-```
+## Key rules
 
-Category files may also declare sub-categories (`"subcategories": [{ "key": "boots", "label": "Boots" }]`).
-Each product in such a category must set `"subcategory": "<key>"`; the build fails otherwise.
-`deposit_eligible` is a legacy field: deposits were removed (see PLAYBOOK §11).
+- All money is whole PKR. No floats.
+- Prices and stock are decided on the server. The browser sends SKUs and quantities only.
+- Orders snapshot prices when created.
+- Stock is held for 15 minutes at checkout and confirmed on payment.
+- The payment webhook (or the signed return, or reconciliation) is the source of truth, never the browser redirect.
+- Customers pay in full online. Cash on delivery and deposits are not offered.
 
-`npm run catalog:build` expands `sizes × colors` into `variants[{sku,size,color,stock_key}]`
-(`AS-W001-IVO-XS`) and writes the generated aggregate. It runs automatically
-(`prebuild`) before every `npm run dev` / `npm run build`.
+## Editing rules
 
-Deposit rule: `deposit_eligible` is true for products priced ≥ PKR 15,000
-(overridable per product in the category file). Checkout deposit plans apply
-only when every item in the cart is deposit-eligible.
+The project's own rules are in `skills/`:
+- `store-architecture.md`: catalogue is data; schema changes update the build, the components and the docs in one commit; API contracts are stable; every commit keeps tests green.
+- `design-system.md`: tokens only; edit the owning file; no override layers; motion budget; anti-slop checklist.
+- `research-first.md`: research before code; find root causes before patching; say what cannot be verified.
 
-### Adding / editing a product (no dashboard)
+## Testing and checks
 
-1. Open the right file in `data/catalog/<gender>/<category>.json`.
-2. Add/edit the object (copy an existing one — fields are self-explanatory).
-3. Drop the photos in `public/images/garments/` (3:4 portrait jpg).
-4. Save. Next build picks it up. (`node scripts/build-catalog.js` to refresh the
-   aggregate without a full build.)
+- `npm test`: 46 checks (validation, money, signatures, order states, reconciliation, invoices and emails). See `BACKEND.md` §12 for the gaps.
+- `npm run typecheck`: `astro check`.
+- `npm run smoke`: runs against a local server.
+- The catalogue build (`npm run catalog:build`) validates required fields, sizes, colours, images and sub-category keys.
 
-Prices are integer PKR. SKU pattern `AS-{ID}-{COLOR3}-{SIZE}` — checkout, stock
-and order APIs key off `sku`/`stock_key`, unchanged from the previous system.
+## Research and design records
 
-## Page routes
+- `docs/DESIGN_SYSTEM.md`: tokens, typography, spacing, grid, components, motion, imagery, copy, accessibility, anti-slop rules.
+- `docs/research/STORE_RESEARCH_2026.md`: conversion, visual and interaction research, with sources and decisions for the owner.
+- `docs/RESEARCH.md`: navigation and fashion-site patterns applied to the store.
+- `docs/RESEARCH_APPLICATION_REPORT.md`: 2026-11-19 report on how the research was applied and the root causes of earlier failures.
+- `CHECKLIST.md` (repo root): reference-led storefront audit, checked against screenshots of a reference site. Used for layout and feel only.
 
-| Route | Page | Data |
-|---|---|---|
-| `/` | Home | site.json + all products (new-in) |
-| `/women`, `/men` | Gender landing | catalog + category tiles |
-| `/women/new-in`, `/men/new-in` | New-in PLP | products with `badge: "NEW"` |
-| `/women/dresses`, `/men/shirts`, … | PLP | category file |
-| `/women/footwear/boots`, `/men/knitwear/cable-knit`, … | Sub-category PLP | category file `subcategories` |
-| `/shop?category=…&type=…&q=…&sort=…` | Shop | all products; filters applied in the browser (static site) |
-| `/product/<slug>` | PDP | product lookup |
+## Stack versions
 
-Legacy pages (`/shop`, `/gifts`, old `/product/*` slugs from the home-goods
-catalog) remain until migration v2; nothing in the new UI links to them.
-
-## CDN policy
-
-- Google Fonts CDN (`Fraunces`, `Inter`) in `StoreLayout` — with system fallbacks,
-  the site is fully usable if the CDN is unreachable.
-- Any future motion/3D enhancement libs load from jsdelivr with `defer` and must
-  **degrade gracefully** (content first, effects optional).
-- Never bundle large third-party frameworks. Plain Astro components + small
-  vanilla JS modules only.
-
-## Cart & checkout (unchanged)
-
-`window.__aasra_addToCart(sku, name, price, qty, image)` → localStorage
-`aasra_cart_v1` → `/cart` → `/checkout` → Workers API (deposit/balance orders,
-Turnstile, Safepay/PayFast) → D1. The new ProductCard/PDP call exactly this API.
-
-## Testing
-
-`npm test` — API invariants (phone/email/cart validation, checkout math, emails)
-+ catalog integrity (every product has images, variants, unique slugs/SKUs).
-Run `npm run catalog:build` before `npm test` (pretest hook).
+Node 24.22.3 (`.nvmrc`, `engines >= 24`). Astro 7 (`astro` ^7.4.12). Wrangler 4. TypeScript 5.6. Fonts: Inter Tight and Inter from Google Fonts. Cormorant Garamond is a dependency (`@fontsource`) and is referenced only by the legacy `global.css`; the logo choice is an open decision (`PLAYBOOK.md` §18).

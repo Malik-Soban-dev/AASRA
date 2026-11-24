@@ -5,9 +5,9 @@ The single guide to read before building a similar store. It records what was bu
 - **Snapshot:** written against `main` at `eb7e511` (PR #90 merged), 2026-11-24.
 - **Status words:** **Live** = on production · **Built** = in code and checked locally · **Parked** = in code, not approved for use · **Open** = needs a decision.
 - **Names, not values.** Secret values live only in Cloudflare, GitHub Actions secrets, or local `.dev.vars` (never committed). The only real key-like value in the repo is a public Safepay key in `wrangler.toml`; it is not copied here.
-- **Verification:** every file, script, name and number below was checked against the repo at this snapshot. Anything not verified is marked **Open** or left out.
+- **Verification:** file paths, script names, environment variable names, routes and numbers were checked against the repo at this snapshot. Where the code and the intent differ, the text says so and points to `KNOWN_ISSUES.md`.
 
-Companion docs: `docs/HISTORY.md` (every merged PR, decisions with reasons, owner rules, dead ends, sandbox recovery, open items), `docs/ARCHITECTURE.md` (short reference for data model and routes), `docs/DESIGN_SYSTEM.md` (tokens, components, motion), `README.md` (backend reference; deposit text corrected, rest partly out of date), `CHECKLIST.md` at repo root (reference audit, not a feature list), `skills/*.md` (rules for editing).
+Companion docs: `docs/HISTORY.md` (every merged PR, decisions with reasons, owner rules, dead ends, sandbox recovery, open items), `docs/ARCHITECTURE.md` (short reference for data model and routes), `docs/BACKEND.md` (every endpoint, money and settlement rules, schema, tests), `docs/OPERATIONS.md` (runbook: fulfilment, refunds, stock, deploys, secrets, incidents), `docs/KNOWN_ISSUES.md` (defects to fix before reuse), `docs/CATALOG_INDEX.md` (generated product list), `docs/DESIGN_SYSTEM.md` (tokens, components, motion), `README.md` (setup and reference), `CHECKLIST.md` at repo root (reference audit, not a feature list), `skills/*.md` (rules for editing).
 
 ---
 
@@ -53,7 +53,7 @@ The design reference is an established luxury-fashion site, used for layout and 
 | `functions/lib/*.js` | `pricing`, `stock`, `email`, `gateway`, `invoice`, `validation`, `reconcile` | Carefully |
 | `functions/scheduled.js` | Cron jobs | Carefully. It still contains `VERIFY` notes on the day counts. |
 | `migrations/` | D1 schema: `0001_initial.sql`, `0002_balance_token.sql` | Add new numbered files only |
-| `tests/run.js` | 46 checks: API contracts and catalog integrity | Keep green |
+| `tests/run.js` | 46 checks: validation, money, signatures, order states, reconciliation, invoices, email templates. No catalogue checks (`KNOWN_ISSUES.md` #11) | Keep green |
 | `scripts/` | `build-catalog.js`, `seed-d1.js`, `smoke-worker.mjs`, `safepay-smoke.js` | As needed |
 | `docs/` | This playbook, architecture, design system, research | Keep current |
 | `skills/` | Rules for design, research, and architecture edits | Read before editing |
@@ -74,7 +74,7 @@ This is the order we would follow. Each step names the thing it depends on.
 8. **Email.** Verify the sending domain in Resend. Add the DNS records. Check them with `nslookup`, because a "verified" badge is not proof.
 9. **Domain.** Attach the custom domain in Cloudflare.
 10. **Deploy from GitHub.** Add repository secrets `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID`. The deploy workflow runs on push to `main` (§14).
-11. **Run locally.** `npm run dev` (runs `prebuild` first). Run `npm test` before every commit.
+11. **Run locally.** `npm run dev` runs the build, and the build runs the catalogue build (`prebuild`) first. Run `npm test` before every commit.
 12. **Catalog.** Create `data/catalog/site.json` and the category files (§5). Run `npm run catalog:build`.
 
 ## 5. The catalog (data model)
@@ -118,9 +118,9 @@ Keys include `brand`, `tagline`, `announcement`, `hero`, `marquee`, `nav` (per g
 The build expands `sizes × colors` into `variants[]`, each with `sku` (for example `AS-<id>-<colour>-<size>`), `size`, `color` and `stock_key`. The bag, checkout and stock use SKUs. Do not rename SKUs after launch.
 
 ### 5.4 Build and checks
-- `npm run catalog:build` writes `data/products.json` and `public/data/products.json`. It also runs before `build`, `dev`, and `test`.
+- `npm run catalog:build` writes `data/products.json` and `public/data/products.json`. It runs first in `build` and `test` (`prebuild`, `pretest`). `dev` runs the build, so it runs too.
 - The build fails on: a missing `id`, `slug`, `name` or `price_pkr`; no sizes, colours or images; a bad size; or a `subcategory` not listed in its category file.
-- Tests check products have images and variants, and that slugs and SKUs are unique.
+- The tests do not check the catalogue. Slug and SKU uniqueness is not checked anywhere (`KNOWN_ISSUES.md` #11). Add those checks as the catalogue grows.
 
 ## 6. Routes and pages
 
@@ -135,7 +135,7 @@ The build expands `sizes × colors` into `variants[]`, each with `sku` (for exam
 | `/product/<slug>` | `src/pages/product/[slug].astro` | Product page |
 | `/cart`, `/checkout`, `/order-lookup`, `/order-success`, `/pay-balance`, `/payment-cancelled` | Respective pages | Bag, checkout, order tracking, payment results. `pay-balance` is legacy (§11.5). |
 | `/wishlist`, `/gifts`, `/new-arrivals` | Respective pages | Older pages; `gifts` and `new-arrivals` use older components |
-| `/journal/*`, `/about`, `/contact`, `/faq`, `/shipping`, `/size-guide`, policy pages | Content pages | Content |
+| `/journal/*`, `/about`, `/contact`, `/faq`, `/shipping`, `/size-guide`, `/appointment`, `/boutiques`, `/services`, `/responsibility`, policy pages (`/privacy`, `/terms`, `/return-policy`, `/cookie-policy`, `/accessibility`, `/shipping-policy`) | Content pages | Content. `/contact` has a known defect: see `KNOWN_ISSUES.md` #33. |
 | `/deposit-policy` | `src/pages/deposit-policy.astro` | **Legacy.** Describes deposits, which were removed. Rewrite or remove before launch. |
 
 Dynamic pages use `getStaticPaths()`. Adding a category or sub-category file adds its pages on the next build.
@@ -195,7 +195,7 @@ Dynamic pages use `getStaticPaths()`. Adding a category or sub-category file add
 - Storage: `localStorage` key `aasra_cart_v1`, an array of `{ sku, name, price, qty, image }`.
 - Helpers defined in `StoreLayout.astro`: `window.__aasra_addToCart(sku, name, price, qty, image)`, `__aasra_updateQty(index, delta)`, `__aasra_remove(index)`.
 - Events: `aasra:cart` (bag changed) and `aasra:cart:clear`. The header count and other pages listen to these.
-- After an add, the "Added to your bag" panel (`#as-added`) appears with **View bag**, **Check out** and **Continue shopping**.
+- After an add, the panel (`#as-added`, heading "Item added to your cart") appears with **Check out** and **Continue shopping**. It has no separate "View bag" link.
 - **Open decision:** the cart quantity fix needs an owner decision (§18). Do not change its behaviour without asking.
 
 ## 9. Client-side navigation (no full reloads between browse pages)
@@ -221,7 +221,7 @@ Dynamic pages use `getStaticPaths()`. Adding a category or sub-category file add
 6. **Header state per page** (menus closed, header shown) is reset on `astro:page-load`.
 7. **Test it:** set `window.__mark = 'alive'` before a click, then check the value is still there afterwards. That proves no full reload. Also test back and forward.
 
-Astro's `popstate` handling covers back and forward, so no custom back-button code was needed.
+Back and forward were not browser-tested at this snapshot. Test them before relying on them (rule 7).
 
 ## 10. Design system (short version)
 
@@ -247,18 +247,18 @@ Full detail in `docs/DESIGN_SYSTEM.md`. The rules that matter most:
 - **Free delivery threshold: PKR 20,000.** It is the same in the header announcement, home, cart drawer, cart page copy and FAQ. Keep it that way if the value changes.
 
 ### 11.2 Flow
-1. Customer checks out (`POST /api/checkout`). The server validates the cart, prices it, adds tax (`TAX_RATE_PCT`), and reserves stock for **15 minutes** (`reserveStock`, default hold 15).
+1. Customer checks out (`POST /api/checkout`). The server validates the cart, prices it, and reserves stock for **15 minutes** (`reserveStock`, default hold 15). Tax is worked out for the invoice only (`TAX_RATE_PCT`, currently `0`). It is not added to order totals (`KNOWN_ISSUES.md` #5).
 2. The server creates the Safepay checkout session and the order number `AAS-YYYYMMDD-XXXX`.
 3. Customer pays on Safepay and returns to `/api/safepay-return`.
 4. Safepay calls `POST /api/webhook`.
-5. The order is marked paid only when the webhook or reconciliation shows `TRACKER_ENDED` **and** the amount matches our record.
+5. **Intended rule:** the order is marked paid only when the payment shows `TRACKER_ENDED` **and** the amount matches our record. **Current code:** the webhook accepts other event and status names, and the signed return has no amount check. Fix before live (`KNOWN_ISSUES.md` #2).
 6. The receipt email is sent (Resend). The order lookup page shows status.
 
 ### 11.3 Webhook and verification (from Safepay's SDK, `getsafepay/safepay-python`)
 - Signature: HMAC-SHA512 hex over the **raw** request body, sent in `X-SFPY-SIGNATURE`. Verify before parsing.
 - Payload fields: `token`, `type`, `data.tracker`, `data.state`, `data.amount`, `data.currency`, `data.metadata.order_id`. The SDK names `payment.succeeded` and `payment.failed` as the event types.
 - Fetch a payment: `GET /reporter/api/v1/payments/{tracker}` with header `X-SFPY-MERCHANT-SECRET`.
-- Settled means `state == TRACKER_ENDED`.
+- Settled means `state == TRACKER_ENDED` (the SDK's `is_paid`). The webhook code does not enforce this yet (`KNOWN_ISSUES.md` #2).
 - **Duplicate guard:** a second full payment for the same order is recorded as `duplicate` and flagged `refund_required`.
 - **Reconciliation** (`functions/lib/reconcile.js`) catches missed webhooks. Cron schedules are every 15 minutes and daily at 09:00 UTC (`wrangler.toml`).
 - Sandbox base URL is set in `wrangler.toml`. A comment there says sandbox serves API and checkout from one host, and gives the live checkout host. Confirm against Safepay's docs before going live.
@@ -273,7 +273,7 @@ Full detail in `docs/DESIGN_SYSTEM.md`. The rules that matter most:
 - **Sandbox orders:** `AAS-20261122-SRQP` and `AAS-20261122-CATP` were created. `SRQP` is still pending. For `CATP` the webhook result was not confirmed. **An end-to-end PAID test order with receipt and lookup showing PAID is still the goal.**
 - **Blockers before live:** `BUSINESS_ADDRESS` is empty; `TAX_REGISTRATION_NO` is empty; `TAX_RATE_PCT` is `0` and marked VERIFY; Safepay is still sandbox; live keys are not obtained; Safepay onboarding is at step 1 of 6.
 - **Open question:** Safepay's option to resend a payment link is unknown. `SRQP` stays pending. Do not guess.
-- **Legacy deposit code** remains in the repo: `pay-balance.astro`, `pay-order.js`, `pay-balance.js`, `deposit-policy.astro`, `DEFAULT_DEPOSIT_PERCENT`, `BALANCE_*` vars, migration `0002`. Decide whether to delete it or keep it. Known problem: `pay-balance.astro` reads `order` and `token` in its frontmatter, which is empty on a static build.
+- **Legacy deposit code** remains in the repo: `pay-balance.astro`, `pay-order.js`, `pay-balance.js`, `deposit-policy.astro`, `DEFAULT_DEPOSIT_PERCENT`, `BALANCE_*` vars. Migration `0002` adds `balance_token`, which is still used (§13). Decide whether to delete it or keep it. Known problem: `pay-balance.astro` reads `order` and `token` in its frontmatter, which is empty on a static build.
 
 ## 12. Email
 
@@ -286,7 +286,7 @@ Full detail in `docs/DESIGN_SYSTEM.md`. The rules that matter most:
 
 ## 13. Database (D1)
 
-Tables from `migrations/0001_initial.sql`: `stock`, `reservations`, `orders`, `payments`, `order_events`, `coupons`, `newsletter`. `0002_balance_token.sql` adds `balance_token`, used by the removed deposit flow.
+Tables from `migrations/0001_initial.sql`: `stock`, `reservations`, `orders`, `payments`, `order_events`, `coupons`, `newsletter`. `0002_balance_token.sql` adds `balance_token` to `orders`. Checkout gives every order one. It is the access token for invoice links, and the legacy balance-payment flow also uses it. It has no expiry check (`KNOWN_ISSUES.md` #6).
 
 Commands: `npm run d1:create`, `npm run d1:migrate`, `npm run d1:seed`, `npm run d1:execute`, `npm run d1:execute:0002`. Apply migrations before deploying code that needs them.
 
@@ -296,7 +296,7 @@ Commands: `npm run d1:create`, `npm run d1:migrate`, `npm run d1:seed`, `npm run
 - **Before merging a change to `functions/`:** run `npx wrangler deploy --dry-run --outdir /tmp/wdry`. A failed workflow re-run (`gh run rerun`) did not work for us; push a fresh commit instead.
 - **Previews:** non-production branches use `[previews.vars]` in `wrangler.toml`. Those preview vars set Safepay to disabled, so previews do not take live payments.
 - **Local preview:** `npm run build`, then `python3 -m http.server 8792 --bind 0.0.0.0 --directory dist`. You get 404s if `dist/` is missing.
-- **Cache:** when someone reports "no change", ask for a hard refresh or a private window first. That fixed every such report we had.
+- **Cache:** when someone reports "no change", ask for a hard refresh or a private window first. That fixed the reports so far.
 
 ## 15. Testing and QA
 
@@ -305,7 +305,7 @@ Commands: `npm run d1:create`, `npm run d1:migrate`, `npm run d1:seed`, `npm run
 - `npm run typecheck` runs `astro check`.
 - **Browser checks** (what we used):
   - `puppeteer-core` with `@sparticuz/chromium` in a scratch folder outside the repo. Chromium needed Amazon Linux shared libraries; they were extracted to a local path and set through `LD_LIBRARY_PATH`.
-  - Check at 390×844 (phone) and 1280×900 (desktop).
+  - Check at a phone width and a desktop width.
   - Wait for the network to go idle. Scroll before capturing: reveal-on-scroll elements stay hidden until scrolled into view.
   - Check `img.naturalWidth > 0` after scrolling. Full-page screenshots can be taken before lazy images load, which looks like missing photos.
   - Write each check to a file and run it. Inline scripts failed silently for us.
@@ -320,10 +320,10 @@ Set as `[vars]` in `wrangler.toml` (non-secret), as Cloudflare secrets with `wra
 |---|---|---|
 | `PUBLIC_BASE_URL`, `ALLOWED_ORIGIN` | var | Site URL and allowed origins |
 | `TAX_RATE_PCT` | var | Tax rate (`0`, VERIFY) |
-| `BUSINESS_NAME`, `BUSINESS_EMAIL`, `BUSINESS_ADDRESS`, `BUSINESS_PHONE`, `TAX_REGISTRATION_NO` | var | Receipt details. `BUSINESS_ADDRESS` and `TAX_REGISTRATION_NO` are empty. |
+| `BUSINESS_NAME`, `BUSINESS_EMAIL`, `BUSINESS_ADDRESS`, `BUSINESS_PHONE`, `TAX_REGISTRATION_NO` | var | Receipt details. `BUSINESS_ADDRESS` and `TAX_REGISTRATION_NO` are empty in `wrangler.toml`. The invoice reads these values through `process.env`, which may not be populated in the Worker (`KNOWN_ISSUES.md` #5). |
 | `EMAIL_PROVIDER`, `EMAIL_FROM`, `EMAIL_FROM_NAME` | var | Email settings |
 | `EMAIL_PROVIDER_API_KEY` | **secret** | Resend key |
-| `SAFEPAY_ENABLED`, `SAFEPAY_PROTOCOL_VERIFIED`, `SAFEPAY_BASE_URL`, `SAFEPAY_CHECKOUT_URL`, `SAFEPAY_ENVIRONMENT` | var | Safepay mode and hosts (sandbox now). Previews set `SAFEPAY_ENABLED` to false. |
+| `SAFEPAY_ENABLED`, `SAFEPAY_PROTOCOL_VERIFIED`, `SAFEPAY_BASE_URL`, `SAFEPAY_CHECKOUT_URL`, `SAFEPAY_ENVIRONMENT` | var | Safepay mode and hosts (sandbox now). `SAFEPAY_ENVIRONMENT` is read by `gateway.js` but is not set in `wrangler.toml`. Previews set `SAFEPAY_ENABLED` to false. |
 | `SAFEPAY_API_KEY` | var (public key) | Safepay public key, kept in `wrangler.toml` |
 | `SAFEPAY_SECRET_KEY` | **secret** | Safepay secret key |
 | `SAFEPAY_WEBHOOK_SECRET` | **secret** | Webhook signing secret (`X-SFPY-SIGNATURE`) |
@@ -345,7 +345,7 @@ GitHub Actions secrets: `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`.
 - Fix history with `git reset --soft` or a new commit. Do not force-push shared work.
 - `gh pr create` on a branch with an existing PR returns that PR. Run `gh pr view` first.
 - After `gh pr edit`, GitHub can keep the old title. Check it.
-- In a shallow clone, `git diff <sha>^1` can fail. Run `git fetch --deepen=3 origin`.
+- In a shallow clone, `git diff <sha>^1` can fail. Run `git fetch --unshallow origin`.
 - **Session resets:** `/tmp` scratch folders and `node_modules` can disappear. Re-run `npm ci`, then rebuild the scratch browser tools (§15) before testing.
 
 ## 18. Open decisions and placeholders
@@ -364,7 +364,7 @@ GitHub Actions secrets: `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`.
 | Legacy deposit code and `/deposit-policy` page | Decide whether to remove. |
 | Whether checkout and order pages stay full loads | Open. |
 | Phone hard refresh for PRs #74–#77 | Not confirmed by the owner. |
-| PRs #62 and #63 | Merge state unclear. Check `gh pr list`. |
+| PRs #62 and #63 | GitHub shows both merged on 2026-11-23. The owner's approval is not recorded. Confirm with the owner. |
 | Breadcrumb spacing | Open. |
 | Sub-category chips on the home page | Not built. Shop and category pages have them. |
 | Footwear search placeholder and empty-state hint (`SiteHeader.astro`) | Not updated. |
@@ -375,7 +375,7 @@ Dates are given where the record has them.
 
 - **Layout and feel:** taken from a reference site. No copied content. (`CHECKLIST.md`.)
 - **Catalog:** JSON category files, built into one generated file. No admin dashboard.
-- **Payments:** Safepay hosted checkout. Webhook signature checked on the raw body. Settle only on `TRACKER_ENDED` plus a matching amount. Duplicate guard. Reconciliation cron.
+- **Payments:** Safepay hosted checkout. Webhook signature checked on the raw body. Intended: settle only on `TRACKER_ENDED` plus a matching amount. Not yet enforced on every path (`KNOWN_ISSUES.md` #2). Duplicate guard. Reconciliation cron.
 - **Deposits removed:** prepaid only.
 - **Shop filters in the browser** (static site).
 - **2026-11-23 — footwear:** added to nav, footer, Categories in Focus, shop and both gender pages. Three products per gender.
@@ -394,14 +394,12 @@ Dates are given where the record has them.
 | Mega menu or search dead after navigation | Persist set on the wrong element | `transition:persist` on the root element (§9) |
 | Strip links tiny | Global `main a:not([class*="as-"])` rule | Give the link an `as-` class (§10.1) |
 | Build fails under Node 22 | Wrong Node | Use Node 24 (`.nvmrc`) |
-| Build fails with `astro: not found` | `node_modules` missing | `npm ci` |
 | Product photos look missing in screenshots | Lazy images not loaded yet | Scroll, then check `naturalWidth` |
 | "No change" after a deploy | Browser cache | Hard refresh or private window |
 | Sticky element jumps on phones | `relative` used instead of `sticky` | `position: sticky; top: 0` |
 | Product page says "Already in your bag" | Intended behaviour | Not a bug |
 | Lookup page shows "Network error" | `can_pay_balance is not defined` | Fixed. Do not switch the lookup back to GET. |
 | Preview 404 | `dist/` missing after a reset | `npm run build`, then start the server |
-| Node 22 build error | Wrong Node | Use Node 24 |
 
 ## 21. Key files for a rebuild, in order
 
@@ -419,3 +417,23 @@ Dates are given where the record has them.
 12. `migrations/*.sql`: database.
 13. `wrangler.toml`, `.github/workflows/deploy.yml`: deployment.
 14. `tests/run.js`: checks.
+
+## 22. Known risks before reuse
+
+Read `docs/KNOWN_ISSUES.md` for the full list: 34 items, each with evidence and a suggested fix. These are the ones that matter most before a new store takes money. None is fixed by the documentation change. Each needs the owner's decision where it touches payments, orders or email.
+
+| # | Risk | Plain meaning | Ref |
+|---|---|---|---|
+| 1 | Newsletter does not store signups | The insert is built but never run. The API still says "subscribed". | #1 |
+| 2 | Settlement accepts more than the final state | A non-final webhook status can settle an order. The signed return has no amount check. | #2 |
+| 3 | Abandoned holds last up to a day | Expired holds are released only in the 09:00 UTC run. | #3 |
+| 4 | Late payment after hold expiry | A payment that completes after its hold expired settles without a stock check. | #4 |
+| 5 | Tax and invoice details | Tax is not in order totals. The invoice reads its business details through `process.env`, which may be empty in the Worker. | #5 |
+| 6 | Invoice links | An invoice shows for any order whose long-lived token matches, paid or not. Full-order tokens are in emails. | #6 |
+| 7 | Contact form and bot checks | The contact form cannot succeed while the Turnstile secret is set, because it sends no token. Its customer text goes into the business email unescaped. Turnstile is skipped when its secret is unset on other forms. | #33, #7, #8 |
+| 8 | Fulfilment and refunds are manual | Shipped, delivered, cancelled and refunded emails are not wired. `refundPayment` throws. | #9 |
+| 9 | Origin and CSRF checks can switch off | An unset or `*` `ALLOWED_ORIGIN` disables the origin and CSRF checks. | #31 |
+| 10 | Coupon limits do nothing | `used_count` is never incremented, so usage limits are never enforced. | #15 |
+| 11 | Stock counts, backups and monitoring | Seed quantities are placeholders. No backup job or alert exists. Rate limits are not confirmed. | #14, #18, #27, #28 |
+
+The rule for reuse: fix items 1 to 9 (or record the owner's decision to accept each) before live payments, and run a sandbox test matrix again afterwards. No written matrix exists yet. Build one from `docs/BACKEND.md` §3 and §5.

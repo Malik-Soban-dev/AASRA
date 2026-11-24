@@ -1,343 +1,390 @@
-# AASRA — Headless E-Commerce Store for Pakistan on Cloudflare
+# AASRA — Online store for Pakistan on Cloudflare
 
-A code-only (no WordPress) online store for customers in Pakistan, hosted on Cloudflare Workers (static assets + API) + D1.
-Design reference: https://shop.brunellocucinelli.com (layout and feel only — no logos, text, or trademarks copied).
+A code-only online store (no WordPress). Static pages are built with Astro. One Cloudflare Worker serves the pages and the API. One D1 database holds stock and orders. Payment is by Safepay hosted checkout. Email is sent through Resend.
 
-**Live domain:** https://aasra.shop
+- **Live domain (configured):** https://aasra.shop
+- **Design reference:** an established luxury-fashion site, used for layout and feel only. No logos, copy, photos or product names are reused.
+
+## Documentation
+
+| Document | What it is for |
+|---|---|
+| [`docs/PLAYBOOK.md`](docs/PLAYBOOK.md) | How to build a similar store from zero, and what we learned. Start here. |
+| [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) | Short reference: system shape, directories, data model, rules. |
+| [`docs/BACKEND.md`](docs/BACKEND.md) | Every API endpoint, money and settlement rules, order states, schema, tests. |
+| [`docs/OPERATIONS.md`](docs/OPERATIONS.md) | Runbook: fulfilment, refunds, stock, coupons, deploys, secrets, incidents. |
+| [`docs/KNOWN_ISSUES.md`](docs/KNOWN_ISSUES.md) | Defects and gaps found in the code, with evidence and suggested fixes. Read before taking payments. |
+| [`docs/HISTORY.md`](docs/HISTORY.md) | Build record: every pull request, decisions and reasons, owner rules, dead ends. |
+| [`docs/CATALOG_INDEX.md`](docs/CATALOG_INDEX.md) | Generated list of categories and products. |
+| [`docs/DESIGN_SYSTEM.md`](docs/DESIGN_SYSTEM.md) | Tokens, components, motion, imagery, copy, accessibility. |
+| [`skills/`](skills/) | Rules for anyone (or any agent) editing the project. |
 
 ---
 
 ## Stack
 
 | Layer | Choice |
-|-------|--------|
-| Hosting | Cloudflare Workers — static assets (`dist/`) served from the edge |
-| Backend | Worker API (`src/index.js` + `functions/api/*` compiled via `wrangler pages functions build`) |
-| Database | Cloudflare D1 (SQLite) |
-| Frontend | Astro (static output) |
-| Payments | Safepay (primary) / PayFast (alternative) — hosted checkout only |
-| Bot protection | Cloudflare Turnstile |
-| Email | Transactional provider called from Worker (stubbed — configure Resend/Mailgun/etc.) |
-| Analytics | Cloudflare Web Analytics |
-| Images | WebP/AVIF committed to repo or R2 |
+|---|---|
+| Hosting | Cloudflare Worker with static assets (`dist/`, binding `ASSETS`). `/api/*` always runs the Worker. |
+| Backend | Worker entry `src/index.js`. API handlers in `functions/api/*`, compiled by `wrangler pages functions build` during `npm run build`. |
+| Database | Cloudflare D1, binding `DB`, database `AASRA_DB`. |
+| Front end | Astro, static output. Client-side navigation between browse pages (Astro `ClientRouter`). |
+| Payments | Safepay hosted checkout. Sandbox configured. Live is not approved. |
+| Email | Resend (`functions/lib/email.js`). Send failures are logged and do not block checkout. |
+| Bot protection | Cloudflare Turnstile on checkout. Contact form: see `docs/KNOWN_ISSUES.md` #33. |
+| Scheduled jobs | Cron triggers `*/15 * * * *` and `0 9 * * *` (`functions/scheduled.js`). |
+| Analytics | None configured. |
+| Images | WebP in the repository, under `public/images/`. |
+
+Node **24** (`.nvmrc`, `engines.node >= 24`). Node 22 fails the build.
 
 ---
 
-## Repo layout
+## Repository layout
 
 ```
-/public             static assets, images, robots.txt, _headers, _redirects
-/src                Astro pages, components, styles, lib + src/index.js (Worker entry)
-/data/products.json product catalog (static)
-/data/shipping-rates.json city-based shipping rates
-/functions/api/*    API handlers (Pages Functions format): checkout, pay-balance, webhook, order-lookup, contact, newsletter, invoice, csrf-token
-/functions/scheduled.js cron: balance reminders, auto-cancel, release reservations, reconcile
-/migrations/        D1 schema (0001_initial.sql, 0002_balance_token.sql)
-/tests              automated tests
-/scripts            seed helper + smoke test (run against `wrangler dev`)
-/public/data/       public copies of products.json and shipping-rates.json
+data/catalog/site.json              brand text, hero, nav, footer              (edit)
+data/catalog/<gender>/<cat>.json    one file per category, with its products    (edit)
+data/products.json                  GENERATED from data/catalog (do not edit)
+data/shipping-rates.json            shipping fee by city; free over PKR 20,000  (edit)
+public/data/                        public copies of products.json and shipping-rates.json
+public/images/                      product, hero and campaign images
+scripts/build-catalog.js            validates and builds the catalogue
+scripts/seed-d1.js                  prints SQL for stock and the sample coupon
+scripts/smoke-worker.mjs            smoke test against a running Worker
+scripts/safepay-smoke.js            gateway check
+src/index.js                        Worker entry (API router, scheduled handler)
+src/pages/                          routes
+src/components/layout/              page shell (StoreLayout)
+src/components/store/               storefront components
+src/styles/tokens.css               design values
+src/styles/store.css                storefront styles
+functions/api/*.js                  API handlers
+functions/api/_middleware.js        CORS, origin and CSRF checks for /api/*
+functions/lib/                      pricing, stock, gateway, email, invoice, reconcile, validation
+functions/scheduled.js              cron jobs
+migrations/                         D1 schema: 0001_initial.sql, 0002_balance_token.sql
+tests/run.js                        46 checks
+docs/                               documentation (see above)
 ```
 
 ---
 
-## Features
+## Pages
 
-- **Pages**: Home, Shop (filters, search), Product (PDP), Cart drawer, Checkout, Order success, Payment cancelled, Pay balance, Order lookup, Wishlist, Size guide, Shipping info, About, Contact, FAQ, Privacy, Terms, Return/Refund, Deposit/Cancellation policy, Shipping policy, Cookie policy, Accessibility statement, custom 404.
-- **Invoices/receipts**: `GET /api/invoice?order_id=&token=&type=deposit|balance|final` — HTML invoice with itemized totals, sales tax fields, deposit/balance breakdown, print-to-PDF.
-- **Transactional email templates**: order, payment, balance, shipping, and cancellation messages are templated. Sending remains disabled until a real email-provider adapter and credentials are configured.
-- **Support**: email contact links. No placeholder phone/WhatsApp destination is published.
-- **Newsletter**: consent-based signup, stored privately in D1 (never in repo).
-- **Security**: CSRF double-submit cookie on state-changing endpoints; CORS restricted to `ALLOWED_ORIGIN`; checkout fails closed unless D1, Turnstile, and a verified Safepay configuration are present. No mock checkout URL is returned. Email sending reports unconfigured instead of claiming success. Do not enable the payment/webhook protocol guard until Safepay's merchant contract is confirmed.
-- **Security headers**: HSTS, CSP, `X-Frame-Options: DENY`, `X-Content-Type-Options`, `Referrer-Policy`, `Permissions-Policy`; HTTPS + minimum TLS 1.2.
-- **Accessibility**: alt text, visible focus, labeled fields, keyboard navigation, reduced motion, skip-to-content links, accessibility statement page.
-- **Payments**: full online or deposit + balance; two payments tracked separately; balance paid via unguessable expiring token; order lookup requires order ID + phone.
+- **Home** (`/`), **Women** and **Men** (`/women`, `/men`), with category pages and sub-category pages (for example `/women/footwear/boots`).
+- **New In** (`/<gender>/new-in`), **Shop** (`/shop`, with category, type, search and sort in the URL), **Product** (`/product/<slug>`).
+- **Bag and checkout:** `/cart`, `/checkout`, `/order-success`, `/payment-cancelled`, `/order-lookup`.
+- **Legacy:** `/pay-balance`, `/deposit-policy` (deposits were removed; see below).
+- **Information:** about, contact, FAQ, shipping, shipping policy, size guide, boutiques, services, appointment, responsibility, journal, wishlist, gifts, new arrivals.
+- **Policies:** privacy, terms, return policy, cookie policy, accessibility statement.
+- **Custom 404.**
 
 ---
 
-## Business rules (decided defaults)
+## Business rules (published defaults)
 
 | Rule | Value |
-|------|-------|
-| Currency | PKR (whole rupees, no floats) |
+|---|---|
+| Currency | PKR, whole rupees, no floats |
 | Countries served | Pakistan only |
-| Cash on Delivery | Not accepted |
-| Payment options | Pay in full online only (deposits removed) |
-| Deposit percentage | Not used (deposits removed) |
-| Balance deadline | Not used (deposits removed) |
-| Stock reservation hold | 15 minutes at checkout |
-| Free shipping threshold | 20,000 PKR |
-| Courier | TCS (Pakistan) |
-| Dispatch | Within 2 business days of payment confirmation |
-| Delivery estimate | 2–7 days by city |
-| Return window | 7 days of delivery, unused, original packaging |
-| Refund method | Original payment method, 7–14 business days |
+| Cash on delivery | Not accepted |
+| Payment | Full payment online only. Deposits were removed. |
+| Stock hold at checkout | 15 minutes |
+| Free shipping threshold | PKR 20,000 (same wording in the header, home, bag, FAQ and cart) |
+| Shipping fees | `data/shipping-rates.json` (Karachi and Lahore 250, Islamabad and Rawalpindi 300, Quetta 500, other cities 600) |
+| Courier | TCS (to confirm rates by city) |
+| Return window | 7 days from delivery, unused, in original packaging |
+| Refund | Original payment method |
 
-> These are published defaults. Confirm against your gateway, accountant, and lawyer before public launch.
+> These are published defaults. Confirm them with the gateway, the accountant and a lawyer before public launch. Dispatch and delivery time claims in the policy pages are not yet confirmed.
 
 ---
 
 ## Quick start
 
-### 1. Install dependencies
+### 1. Install
 
 ```bash
-npm install
+npm ci
 ```
 
 ### 2. Create the D1 database
 
-Dashboard: **Storage & Databases → D1 → Create database** → name it `AASRA_DB`.
-Copy the **Database ID**, open `wrangler.toml`, and uncomment the `[[d1_databases]]` block, pasting the ID into `database_id`.
+Dashboard: **Storage & Databases → D1 → Create database** → `AASRA_DB`. Or, with `wrangler login`: `npx wrangler d1 create AASRA_DB`.
 
-Or from a terminal with Cloudflare auth: `npx wrangler d1 create AASRA_DB`.
+`wrangler.toml` already contains a `[[d1_databases]]` block for `AASRA_DB`. For a new site, replace its `database_id` with the new database's ID.
 
-### 3. Run migrations
+### 3. Apply the migrations
 
-Easiest: open the database in the dashboard → **Console**, and paste the contents of `migrations/0001_initial.sql`, then `migrations/0002_balance_token.sql`.
+Easiest: dashboard → D1 → database → **Console**. Paste `migrations/0001_initial.sql`, then `migrations/0002_balance_token.sql`. Do not paste either file twice.
 
-Or: `npm run d1:execute` and `npm run d1:execute:0002` (requires `wrangler login`).
+Or, with `wrangler login`: `npm run d1:migrate` (applies both to the remote database).
 
-### 4. Seed stock (optional)
+### 4. Seed stock (optional, once)
 
 ```bash
-node scripts/seed-d1.js | npx wrangler d1 execute AASRA_DB --remote -y
+node scripts/seed-d1.js > /tmp/seed.sql
+npx wrangler d1 execute AASRA_DB --remote --file=/tmp/seed.sql
 ```
 
-### 5. Configure secrets (never commit these)
+The seed uses plain `INSERT`s. Running it twice on the same database fails on the primary key. Seed quantities are placeholders (`KNOWN_ISSUES.md` #14).
 
-Dashboard: **Workers & Pages → aasra → Settings → Variables and Secrets → Add** (type **Secret**):
+### 5. Set the secrets (never commit them)
 
-- `TURNSTILE_SECRET_KEY`
-- `SAFEPAY_SECRET_KEY`
-- `SAFEPAY_WEBHOOK_SECRET`
-- `EMAIL_PROVIDER_API_KEY`
+```bash
+npx wrangler secret put TURNSTILE_SECRET_KEY
+npx wrangler secret put SAFEPAY_SECRET_KEY
+npx wrangler secret put SAFEPAY_WEBHOOK_SECRET
+npx wrangler secret put EMAIL_PROVIDER_API_KEY
+```
 
-Secrets persist across deployments. All non-secret variables already live in `wrangler.toml [vars]` — no dashboard step needed for them.
+Optional: `SAFEPAY_V1_SECRET` (only if the Safepay dashboard shows a separate v1 secret; otherwise the signed return uses `SAFEPAY_SECRET_KEY`). Enter each value at the prompt. Do not put it on the command line. The dashboard path is **Workers & Pages → aasra → Settings → Variables and Secrets** (type **Secret**).
 
-### 6. Configure Turnstile
+Non-secret variables are in `wrangler.toml` `[vars]`.
 
-Get a sitekey and secret from the Cloudflare dashboard (Turnstile). Add the sitekey to `src/pages/checkout.astro` and `src/pages/contact.astro` (replace the placeholder `0x0...`).
+### 6. Turnstile
 
-### 7. Configure the payment gateway webhook
+Create a Turnstile widget in the Cloudflare dashboard. Put the **site key** in the GitHub Actions repository variable `PUBLIC_TURNSTILE_SITE_KEY`. It is read at build time (`src/pages/checkout.astro`), so changing it needs a new build and deploy. Put the **secret** in `TURNSTILE_SECRET_KEY` (step 5).
 
-In your gateway dashboard, set the webhook URL to:
+### 7. Safepay webhook
+
+In the Safepay dashboard, set the webhook URL for the environment you are using:
 
 ```
 https://aasra.shop/api/webhook
 ```
 
-Use separate URLs for staging (sandbox keys) and production (live keys). **Never use live keys in preview.**
+Sandbox and live are separate. Use sandbox keys in staging and live keys only in production. **Never use live keys in preview.**
 
-### 8. Add the custom domain
+### 8. Custom domain
 
-Dashboard: **Workers & Pages → aasra → Settings → Domains & Routes → Add → Custom domain** → `aasra.shop`.
-The zone is already on Cloudflare, so the DNS record is created automatically. Enable HSTS and WAF rules on the zone.
+Dashboard: **Workers & Pages → aasra → Settings → Domains & Routes → Add → Custom domain**. Set `PUBLIC_BASE_URL` to the same domain. Enable HSTS and WAF rules on the zone. The WAF rate-limit rules are described in `docs/OPERATIONS.md` §6. They are not confirmed as created.
 
-### 9. Develop locally
-
-```bash
-npm run dev          # builds frontend + compiles functions, then serves at http://localhost:8787
-```
-
-Then run the smoke test against the local server:
+### 9. Run locally
 
 ```bash
+npm run dev                                    # build, then wrangler dev on http://localhost:8787
 BASE_URL=http://127.0.0.1:8787 node scripts/smoke-worker.mjs
+npm test
 ```
 
-### 10. Build & deploy
+Local development needs `.dev.vars` (copy `.dev.vars.example`). Never commit it. Without D1, the stock endpoint returns `stock: null` and checkout returns 503. That is expected.
 
-Git-connected: every push to `main` runs Build command `npm run build` and Deploy command `npx wrangler deploy` automatically.
+### 10. Build and deploy
 
-Manual:
+Every push to `main` runs `.github/workflows/deploy.yml`: `npm ci`, `npm run build` (with `PUBLIC_TURNSTILE_SITE_KEY` from the repository variable), then `npx wrangler deploy`. It needs the repository secrets `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID`. The workflow can also be run by hand from the Actions tab.
+
+Manual deploy from a terminal: `npm run build && npm run deploy`.
+
+Before merging a change to `functions/`, check that the Worker bundles:
 
 ```bash
-npm run build
-npm run deploy       # npx wrangler deploy
+npx wrangler deploy --dry-run --outdir /tmp/wdry
 ```
 
 ---
 
 ## Environment variables
 
-| Variable | Type | Description |
-|----------|------|-------------|
-| `DB` | D1 binding | The D1 database (set in wrangler.toml) |
-| `PUBLIC_BASE_URL` | var | `https://aasra.shop` |
-| `DEFAULT_DEPOSIT_PERCENT` | var | Deposit % (default 30) |
-| `BALANCE_REMINDER_DAYS` | var | Reminder schedule, e.g. "3,1" |
-| `BALANCE_CANCEL_AFTER_DAYS` | var | Auto-cancel after N days (default 7) |
-| `TAX_RATE_PCT` | var | Sales tax rate (verify with accountant) |
-| `BUSINESS_NAME` | var | Business name for invoices |
-| `BUSINESS_ADDRESS` | var | Business address for invoices |
-| `BUSINESS_PHONE` | var | Business phone for invoices |
-| `BUSINESS_EMAIL` | var | Business email for invoices |
-| `TAX_REGISTRATION_NO` | var | Tax/GST registration number |
-| `TURNSTILE_SECRET_KEY` | secret | Cloudflare Turnstile secret key |
-| `SAFEPAY_SECRET_KEY` | secret | Safepay API secret key |
-| `SAFEPAY_WEBHOOK_SECRET` | secret | Safepay webhook signature secret |
-| `EMAIL_PROVIDER_API_KEY` | secret | Transactional email API key |
-| `ALLOWED_ORIGIN` | secret | CORS allowed origin (`https://aasra.shop`) |
+Names and kinds. Values are never written in this file.
+
+| Name | Kind | Purpose |
+|---|---|---|
+| `DB` | D1 binding | `AASRA_DB` |
+| `ASSETS` | binding | Static assets (`dist/`) |
+| `PUBLIC_BASE_URL` | var | Site URL used in emails and links |
+| `ALLOWED_ORIGIN` | var | Comma-separated origins allowed to call the API. If unset or `*`, the origin and CSRF checks are switched off (`KNOWN_ISSUES.md` #31). |
+| `TAX_RATE_PCT` | var | Tax rate for invoices. `0` and marked VERIFY. Not added to order totals (`KNOWN_ISSUES.md` #5). |
+| `BUSINESS_NAME`, `BUSINESS_EMAIL` | var | Invoice and receipt details |
+| `BUSINESS_ADDRESS`, `TAX_REGISTRATION_NO` | var | Empty. Required before live. |
+| `BUSINESS_PHONE` | read by `process.env` | Not set in `wrangler.toml`. See `KNOWN_ISSUES.md` #5. |
+| `EMAIL_PROVIDER`, `EMAIL_FROM`, `EMAIL_FROM_NAME` | var | Email settings. Provider `resend`. |
+| `EMAIL_PROVIDER_API_KEY` | secret | Resend API key |
+| `SAFEPAY_ENABLED`, `SAFEPAY_PROTOCOL_VERIFIED` | var | Both `true` in the production config. Previews set `SAFEPAY_ENABLED` to `false`. |
+| `SAFEPAY_BASE_URL`, `SAFEPAY_CHECKOUT_URL` | var | Sandbox hosts now. Live hosts are not approved. |
+| `SAFEPAY_ENVIRONMENT` | read by `gateway.js` | Not set in `wrangler.toml`. Defaults from the sandbox setting. |
+| `SAFEPAY_API_KEY` | var | Public Safepay key (`sec_…`), kept in `wrangler.toml` |
+| `SAFEPAY_SECRET_KEY` | secret | Safepay secret key |
+| `SAFEPAY_WEBHOOK_SECRET` | secret | Webhook signature secret (`X-SFPY-SIGNATURE`) |
+| `SAFEPAY_V1_SECRET` | secret, optional | Signed return. Falls back to `SAFEPAY_SECRET_KEY`. |
+| `TURNSTILE_SECRET_KEY` | secret | Turnstile server check |
+| `PUBLIC_TURNSTILE_SITE_KEY` | GitHub Actions variable | Build-time site key |
+| `PAYFAST_ENABLED` | var | `false`. PayFast is not built (`KNOWN_ISSUES.md` #32). |
+| `DEFAULT_DEPOSIT_PERCENT`, `BALANCE_REMINDER_DAYS`, `BALANCE_CANCEL_AFTER_DAYS` | var | Legacy deposit settings. Still read by the scheduled jobs. |
+
+GitHub Actions secrets: `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`.
 
 ---
 
 ## How it works
 
-### Checkout flow
-1. Browser POSTs `/api/checkout` with cart (sku + qty only), payment type, customer details, coupon, Turnstile token.
-2. Worker validates Turnstile + CSRF, loads **server-side** prices from `products.json`, checks/reserves stock (15-min hold), applies coupon, adds shipping, computes total/deposit/balance.
-3. Worker creates the order (pending-payment / pending-deposit), stores an unguessable `balance_token`, creates a gateway hosted-checkout session, returns the checkout URL.
-4. Browser redirects to the gateway. The **webhook** (not the redirect) is the source of truth.
-5. `POST /api/webhook` verifies the signature on the raw body, matches tracker + amount, is idempotent, marks payment paid, updates order state, confirms stock reservation, emails customer.
+### Checkout
 
-### Deposit orders (removed)
-Deposits were removed: checkout accepts only `payment_type=full`. `POST /api/pay-balance` and its page still exist in code but are not linked; `src/pages/pay-balance.astro` reads its parameters at build time and needs a decision before use. See `docs/PLAYBOOK.md` §11.
+1. The browser posts `POST /api/checkout` with SKUs and quantities only (never prices), the customer details, an optional coupon and the Turnstile token.
+2. The Worker checks Turnstile and CSRF, prices the cart on the server, applies the coupon, adds shipping, and reserves stock for 15 minutes.
+3. The Worker creates the order (`pending-payment`), gives it a `balance_token`, creates a Safepay hosted-checkout session and returns its URL.
+4. The browser goes to Safepay. The **webhook**, not the redirect, is the source of truth for payment.
+5. `POST /api/webhook` checks the signature on the raw body, matches the tracker, order and amount, records the payment idempotently, marks the order paid, and sends the paid email.
+
+The exact rules, including the known gaps in step 5, are in `docs/BACKEND.md` §5 and `docs/KNOWN_ISSUES.md` #2.
 
 ### Order lookup
-`GET /api/order-lookup?order_id=...&phone=...` — requires both order ID and phone. Returns only that customer's own order; no exposure of other customers' data.
+
+`POST /api/order-lookup` with the order ID and phone number. Both must match. It returns that customer's order only.
 
 ### Invoices
-`GET /api/invoice?order_id=...&token=...&type=deposit\|balance\|final` — authorized by the order's unguessable `balance_token`. Includes itemized totals and sales tax fields.
 
-### Money invariant
-`deposit_amount + balance_amount === total_amount` exactly, all integers (whole PKR). No floats.
+`GET /api/invoice?order_id=…&token=…&type=deposit|balance|final`. The `balance_token` is the access token. It has no expiry, and the invoice does not check that the order is paid (`KNOWN_ISSUES.md` #6).
+
+### Money
+
+Prices are whole PKR, stored as integers. Order prices are copied into the order at checkout, so later price edits do not change existing orders. For deposit orders (legacy), `deposit + balance` must equal `total` (`assertMoneyInvariant`). Full orders carry zero deposit and balance.
+
+### Deposits (removed)
+
+Checkout accepts only `payment_type=full`. The balance-payment endpoint and page (`/api/pay-balance`, `/pay-balance`) still exist in code. They are not linked from the store and need a decision before use (`docs/PLAYBOOK.md` §11).
 
 ---
 
 ## Editing products and stock
 
 ### Products
-Edit `data/products.json` (id, slug, name, description, category, price_pkr, images[], variants[], deposit_eligible, tags, seo, visible). Rebuild and redeploy to publish changes. Price edits do **not** affect existing orders (prices are snapshotted at checkout).
 
-### Stock
-Stock lives in D1 (`stock` table), not in products.json. Seed or update via:
+Edit the category files in `data/catalog/<gender>/<category>.json`. Then run:
 
 ```bash
-npx wrangler d1 execute AASRA_DB --command="UPDATE stock SET quantity_available = 10 WHERE sku = 'LIN-IV-135X240'"
+npm run catalog:build      # validates, writes data/products.json and public/data/products.json
+npm test
 ```
 
-Seed helper:
+The build fails on missing required fields, an empty size, colour or image list, a bad size, or a sub-category key that the category does not list. It does not check that slugs or SKUs are unique (`KNOWN_ISSUES.md` #11). Do not commit the two generated `products.json` files without the owner's agreement.
+
+Each size and colour pair becomes a SKU, in the form `AS-<id>-<colour>-<size>`, for example `AS-W001-IVO-XS`. Do not rename SKUs after launch.
+
+### Stock
+
+Stock is in the D1 `stock` table, one row per SKU. Set a count:
+
 ```bash
-node scripts/seed-d1.js
+npx wrangler d1 execute AASRA_DB --remote --command "UPDATE stock SET quantity_available = 10, updated_at = strftime('%Y-%m-%dT%H:%M:%fZ','now') WHERE sku = 'AS-W001-IVO-XS';"
 ```
 
 ---
 
 ## Refunds
 
-Refunds are done through the gateway dashboard/API. After refunding:
-1. Update the order status to `refunded` in D1.
-2. Restock the items (`UPDATE stock SET quantity_available = quantity_available + <qty> WHERE sku = ...`).
-3. Email the customer using the `refundedEmail` template.
+Refunds are manual. `refundPayment` throws "not implemented" (`KNOWN_ISSUES.md` #9). Follow `docs/OPERATIONS.md` §4:
+
+1. Refund at Safepay.
+2. Set the order to `refunded` in D1, and log the event.
+3. Restock only goods that came back unused.
+4. Email the customer. The `refundedEmail` template exists, but no code sends it.
 
 ---
 
 ## Key rotation
 
-If any secret is leaked, rotate immediately:
-
-```bash
-npx wrangler pages secret put TURNSTILE_SECRET_KEY   # new value
-npx wrangler pages secret put SAFEPAY_SECRET_KEY
-npx wrangler pages secret put SAFEPAY_WEBHOOK_SECRET
-npx wrangler pages secret put EMAIL_PROVIDER_API_KEY
-```
-
-Redeploy after rotating. Old keys are invalidated immediately by Cloudflare.
+1. Rotate the value at its provider first: Safepay, Resend, or Cloudflare Turnstile.
+2. Set the new value with `npx wrangler secret put <NAME>`.
+3. Check the logs for signature failures over the next hour (`docs/OPERATIONS.md` §10).
 
 ---
 
 ## Backup and restore
 
-### Backup
+**Backup** (the file contains customer data; keep it out of Git and out of chat):
+
 ```bash
-npx wrangler d1 export AASRA_DB --output=backup-$(date +%F).sql
+npx wrangler d1 export AASRA_DB --remote --output=backup-$(date +%F).sql
 ```
 
-### Restore
+**Restore** (into a database that is empty or being replaced; check the target first):
+
 ```bash
-npx wrangler d1 execute AASRA_DB --file=backup-2026-11-16.sql
+npx wrangler d1 execute AASRA_DB --remote --file=backup-YYYY-MM-DD.sql
 ```
 
-Schedule daily exports via a cron job or Cloudflare Pages function.
+No scheduled backup is configured yet (`KNOWN_ISSUES.md` #27). Restore has not been tested.
 
 ---
 
 ## Testing
 
 ```bash
-npm test
+npm test          # 46 checks: validation, money, signatures, order states, reconciliation, invoices, email templates
+npm run typecheck # astro check
+npm run smoke     # against a running Worker
 ```
 
-Tests cover pricing, deposit math, coupons, webhook signature verification, stock logic, order state transitions, invoice generation, and email templates. All 27 tests pass.
+Not covered by the tests: newsletter storage, scheduled jobs, the signed return's HTTP behaviour, the stock race, the CORS and CSRF paths, and catalogue uniqueness. See `docs/BACKEND.md` §12.
 
 ---
 
-## Launch checklist
+## Launch checklist (status at snapshot `eb7e511`)
 
-- [ ] D1 database created and migrations run
-- [ ] Secrets configured (Turnstile, Safepay, email, CORS origin)
-- [ ] Turnstile sitekey added to checkout and contact pages
-- [ ] Gateway webhook URL set to `https://aasra.shop/api/webhook`
-- [ ] Custom domain `aasra.shop` added in Cloudflare Pages
-- [ ] HTTPS, HSTS, WAF rules enabled
-- [ ] Email domain: SPF, DKIM, DMARC records configured; send test emails
-- [ ] Tax rate and registration number verified with accountant
-- [ ] Full test matrix run on staging (sandbox keys)
-- [ ] Small real order placed (deposit + balance), settlement verified, refunded
-- [ ] Soft launch with friends and family; review first 20 orders
+- [x] D1 database created and migrations applied (sandbox)
+- [x] Secrets set (sandbox)
+- [x] Turnstile site key in the build
+- [ ] Safepay webhook URL confirmed in the sandbox dashboard
+- [ ] Safepay webhook matching confirmed by a completed PAID test order
+- [ ] Contact form works (`KNOWN_ISSUES.md` #33)
+- [ ] Known issues #1–#5 fixed or accepted in writing by the owner
+- [ ] WAF rate-limit rules created (`docs/OPERATIONS.md` §6)
+- [ ] Email DNS: SPF, DKIM and DMARC checked with `nslookup`
+- [ ] Tax rate, registration number and business address confirmed with the accountant
+- [ ] Real stock counts set
+- [ ] Backups scheduled and a restore tested
+- [ ] A small real order placed, paid, shipped and refunded (requires live payments, not approved)
+- [ ] Soft launch with friends and family; review the first 20 orders
 
 ---
 
 ## Failure runbook
 
-| Failure | Action |
-|---------|--------|
-| Webhook missing | Cron reconciliation job checks pending payments against gateway |
-| Stuck unpaid balance | Auto-cancel after `BALANCE_CANCEL_AFTER_DAYS`; release reservation |
-| Double payment | Idempotency by `raw_event_id`; second webhook ignored |
-| Stock oversell | 15-minute reservation + server-side revalidation at checkout |
-| Email failure | Webhook continues; error logged to `order_events` |
-| Key leak | Rotate immediately via `wrangler pages secret put` |
-| Order lookup returns nothing | Customer must provide exact order ID + phone used at checkout |
-| Balance link expired | Order auto-cancelled after 7 days; customer must place a new order |
+Full runbook: `docs/OPERATIONS.md` §14. Short form:
+
+| Failure | What happens | Action |
+|---|---|---|
+| Webhook missing | The 15-minute reconciliation checks pending payments with Safepay. | Check the logs for `[RECONCILE]`. |
+| Customer paid, order still pending | Reconciliation or the order lookup settles it. | Check the Safepay dashboard. Do not mark paid by hand. |
+| Double payment | Recorded as `duplicate` and flagged `refund_required`. The order stays paid. | Refund the second payment at Safepay. |
+| Stock oversell | A hold lasts 15 minutes. Expired holds are released only in the daily run. A late payment can settle without a stock check (`KNOWN_ISSUES.md` #3, #4). | Check stock by hand after a late payment. |
+| Email failure | Logged as `email_failed` in `order_events`. Checkout and payment continue. | Check Resend, then send the email by hand. |
+| Key leak | — | Rotate at the provider, then `npx wrangler secret put` (see Key rotation). |
+| Order lookup returns nothing | The order ID or phone does not match. | The customer must give the exact order ID and the phone used at checkout. |
 
 ---
 
-## Monitoring and backups
+## Monitoring
 
-- Worker logs and error alerts (email/WhatsApp) for failed checkouts, failed webhooks, email failures
-- Uptime checks on the homepage and API
-- Daily export of orders to backup (CSV or Sheet)
-- Documented restore steps (see Backup and restore)
-- Keys stored in a password manager
+- **Workers Logs** are enabled in `wrangler.toml`. Look for `[WEBHOOK]`, `[RECONCILE]`, `[CHECKOUT]` and `email_failed`.
+- Error alerts and uptime checks are **not configured** (`KNOWN_ISSUES.md` #28).
 
-### Weekly checks
-- Gateway settlements vs. orders
-- Unpaid balances, failed payments, stock accuracy, returns, support backlog
+Weekly checks, daily queries and the shipping queue are in `docs/OPERATIONS.md` §2.
 
 ---
 
-## Open decisions — user-supplied items still needed
+## Open decisions (owner)
 
-Before public launch, you must supply:
+Before public launch, the owner supplies or confirms:
 
-1. **D1** — create production `AASRA_DB`, add its real `database_id` to `wrangler.toml`, apply migrations, and seed/verify stock.
-2. **Safepay** — merchant keys plus written confirmation of checkout endpoint/auth/request/response and webhook event/signature/amount contract. Keep `SAFEPAY_PROTOCOL_VERIFIED=false` until confirmed.
-3. **Turnstile** — configure build-time `PUBLIC_TURNSTILE_SITE_KEY` and Worker secret `TURNSTILE_SECRET_KEY`.
-4. **Email** — select a provider, implement its API adapter, set credentials and verified sender domain.
-5. **Business details** — legal address/phone and tax/invoice requirements from the owner and accountant.
-6. **Couriers** — confirm TCS rates by city; update `data/shipping-rates.json`.
-7. **Brand content** — descriptions, size guides, policy text and email templates.
-8. **Budget and launch date**.
+1. **Safepay:** merchant onboarding (step 1 of 6), live keys, and written confirmation of the checkout, webhook and return contract. The config already sets `SAFEPAY_PROTOCOL_VERIFIED=true`, based on Safepay's official SDK. That is not the same as a confirmed live contract.
+2. **Business details:** legal address, phone, tax registration, and tax rules confirmed with an accountant.
+3. **Couriers:** TCS rates by city, then update `data/shipping-rates.json`.
+4. **Content:** descriptions, size guides, policy text and email wording.
+5. **Photos:** real product, colour and denim photos, and footwear images. Placeholders until then.
+6. **Stock:** real counts.
+7. **Retention:** how long customer data is kept (`docs/OPERATIONS.md` §9).
+8. **Budget and launch date.**
 
 ---
 
 ## Security notes
 
-- Never put secrets in code. `.env` and `.dev.vars` are in `.gitignore`.
-- Never trust the browser for prices, stock, discounts, or payment status.
-- All amounts are integers (whole PKR); no floats.
-- Webhook: verify signature on raw body, match tracker and amount, idempotent processing.
-- Hosted checkout only — no card data on our systems.
-- 2FA on Cloudflare, GitHub, gateway account, email provider, and domain registrar. Registrar lock enabled.
+- Never put secrets in code. `.env`, `.dev.vars` and `.dev.vars.example` values stay out of Git. Only names go in the example files.
+- Never trust the browser for prices, stock, discounts or payment status. The server decides them.
+- Amounts are integers (whole PKR).
+- Checkout fails closed: it returns 503 unless D1, Turnstile and Safepay are configured. No mock checkout URL is returned.
+- Security headers (HSTS, CSP, `X-Frame-Options: DENY`, `X-Content-Type-Options`, `Referrer-Policy`, `Permissions-Policy`) are in `public/_headers`. The CSP still allows `'unsafe-inline'` (`KNOWN_ISSUES.md` #17).
+- Known security gaps are listed in `docs/KNOWN_ISSUES.md`. Read it before live payments.
