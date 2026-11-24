@@ -15,7 +15,7 @@ const megaFeature = {
 };
 ---
 
-<header class="as-header" id="as-header">
+<header class="as-header" id="as-header" transition:persist>
   <div class="as-announce" role="note">Free delivery on orders over PKR 20,000 &nbsp;·&nbsp; Dispatched in 2 days &nbsp;·&nbsp; Returns within 7 days</div>
   <div class="container as-header-inner">
     <nav class="as-nav-main" aria-label="Primary">
@@ -71,7 +71,7 @@ const megaFeature = {
 </header>
 
 <!-- mobile drawer -->
-<div class="as-drawer" id="as-drawer" aria-hidden="true" inert>
+<div class="as-drawer" id="as-drawer" transition:persist aria-hidden="true" inert>
   <div class="as-drawer-head">
     <span class="as-logo" style="color:var(--as-ink)">AASRA</span>
     <button type="button" class="as-icon-btn" id="as-drawer-close" aria-label="Close menu">
@@ -102,7 +102,7 @@ const megaFeature = {
 </div>
 
 <!-- search overlay -->
-<div class="as-drawer" id="as-search" aria-hidden="true" inert style="height:auto;bottom:auto">
+<div class="as-drawer" id="as-search" transition:persist aria-hidden="true" inert style="height:auto;bottom:auto">
   <div class="as-drawer-head">
     <span class="as-kicker">Search</span>
     <button type="button" class="as-icon-btn" id="as-search-close" aria-label="Close search">
@@ -117,13 +117,13 @@ const megaFeature = {
 <script>
   // Header: solid on scroll, mega menus with hover intent, drawer, search, bag count.
   const header = document.getElementById('as-header');
-  const hasHero = !!document.querySelector('[data-hero], .as-home-hero');
   // Transparent at the top of a hero page. Scrolling down shows the coloured bar; scrolling up hides it.
   // Pages without a hero are always coloured. Mega menu / drawer open keeps it visible.
   let lastY = window.scrollY;
   const onScroll = () => {
     const y = window.scrollY;
     const open = header.classList.contains('is-open');
+    const hasHero = !!document.querySelector('[data-hero], .as-home-hero');
     header.classList.toggle('is-solid', !hasHero || y > 40 || open);
     // Scrolling down hides the header; scrolling up brings it back.
     if (open || y <= 40 || y < lastY - 2) header.classList.remove('is-hidden');
@@ -226,4 +226,13 @@ const megaFeature = {
   syncBag();
   window.addEventListener('storage', syncBag);
   window.addEventListener('aasra:cart', syncBag);
+
+  // The header persists across client-side navigation: reset per-page state on each page.
+  document.addEventListener('astro:page-load', () => {
+    closeMegas();
+    closeAll();
+    header.classList.remove('is-hidden');
+    onScroll();
+    measureHeader();
+  });
 </script>

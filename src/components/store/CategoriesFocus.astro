@@ -70,30 +70,42 @@ const focusGroups = raw.map((g, _, all) => ({
   </section>
 
   <script>
-    // Fade the right edge of the category names only while there are more names to scroll to.
-    const focusList = document.querySelector('.as-focus-list ul');
-    const markOverflow = () => focusList?.classList.toggle('is-overflow', focusList.scrollWidth - focusList.clientWidth > 4 && focusList.scrollLeft < focusList.scrollWidth - focusList.clientWidth - 4);
-    if (focusList) { markOverflow(); focusList.addEventListener('scroll', markOverflow, { passive: true }); window.addEventListener('resize', markOverflow); }
-    document.querySelectorAll('[data-focus]').forEach((btn) => {
-      btn.addEventListener('click', () => {
-        const key = btn.dataset.focus;
-        document.querySelectorAll('[data-focus]').forEach((b) => {
-          const on = b === btn;
-          b.classList.toggle('is-active', on);
-          b.setAttribute('aria-pressed', on ? 'true' : 'false');
-        });
-        document.querySelectorAll('[data-focus-panel]').forEach((panel) => {
-          panel.hidden = panel.dataset.focusPanel !== key;
-        });
-        document.querySelectorAll('[data-focus-feature]').forEach((img) => {
-          img.hidden = img.dataset.focusFeature !== key;
+    // Categories in Focus: name-list overflow fade, tab switching, prev/next arrows.
+    // Re-initialised on each client-side navigation.
+    const markFocusOverflow = () => {
+      const focusList = document.querySelector('.as-focus-list ul');
+      if (!focusList) return;
+      // Fade the right edge of the names only while there are more names to scroll to.
+      focusList.classList.toggle('is-overflow', focusList.scrollWidth - focusList.clientWidth > 4 && focusList.scrollLeft < focusList.scrollWidth - focusList.clientWidth - 4);
+    };
+    window.addEventListener('resize', markFocusOverflow);
+
+    const initFocus = () => {
+      const focusList = document.querySelector('.as-focus-list ul');
+      if (focusList) { markFocusOverflow(); focusList.addEventListener('scroll', markFocusOverflow, { passive: true }); }
+      document.querySelectorAll('[data-focus]').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const key = btn.dataset.focus;
+          document.querySelectorAll('[data-focus]').forEach((b) => {
+            const on = b === btn;
+            b.classList.toggle('is-active', on);
+            b.setAttribute('aria-pressed', on ? 'true' : 'false');
+          });
+          document.querySelectorAll('[data-focus-panel]').forEach((panel) => {
+            panel.hidden = panel.dataset.focusPanel !== key;
+          });
+          document.querySelectorAll('[data-focus-feature]').forEach((img) => {
+            img.hidden = img.dataset.focusFeature !== key;
+          });
         });
       });
-    });
-    // Previous / next arrows move the visible row by one card.
-    const visibleTrack = () => document.querySelector('.as-focus-panel:not([hidden]) .as-focus-track');
-    const step = (t) => (t.querySelector('.as-focus-card')?.getBoundingClientRect().width || 280) + 14;
-    document.querySelector('[data-focus-prev]')?.addEventListener('click', () => { const t = visibleTrack(); t?.scrollBy({ left: -step(t), behavior: 'smooth' }); });
-    document.querySelector('[data-focus-next]')?.addEventListener('click', () => { const t = visibleTrack(); t?.scrollBy({ left: step(t), behavior: 'smooth' }); });
+      // Previous / next arrows move the visible row by one card.
+      const visibleTrack = () => document.querySelector('.as-focus-panel:not([hidden]) .as-focus-track');
+      const step = (t) => (t.querySelector('.as-focus-card')?.getBoundingClientRect().width || 280) + 14;
+      document.querySelector('[data-focus-prev]')?.addEventListener('click', () => { const t = visibleTrack(); t?.scrollBy({ left: -step(t), behavior: 'smooth' }); });
+      document.querySelector('[data-focus-next]')?.addEventListener('click', () => { const t = visibleTrack(); t?.scrollBy({ left: step(t), behavior: 'smooth' }); });
+    };
+    initFocus();
+    document.addEventListener('astro:page-load', initFocus);
   </script>
 

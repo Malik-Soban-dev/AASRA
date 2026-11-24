@@ -30,7 +30,7 @@ product.colors.forEach((c) => addPhoto(c.image, c.name));
 product.images.forEach((src) => addPhoto(src, ''));
 ---
 
-<StoreLayout title={`${product.name} — AASRA`}>
+<StoreLayout spa title={`${product.name} — AASRA`}>
   <div class="container">
     <nav class="as-breadcrumb" aria-label="Breadcrumb">
       <a href="/">Home</a><span>/</span>
@@ -137,8 +137,11 @@ product.images.forEach((src) => addPhoto(src, ''));
     <button type="button" class="as-btn as-btn--solid" id="as-sticky-add" disabled>Select a size</button>
   </div>
 
-  <script define:vars={{ productData: product }}>
+  <script data-astro-rerun define:vars={{ productData: product }}>
     // Gallery thumbs, colour/size selection, add to bag via the shared cart API.
+    // Re-runs on each client-side navigation; the previous page's window listeners are removed first.
+    (() => {
+    window.__pdpCleanup?.();
     const gallery = document.getElementById('as-pdp-gallery');
     const dotsWrap = document.getElementById('as-pdp-dots');
     const slides = () => [...gallery.querySelectorAll('.as-pdp-fig')];
@@ -246,5 +249,11 @@ product.images.forEach((src) => addPhoto(src, ''));
     window.addEventListener('aasra:cart', refresh);
     window.addEventListener('pageshow', refresh);
     refresh();
+    window.__pdpCleanup = () => {
+      window.removeEventListener('storage', refresh);
+      window.removeEventListener('aasra:cart', refresh);
+      window.removeEventListener('pageshow', refresh);
+    };
+    })();
   </script>
 </StoreLayout>

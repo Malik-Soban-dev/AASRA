@@ -80,59 +80,62 @@ const words = headline.split(' ');
 </section>
 
 <script>
-  // Hero slideshow: auto-advance (6s), dot navigation, caption swap.
-  // Reduced motion: first slide stays, no animation.
-  (() => {
-    const hero = document.querySelector('[data-hero]');
-    if (!hero) return;
-    const slides = [...hero.querySelectorAll('.as-hero-slide')];
-    const dots = [...hero.querySelectorAll('.as-hero-dot')];
-    const caption = hero.querySelector('[data-hero-caption]');
+    // Hero slideshow: auto-advance (6s), dot navigation, caption swap, scroll and cursor parallax.
+    // Reduced motion: first slide stays, no animation. Re-initialised on each client-side navigation.
     const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
-    let current = 0;
-    let timer;
+    let heroTimer;
+    let ticking = false;
 
-    const show = (index) => {
-      current = (index + slides.length) % slides.length;
-      slides.forEach((s, i) => s.classList.toggle('is-active', i === current));
-      dots.forEach((d, i) => d.classList.toggle('is-active', i === current));
-      caption.textContent = dots[current].dataset.caption;
+    const driftHero = () => {
+      ticking = false;
+      const hero = document.querySelector('[data-hero]');
+      const media = hero && hero.querySelector('[data-hero-media]');
+      if (!hero || !media || reduce) return;
+      // Scroll parallax: the photo drifts at 30% of page speed, capped so it never shows an edge.
+      const h = hero.offsetHeight;
+      const y = Math.min(Math.max(window.scrollY, 0), h);
+      media.style.transform = `translate3d(0, ${Math.round(Math.min(y * 0.3, h * 0.15))}px, 0)`;
     };
-    const start = () => {
-      if (reduce) return;
-      clearInterval(timer);
-      timer = setInterval(() => show(current + 1), 6000);
-    };
-    dots.forEach((dot) => {
-      dot.addEventListener('click', () => { show(Number(dot.dataset.slide)); start(); });
-    });
-    start();
+    window.addEventListener('scroll', () => { if (!ticking) { ticking = true; requestAnimationFrame(driftHero); } }, { passive: true });
 
-    // Scroll parallax: the photo drifts at 30% of page speed, capped so it never
-    // shows an edge (slides are 130% tall, offset -15%).
-    if (!reduce) {
+    const initHero = () => {
+      clearInterval(heroTimer);
+      const hero = document.querySelector('[data-hero]');
+      if (!hero) return;
+      const slides = [...hero.querySelectorAll('.as-hero-slide')];
+      const dots = [...hero.querySelectorAll('.as-hero-dot')];
+      const caption = hero.querySelector('[data-hero-caption]');
       const media = hero.querySelector('[data-hero-media]');
-      let ticking = false;
-      const drift = () => {
-        ticking = false;
-        const h = hero.offsetHeight;
-        const y = Math.min(Math.max(window.scrollY, 0), h);
-        media.style.transform = `translate3d(0, ${Math.round(Math.min(y * 0.3, h * 0.15))}px, 0)`;
+      let current = 0;
+
+      const show = (index) => {
+        current = (index + slides.length) % slides.length;
+        slides.forEach((s, i) => s.classList.toggle('is-active', i === current));
+        dots.forEach((d, i) => d.classList.toggle('is-active', i === current));
+        caption.textContent = dots[current].dataset.caption;
       };
-      window.addEventListener('scroll', () => { if (!ticking) { ticking = true; requestAnimationFrame(drift); } }, { passive: true });
-      drift();
-    }
-
-    // Subtle cursor parallax on the media (±8px), design-system hero pattern.
-    if (!reduce && matchMedia('(hover:hover)').matches) {
-      const media = hero.querySelector('[data-hero-media]');
-      hero.addEventListener('mousemove', (e) => {
-        const r = hero.getBoundingClientRect();
-        const x = (e.clientX - r.left) / r.width - 0.5;
-        const y = (e.clientY - r.top) / r.height - 0.5;
-        media.style.translate = `${x * -14}px ${y * -10}px`;
+      const start = () => {
+        if (reduce) return;
+        clearInterval(heroTimer);
+        heroTimer = setInterval(() => show(current + 1), 6000);
+      };
+      dots.forEach((dot) => {
+        dot.addEventListener('click', () => { show(Number(dot.dataset.slide)); start(); });
       });
-      hero.addEventListener('mouseleave', () => { media.style.translate = '0 0'; });
-    }
-  })();
-</script>
+      start();
+      driftHero();
+
+      // Subtle cursor parallax on the media (±8px), design-system hero pattern.
+      if (!reduce && matchMedia('(hover:hover)').matches) {
+        hero.addEventListener('mousemove', (e) => {
+          const r = hero.getBoundingClientRect();
+          const x = (e.clientX - r.left) / r.width - 0.5;
+          const y = (e.clientY - r.top) / r.height - 0.5;
+          media.style.translate = `${x * -14}px ${y * -10}px`;
+        });
+        hero.addEventListener('mouseleave', () => { media.style.translate = '0 0'; });
+      }
+    };
+    initHero();
+    document.addEventListener('astro:page-load', initHero);
+  </script>

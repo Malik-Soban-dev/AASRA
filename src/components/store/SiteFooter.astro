@@ -6,7 +6,7 @@ import site from '../../../data/catalog/site.json';
 const { columns, legal } = site.footer;
 ---
 
-<footer class="as-footer">
+<footer class="as-footer" transition:persist>
   <div class="container">
     <div class="as-footer-cols">
       {columns.map((col) => (
