@@ -44,13 +44,16 @@ for (const gender of ['women', 'men']) {
     if (!data.category || !Array.isArray(data.products)) {
       throw new Error(`${gender}/${file}: needs { category, label, products[] }`);
     }
-    categories[gender].push({ category: data.category, label: data.label, href: `/${gender}/${data.category}` });
+    const subcategories = Array.isArray(data.subcategories) ? data.subcategories : [];
+    const subKeys = new Set(subcategories.map((sc) => sc.key));
+    categories[gender].push({ category: data.category, label: data.label, href: `/${gender}/${data.category}`, subcategories });
     for (const p of data.products) {
       if (!p.id || !p.slug || !p.name || !p.price_pkr) throw new Error(`${gender}/${file}: product missing id/slug/name/price_pkr`);
       if (!Array.isArray(p.sizes) || !p.sizes.length) throw new Error(`${p.id}: sizes[] required`);
       if (!Array.isArray(p.colors) || !p.colors.length) throw new Error(`${p.id}: colors[] required`);
       if (!Array.isArray(p.images) || !p.images.length) throw new Error(`${p.id}: images[] required`);
       for (const size of p.sizes) if (!VALID_SIZE.test(size)) throw new Error(`${p.id}: bad size "${size}"`);
+      if (subcategories.length && !subKeys.has(p.subcategory)) throw new Error(`${p.id}: subcategory "${p.subcategory}" not in ${gender}/${data.category} subcategories`);
 
       // Expand sizes x colors into variants (the units cart/checkout/stock track).
       const variants = [];
@@ -91,7 +94,7 @@ for (const gender of ['women', 'men']) {
 
 // "New in" pseudo-category rides on the badge.
 for (const gender of ['women', 'men']) {
-  categories[gender].unshift({ category: 'new-in', label: 'New In', href: `/${gender}/new-in` });
+  categories[gender].unshift({ category: 'new-in', label: 'New In', href: `/${gender}/new-in`, subcategories: [] });
 }
 
 const out = {

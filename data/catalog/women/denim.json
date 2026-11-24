@@ -1,11 +1,26 @@
 {
   "category": "denim",
   "label": "Denim",
+  "subcategories": [
+    {
+      "key": "wide-leg",
+      "label": "Wide-Leg"
+    },
+    {
+      "key": "straight",
+      "label": "Straight"
+    },
+    {
+      "key": "barrel",
+      "label": "Barrel"
+    }
+  ],
   "products": [
     {
       "id": "W101",
       "slug": "wide-leg-denim-indigo",
       "name": "Wide-Leg Denim — Indigo",
+      "subcategory": "wide-leg",
       "price_pkr": 13900,
       "colors": [
         {
@@ -40,6 +55,7 @@
       "id": "W102",
       "slug": "straight-denim-black",
       "name": "Straight Denim — Black",
+      "subcategory": "straight",
       "price_pkr": 12400,
       "colors": [
         {
@@ -74,6 +90,7 @@
       "id": "W103",
       "slug": "barrel-denim-stone-wash",
       "name": "Barrel Denim — Stone Wash",
+      "subcategory": "barrel",
       "price_pkr": 14500,
       "colors": [
         {

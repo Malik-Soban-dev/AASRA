@@ -1,11 +1,26 @@
 {
   "category": "footwear",
   "label": "Footwear",
+  "subcategories": [
+    {
+      "key": "derbys",
+      "label": "Derbys"
+    },
+    {
+      "key": "loafers",
+      "label": "Loafers"
+    },
+    {
+      "key": "sneakers",
+      "label": "Sneakers"
+    }
+  ],
   "products": [
     {
       "id": "M401",
       "slug": "leather-derby-brown",
       "name": "Leather Derby — Brown",
+      "subcategory": "derbys",
       "price_pkr": 17500,
       "colors": [
         {
@@ -40,6 +55,7 @@
       "id": "M402",
       "slug": "canvas-sneaker-stone",
       "name": "Canvas Sneaker — Stone",
+      "subcategory": "sneakers",
       "price_pkr": 10500,
       "badge": "NEW",
       "colors": [
@@ -75,6 +91,7 @@
       "id": "M403",
       "slug": "suede-loafer-navy",
       "name": "Suede Loafer — Navy",
+      "subcategory": "loafers",
       "price_pkr": 13900,
       "colors": [
         {

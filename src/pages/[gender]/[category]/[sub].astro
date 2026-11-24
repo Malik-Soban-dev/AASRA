@@ -1,0 +1,21 @@
+---
+/** /women/footwear/boots — one product type inside a parent category. */
+import CategoryPage from '../../../components/store/CategoryPage.astro';
+import { categories } from '../../../lib/catalog.js';
+
+export function getStaticPaths() {
+  const paths = [];
+  for (const gender of ['women', 'men']) {
+    for (const cat of categories[gender]) {
+      for (const s of cat.subcategories || []) {
+        paths.push({ params: { gender, category: cat.category, sub: s.key } });
+      }
+    }
+  }
+  return paths;
+}
+
+const { gender, category, sub } = Astro.params;
+---
+
+<CategoryPage gender={gender} category={category} sub={sub} />

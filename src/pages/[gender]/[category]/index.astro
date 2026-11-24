@@ -1,0 +1,19 @@
+---
+/** /women/footwear — a parent category, showing all its pieces and product-type chips. */
+import CategoryPage from '../../../components/store/CategoryPage.astro';
+import { categories } from '../../../lib/catalog.js';
+
+export function getStaticPaths() {
+  const paths = [];
+  for (const gender of ['women', 'men']) {
+    for (const cat of categories[gender]) {
+      paths.push({ params: { gender, category: cat.category } });
+    }
+  }
+  return paths;
+}
+
+const { gender, category } = Astro.params;
+---
+
+<CategoryPage gender={gender} category={category} />
