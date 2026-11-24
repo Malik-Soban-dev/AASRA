@@ -5,7 +5,7 @@
  */
 import StoreLayout from '../../components/layout/StoreLayout.astro';
 import ProductRail from '../../components/store/ProductRail.astro';
-import { products, productBySlug, wearItWith, formatPrice, categoryLabel } from '../../lib/catalog.js';
+import { products, productBySlug, wearItWith, formatPrice, categoryLabel, subcategoryLabel } from '../../lib/catalog.js';
 import shippingRates from '../../../data/shipping-rates.json';
 
 export function getStaticPaths() {
@@ -36,6 +36,9 @@ product.images.forEach((src) => addPhoto(src, ''));
       <a href="/">Home</a><span>/</span>
       <a href={`/${product.gender}`}>{product.gender === 'women' ? 'Women' : 'Men'}</a><span>/</span>
       <a href={`/${product.gender}/${product.category}`}>{categoryLabel(product.gender, product.category)}</a><span>/</span>
+      {subcategoryLabel(product.gender, product.category, product.subcategory) && (
+        <><a href={`/${product.gender}/${product.category}/${product.subcategory}`}>{subcategoryLabel(product.gender, product.category, product.subcategory)}</a><span>/</span></>
+      )}
       <span aria-current="page">{product.name}</span>
     </nav>
 

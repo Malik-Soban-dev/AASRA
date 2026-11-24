@@ -15,6 +15,17 @@ import productsData from '../../data/products.json';
 const visible = productsData.products.filter((p) => p.visible);
 const categories = getCategories(productsData);
 
+// Sub-categories per category, merged across women and men (same keys and labels).
+const subsByCategory = {};
+for (const gender of ['women', 'men']) {
+  for (const c of productsData.categories[gender] || []) {
+    for (const s of c.subcategories || []) {
+      if (!subsByCategory[c.category]) subsByCategory[c.category] = [];
+      if (!subsByCategory[c.category].some((x) => x.key === s.key)) subsByCategory[c.category].push(s);
+    }
+  }
+}
+
 const label = (cat) => cat.charAt(0).toUpperCase() + cat.slice(1).replace('-', ' ');
 ---
 
@@ -39,6 +50,15 @@ const label = (cat) => cat.charAt(0).toUpperCase() + cat.slice(1).replace('-', '
       <a class="as-chip" href="/gifts">Gifts</a>
     </nav>
 
+    {categories.filter((cat) => subsByCategory[cat]?.length).map((cat) => (
+      <nav class="as-subcats as-subcats--types" aria-label="Product types" data-subrow={cat} style="display:none">
+        <a class="as-chip" href={`/shop?category=${cat}`} data-sub="">All {label(cat)}</a>
+        {subsByCategory[cat].map((s) => (
+          <a class="as-chip" href={`/shop?category=${cat}&type=${s.key}`} data-sub={s.key}>{s.label}</a>
+        ))}
+      </nav>
+    ))}
+
     <div class="as-filterbar">
       <div class="as-filter-group">
         <label class="as-filter-legend" for="sort-select">Sort</label>
@@ -55,7 +75,7 @@ const label = (cat) => cat.charAt(0).toUpperCase() + cat.slice(1).replace('-', '
 
     <div class="as-grid" id="as-grid">
       {visible.map((p, i) => (
-        <div class="as-reveal as-grid-item" style={`--i:${i}`} data-cat={p.category} data-name={p.name} data-price={p.price_pkr} data-search={[p.name, p.description, ...(p.tags || [])].join('\n').toLowerCase()}>
+        <div class="as-reveal as-grid-item" style={`--i:${i}`} data-cat={p.category} data-sub={p.subcategory} data-name={p.name} data-price={p.price_pkr} data-search={[p.name, p.description, ...(p.tags || [])].join('\n').toLowerCase()}>
           <ProductCard product={p} />
         </div>
       ))}
@@ -85,6 +105,7 @@ const label = (cat) => cat.charAt(0).toUpperCase() + cat.slice(1).replace('-', '
         cat: u.searchParams.get('category') || '',
         q: (u.searchParams.get('q') || '').trim(),
         sort: u.searchParams.get('sort') || '',
+        type: u.searchParams.get('type') || '',
       };
     }
 
@@ -96,6 +117,7 @@ const label = (cat) => cat.charAt(0).toUpperCase() + cat.slice(1).replace('-', '
       const shown = items.filter(
         (el) =>
           (!s.cat || el.dataset.cat === s.cat) &&
+          (!s.type || el.dataset.sub === s.type) &&
           (!needle || el.dataset.search.includes(needle))
       );
 
@@ -129,6 +151,16 @@ const label = (cat) => cat.charAt(0).toUpperCase() + cat.slice(1).replace('-', '
         if (on) allChip.setAttribute('aria-current', 'page');
         else allChip.removeAttribute('aria-current');
       }
+      document.querySelectorAll('[data-subrow]').forEach((row) => {
+        const open = row.dataset.subrow === s.cat;
+        row.style.display = open ? '' : 'none';
+        row.querySelectorAll('.as-chip').forEach((c) => {
+          const on = (c.dataset.sub || '') === (open ? s.type : '');
+          c.classList.toggle('is-active', on);
+          if (on) c.setAttribute('aria-current', 'page');
+          else c.removeAttribute('aria-current');
+        });
+      });
       if (sortSel) sortSel.value = s.sort;
     }
 
@@ -145,8 +177,21 @@ const label = (cat) => cat.charAt(0).toUpperCase() + cat.slice(1).replace('-', '
         e.preventDefault();
         const cat = a.dataset.cat;
         go((sp) => {
+          sp.delete('type');
           if (cat) sp.set('category', cat);
           else sp.delete('category');
+        });
+      });
+    });
+
+    document.querySelectorAll('.as-subcats--types .as-chip[data-sub]').forEach((a) => {
+      a.addEventListener('click', (e) => {
+        if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return;
+        e.preventDefault();
+        const sub = a.dataset.sub;
+        go((sp) => {
+          if (sub) sp.set('type', sub);
+          else sp.delete('type');
         });
       });
     });
