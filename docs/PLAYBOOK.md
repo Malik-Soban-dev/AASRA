@@ -7,7 +7,7 @@ The single guide to read before building a similar store. It records what was bu
 - **Names, not values.** Secret values live only in Cloudflare, GitHub Actions secrets, or local `.dev.vars` (never committed). The only real key-like value in the repo is a public Safepay key in `wrangler.toml`; it is not copied here.
 - **Verification:** every file, script, name and number below was checked against the repo at this snapshot. Anything not verified is marked **Open** or left out.
 
-Companion docs: `docs/ARCHITECTURE.md` (short reference for data model and routes), `docs/DESIGN_SYSTEM.md` (tokens, components, motion), `README.md` (backend reference; deposit text corrected, rest partly out of date), `CHECKLIST.md` at repo root (reference audit, not a feature list), `skills/*.md` (rules for editing).
+Companion docs: `docs/HISTORY.md` (every merged PR, decisions with reasons, owner rules, dead ends, sandbox recovery, open items), `docs/ARCHITECTURE.md` (short reference for data model and routes), `docs/DESIGN_SYSTEM.md` (tokens, components, motion), `README.md` (backend reference; deposit text corrected, rest partly out of date), `CHECKLIST.md` at repo root (reference audit, not a feature list), `skills/*.md` (rules for editing).
 
 ---
 
