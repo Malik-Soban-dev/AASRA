@@ -45,7 +45,10 @@ export async function onRequestPost(context) {
     return errorResponse('order_id and token are required', 400, 'missing_fields');
   }
 
-  // Turnstile (optional but recommended on balance pay)
+  // Turnstile: required. Fail closed when the secret is missing (KNOWN_ISSUES #8).
+  if (!env.TURNSTILE_SECRET_KEY) {
+    return errorResponse('turnstile_not_configured', 503, 'turnstile_not_configured');
+  }
   if (env.TURNSTILE_SECRET_KEY) {
     const secret = env.TURNSTILE_SECRET_KEY;
     try {

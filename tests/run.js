@@ -33,6 +33,8 @@ import {
   wrapEmail,
   sendEmail,
 } from '../functions/lib/email.js';
+import { onRequestPost as newsletterPost } from '../functions/api/newsletter.js';
+import { onRequestGet as invoiceGet } from '../functions/api/invoice.js';
 
 // ---- Load sample products ----
 const productsData = JSON.parse(
@@ -745,6 +747,91 @@ t('reconcile refuses to settle when the amount does not match our record', async
   } finally {
     globalThis.fetch = realFetch;
   }
+});
+
+// ============================================================
+// Audit fixes (KNOWN_ISSUES #1, #6, #7, #8, #11, #12, #30)
+// ============================================================
+function fakeD1(error) {
+  const calls = [];
+  return {
+    calls,
+    prepare(sql) {
+      return {
+        bind(...args) {
+          return {
+            async run() { calls.push({ sql, args }); if (error) throw error; return { success: true }; },
+            async first() { calls.push({ sql, args }); if (error) throw error; return null; },
+          };
+        },
+      };
+    },
+  };
+}
+function src(path) { return readFileSync(new URL('../' + path, import.meta.url), 'utf8'); }
+
+t('newsletter: signup executes the insert and says subscribed (KNOWN #1)', async () => {
+  const db = fakeD1();
+  const res = await newsletterPost({ request: new Request('https://x.test/api/newsletter', { method: 'POST', body: JSON.stringify({ email: 'Ana@Example.com', consent: true }) }), env: { DB: db } });
+  const body = await res.json();
+  assert.strictEqual(res.status, 200);
+  assert.strictEqual(body.message, 'subscribed');
+  assert.strictEqual(db.calls.length, 1, 'insert must run');
+  assert.ok(db.calls[0].sql.startsWith('INSERT INTO newsletter'));
+  assert.ok(db.calls[0].args.includes('ana@example.com'), 'email is normalised');
+});
+
+t('newsletter: duplicate signup is idempotent (KNOWN #1)', async () => {
+  const res = await newsletterPost({ request: new Request('https://x.test/api/newsletter', { method: 'POST', body: JSON.stringify({ email: 'a@b.com', consent: true }) }), env: { DB: fakeD1(new Error('UNIQUE constraint failed: newsletter.email')) } });
+  assert.strictEqual((await res.json()).message, 'already_subscribed');
+});
+
+t('newsletter: a database failure is reported, not hidden (KNOWN #1)', async () => {
+  const res = await newsletterPost({ request: new Request('https://x.test/api/newsletter', { method: 'POST', body: JSON.stringify({ email: 'a@b.com', consent: true }) }), env: { DB: fakeD1(new Error('disk on fire')) } });
+  assert.strictEqual(res.status, 500);
+});
+
+t('contact: fails closed without Turnstile and escapes every field (KNOWN #7, #8)', () => {
+  const c = src('functions/api/contact.js');
+  assert.ok(c.includes("turnstile_not_configured"), 'guard present');
+  assert.ok(c.includes('escapeHtml(customerName)') && c.includes('escapeHtml(customerMessage)') && c.includes('escapeHtml(customerSubject)'), 'fields escaped');
+  assert.ok(!c.includes("orders@example.com"), 'no placeholder recipient');
+});
+
+t('pay-balance: fails closed without Turnstile (KNOWN #8)', () => {
+  assert.ok(src('functions/api/pay-balance.js').includes("if (!env.TURNSTILE_SECRET_KEY)"));
+});
+
+t('email: no placeholder sender; mail is not sent without a configured sender (KNOWN #11)', async () => {
+  const { emailConfig, sendEmail } = await import('../functions/lib/email.js');
+  assert.strictEqual(emailConfig({}).from, '');
+  const realFetch = globalThis.fetch;
+  let fetched = false;
+  globalThis.fetch = async () => { fetched = true; return new Response('{}'); };
+  try {
+    const r = await sendEmail({ EMAIL_PROVIDER: 'resend', EMAIL_PROVIDER_API_KEY: 'k' }, { to: 'a@b.com', subject: 's', html: 'h' });
+    assert.strictEqual(r.ok, false);
+    assert.strictEqual(r.error, 'email_provider_not_configured');
+    assert.strictEqual(fetched, false, 'no provider call without a sender');
+  } finally { globalThis.fetch = realFetch; }
+});
+
+t('shipping email: shows tracking number, no placeholder link (KNOWN #30)', () => {
+  const m = shippedEmail({ order: { id: 'AAS-1', customer_name: 'Ana', courier: 'TCS' }, tracking: '123456', env: {} });
+  assert.ok(m.html.includes('Tracking number'));
+  assert.ok(!m.html.includes('example.com'));
+});
+
+t('invoice: unpaid orders get no receipt; token is still checked first (KNOWN #6)', async () => {
+  const order = { id: 'AAS-1', status: 'pending-payment', balance_token: 'tok', items: '[]' };
+  const db = { prepare: () => ({ bind: () => ({ first: async () => order, all: async () => ({ results: [] }) }) }) };
+  const call = (token) => invoiceGet({ env: { DB: db }, request: new Request('https://x.test/api/invoice?order_id=AAS-1&token=' + token) });
+  assert.strictEqual((await call('tok')).status, 404);
+  assert.strictEqual((await call('bad')).status, 403);
+});
+
+t('scheduled: reminder failure logs the right order id (KNOWN #12)', () => {
+  assert.ok(src('functions/scheduled.js').includes('dueOrders.results[i].id'));
 });
 
 // ============================================================

@@ -17,7 +17,7 @@ export function emailConfig(env) {
   return {
     provider: env.EMAIL_PROVIDER || '',
     apiKey: env.EMAIL_PROVIDER_API_KEY || '',
-    from: env.EMAIL_FROM || 'orders@example.com',
+    from: env.EMAIL_FROM || '', // no placeholder sender (KNOWN_ISSUES #11)
     fromName: env.EMAIL_FROM_NAME || 'AASRA',
     baseUrl: env.PUBLIC_BASE_URL || 'https://aasra.shop',
   };
@@ -35,7 +35,7 @@ export async function sendEmail(env, { to, subject, html, text }) {
   const domain = String(to || '').split('@')[1] || 'unknown';
   console.log('[EMAIL]', { to: domain, subject, provider: cfg.provider });
 
-  if (!cfg.provider || !cfg.apiKey) {
+  if (!cfg.provider || !cfg.apiKey || !cfg.from) {
     return { ok: false, error: 'email_provider_not_configured' };
   }
 
@@ -85,7 +85,7 @@ function lookupLink(env) {
   return `${env.PUBLIC_BASE_URL || 'https://aasra.shop'}/order-lookup`;
 }
 
-function escapeHtml(s) {
+export function escapeHtml(s) {
   return String(s == null ? '' : s)
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
@@ -95,7 +95,7 @@ function escapeHtml(s) {
 }
 
 function fromEmail(env) {
-  return env.EMAIL_FROM || 'orders@example.com';
+  return env.EMAIL_FROM || env.BUSINESS_EMAIL || '';
 }
 
 /* ---------------------------------------------------------------- templates */
@@ -194,7 +194,7 @@ export function shippedEmail({ order, tracking, env }) {
       <p>Great news — order <span class="hl">${escapeHtml(order.id)}</span> has been shipped.</p>
       ${tracking
         ? `<p>Courier: <span class="hl">${escapeHtml(order.courier)}</span><br/>
-           Tracking: <a href="${escapeHtml(trackingUrl(order.courier, tracking))}">${escapeHtml(tracking)}</a></p>`
+           Tracking number: <span class="hl">${escapeHtml(tracking)}</span></p>`
         : `<p>Tracking details will follow shortly.</p>`}
     `,
     intro: 'Your order has been dispatched.',
@@ -418,6 +418,3 @@ export function wrapEmail(env, { subject, title, body, intro, outro, btnText, bt
   };
 }
 
-function trackingUrl(courier, tracking) {
-  return `https://example.com/track?courier=${encodeURIComponent(courier || '')}&id=${encodeURIComponent(tracking || '')}`;
-}

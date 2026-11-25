@@ -105,7 +105,7 @@ export async function onRequestScheduled(context) {
         const emailPromises = dueOrders.results.map((o) =>
           sendBalanceReminder(env, o, baseUrl)
         );
-        await Promise.all(emailPromises.map((p) => p.catch((e) => console.warn('[REMINDER] email failed', o.id, e.message))));
+        await Promise.all(emailPromises.map((p, i) => p.catch((e) => console.warn('[REMINDER] email failed', dueOrders.results[i].id, e.message))));
         for (const o of dueOrders.results) {
           await createOrderEvent(env.DB, o.id, 'balance_reminder_sent', { days_until_due: days });
         }

@@ -5,7 +5,7 @@
  * Rate-limited via WAF (configured in _headers / wrangler).
  */
 
-import { sendEmail } from '../lib/email.js';
+import { sendEmail, escapeHtml } from '../lib/email.js';
 import { validateCart } from '../lib/validation.js'; // unused import, kept for pattern consistency
 import { isValidEmail, sanitizeString } from '../lib/validation.js';
 
@@ -41,8 +41,11 @@ export async function onRequestPost(context) {
     return errorResponse(`missing_fields: ${missing.join(', ')}`, 400, 'missing_fields');
   }
 
-  // Turnstile
+  // Turnstile: fail closed. Without the secret the form cannot check for a human (KNOWN_ISSUES #8).
   const secret = env.TURNSTILE_SECRET_KEY;
+  if (!secret) {
+    return errorResponse('turnstile_not_configured', 503, 'turnstile_not_configured');
+  }
   if (secret) {
     try {
       const resp = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
@@ -67,17 +70,21 @@ export async function onRequestPost(context) {
 
   const baseUrl = env.PUBLIC_BASE_URL || 'https://aasra.shop';
 
+  const businessTo = env.BUSINESS_EMAIL || env.EMAIL_FROM;
+  if (!businessTo) {
+    return errorResponse('contact_not_configured', 503, 'contact_not_configured');
+  }
   try {
     await sendEmail(env, {
-      to: env.EMAIL_FROM || 'orders@example.com',
+      to: businessTo,
       subject: `[Contact] ${customerSubject}`,
       html: `
         <h1>Contact form submission</h1>
-        <p><strong>Name:</strong> ${customerName}</p>
-        <p><strong>Email:</strong> ${customerEmail}</p>
-        <p><strong>Phone:</strong> ${customerPhone || 'not provided'}</p>
-        <p><strong>Subject:</strong> ${customerSubject}</p>
-        <p><strong>Message:</strong><br/>${customerMessage.replace(/\n/g, '<br/>')}</p>
+        <p><strong>Name:</strong> ${escapeHtml(customerName)}</p>
+        <p><strong>Email:</strong> ${escapeHtml(customerEmail)}</p>
+        <p><strong>Phone:</strong> ${escapeHtml(customerPhone || 'not provided')}</p>
+        <p><strong>Subject:</strong> ${escapeHtml(customerSubject)}</p>
+        <p><strong>Message:</strong><br/>${escapeHtml(customerMessage).replace(/\n/g, '<br/>')}</p>
       `,
     });
     // Auto-reply to customer
@@ -85,9 +92,9 @@ export async function onRequestPost(context) {
       to: customerEmail,
       subject: `We received your message — AASRA`,
       html: `
-        <h1>Thank you, ${customerName}</h1>
+        <h1>Thank you, ${escapeHtml(customerName)}</h1>
         <p>We received your message and will respond soon.</p>
-        <p>You can also reach us on Email or at ${env.EMAIL_FROM || 'orders@example.com'}.</p>
+        <p>You can also reach us on Email or at ${escapeHtml(businessTo)}.</p>
       `,
     });
   } catch (e) {
