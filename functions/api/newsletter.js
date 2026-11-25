@@ -47,7 +47,7 @@ export async function onRequestPost(context) {
   try {
     await context.env.DB.prepare(
       `INSERT INTO newsletter (id, email, source, subscribed_at) VALUES (?, ?, ?, ?)`
-    ).bind(makeId('nl'), normalizedEmail, 'website', now);
+    ).bind(makeId('nl'), normalizedEmail, 'website', now).run();
   } catch (e) {
     if (e.message && e.message.includes('UNIQUE')) {
       // Already subscribed — idempotent

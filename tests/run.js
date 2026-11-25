@@ -33,6 +33,12 @@ import {
   wrapEmail,
   sendEmail,
 } from '../functions/lib/email.js';
+import { onRequestPost as newsletterPost } from '../functions/api/newsletter.js';
+import { onRequest as apiMiddleware } from '../functions/api/_middleware.js';
+import { isSettlementEvent } from '../functions/api/webhook.js';
+import { stockStatus, onRequestGet as stockGet } from '../functions/api/stock.js';
+import { onRequestScheduled } from '../functions/scheduled.js';
+import { onRequestGet as invoiceGet } from '../functions/api/invoice.js';
 
 // ---- Load sample products ----
 const productsData = JSON.parse(
@@ -745,6 +751,277 @@ t('reconcile refuses to settle when the amount does not match our record', async
   } finally {
     globalThis.fetch = realFetch;
   }
+});
+
+// ============================================================
+// Audit fixes (KNOWN_ISSUES #1, #6, #7, #8, #11, #12, #30)
+// ============================================================
+function fakeD1(error) {
+  const calls = [];
+  return {
+    calls,
+    prepare(sql) {
+      return {
+        bind(...args) {
+          return {
+            async run() { calls.push({ sql, args }); if (error) throw error; return { success: true }; },
+            async first() { calls.push({ sql, args }); if (error) throw error; return null; },
+          };
+        },
+      };
+    },
+  };
+}
+function src(path) { return readFileSync(new URL('../' + path, import.meta.url), 'utf8'); }
+
+t('newsletter: signup executes the insert and says subscribed (KNOWN #1)', async () => {
+  const db = fakeD1();
+  const res = await newsletterPost({ request: new Request('https://x.test/api/newsletter', { method: 'POST', body: JSON.stringify({ email: 'Ana@Example.com', consent: true }) }), env: { DB: db } });
+  const body = await res.json();
+  assert.strictEqual(res.status, 200);
+  assert.strictEqual(body.message, 'subscribed');
+  assert.strictEqual(db.calls.length, 1, 'insert must run');
+  assert.ok(db.calls[0].sql.startsWith('INSERT INTO newsletter'));
+  assert.ok(db.calls[0].args.includes('ana@example.com'), 'email is normalised');
+});
+
+t('newsletter: duplicate signup is idempotent (KNOWN #1)', async () => {
+  const res = await newsletterPost({ request: new Request('https://x.test/api/newsletter', { method: 'POST', body: JSON.stringify({ email: 'a@b.com', consent: true }) }), env: { DB: fakeD1(new Error('UNIQUE constraint failed: newsletter.email')) } });
+  assert.strictEqual((await res.json()).message, 'already_subscribed');
+});
+
+t('newsletter: a database failure is reported, not hidden (KNOWN #1)', async () => {
+  const res = await newsletterPost({ request: new Request('https://x.test/api/newsletter', { method: 'POST', body: JSON.stringify({ email: 'a@b.com', consent: true }) }), env: { DB: fakeD1(new Error('disk on fire')) } });
+  assert.strictEqual(res.status, 500);
+});
+
+t('contact: fails closed without Turnstile and escapes every field (KNOWN #7, #8)', () => {
+  const c = src('functions/api/contact.js');
+  assert.ok(c.includes("turnstile_not_configured"), 'guard present');
+  assert.ok(c.includes('escapeHtml(customerName)') && c.includes('escapeHtml(customerMessage)') && c.includes('escapeHtml(customerSubject)'), 'fields escaped');
+  assert.ok(!c.includes("orders@example.com"), 'no placeholder recipient');
+});
+
+t('pay-balance: fails closed without Turnstile (KNOWN #8)', () => {
+  assert.ok(src('functions/api/pay-balance.js').includes("if (!env.TURNSTILE_SECRET_KEY)"));
+});
+
+t('email: no placeholder sender; mail is not sent without a configured sender (KNOWN #11)', async () => {
+  const { emailConfig, sendEmail } = await import('../functions/lib/email.js');
+  assert.strictEqual(emailConfig({}).from, '');
+  const realFetch = globalThis.fetch;
+  let fetched = false;
+  globalThis.fetch = async () => { fetched = true; return new Response('{}'); };
+  try {
+    const r = await sendEmail({ EMAIL_PROVIDER: 'resend', EMAIL_PROVIDER_API_KEY: 'k' }, { to: 'a@b.com', subject: 's', html: 'h' });
+    assert.strictEqual(r.ok, false);
+    assert.strictEqual(r.error, 'email_provider_not_configured');
+    assert.strictEqual(fetched, false, 'no provider call without a sender');
+  } finally { globalThis.fetch = realFetch; }
+});
+
+t('shipping email: shows tracking number, no placeholder link (KNOWN #30)', () => {
+  const m = shippedEmail({ order: { id: 'AAS-1', customer_name: 'Ana', courier: 'TCS' }, tracking: '123456', env: {} });
+  assert.ok(m.html.includes('Tracking number'));
+  assert.ok(!m.html.includes('example.com'));
+});
+
+t('invoice: unpaid orders get no receipt; token is still checked first (KNOWN #6)', async () => {
+  const order = { id: 'AAS-1', status: 'pending-payment', balance_token: 'tok', items: '[]' };
+  const db = { prepare: () => ({ bind: () => ({ first: async () => order, all: async () => ({ results: [] }) }) }) };
+  const call = (token) => invoiceGet({ env: { DB: db }, request: new Request('https://x.test/api/invoice?order_id=AAS-1&token=' + token) });
+  assert.strictEqual((await call('tok')).status, 404);
+  assert.strictEqual((await call('bad')).status, 403);
+});
+
+t('scheduled: reminder failure logs the right order id (KNOWN #12)', () => {
+  assert.ok(src('functions/scheduled.js').includes('dueOrders.results[i].id'));
+});
+
+// ---- Batch 2: middleware, catalogue, order numbers (KNOWN #10, #11, #13, #19, #31)
+function mwCall(method, url, env, headers = {}) {
+  const request = new Request(url, { method, headers });
+  return apiMiddleware({ request, env, next: async () => new Response('{"ok":true}', { headers: { 'Content-Type': 'application/json' } }) });
+}
+t('api middleware: unset ALLOWED_ORIGIN fails closed for browser API calls (KNOWN #31)', async () => {
+  const r = await mwCall('POST', 'https://x.test/api/checkout', {}, {});
+  assert.strictEqual(r.status, 503);
+  assert.strictEqual((await r.json()).error, 'origin_not_configured');
+});
+t('api middleware: wildcard ALLOWED_ORIGIN also fails closed (KNOWN #31)', async () => {
+  const r = await mwCall('GET', 'https://x.test/api/stock', { ALLOWED_ORIGIN: '*' });
+  assert.strictEqual(r.status, 503);
+});
+t('api middleware: webhook still reaches its handler without origin config (KNOWN #31)', async () => {
+  const r = await mwCall('POST', 'https://x.test/api/webhook', {}, {});
+  assert.strictEqual(r.status, 200);
+});
+t('api middleware: foreign origin is refused on state-changing calls', async () => {
+  const r = await mwCall('POST', 'https://x.test/api/checkout', { ALLOWED_ORIGIN: 'https://aasra.shop' }, { Origin: 'https://evil.test' });
+  assert.strictEqual(r.status, 403);
+});
+t('api middleware: a lookalike path is not a gateway callback (KNOWN #19)', async () => {
+  const r = await mwCall('POST', 'https://x.test/api/checkout?x=/api/webhook', { ALLOWED_ORIGIN: 'https://aasra.shop' }, { Origin: 'https://evil.test' });
+  assert.strictEqual(r.status, 403);
+});
+t('api middleware: reads pass when the origin is configured (KNOWN #31)', async () => {
+  const r = await mwCall('GET', 'https://x.test/api/stock', { ALLOWED_ORIGIN: 'https://aasra.shop' });
+  assert.strictEqual(r.status, 200);
+});
+t('catalogue: ids, slugs and SKUs are unique; every product has images and variants (KNOWN #11)', () => {
+  const cat = JSON.parse(readFileSync(new URL('../data/products.json', import.meta.url), 'utf8'));
+  assert.ok(cat.products.length > 0);
+  const ids = new Set(), slugs = new Set(), skus = new Set();
+  for (const p of cat.products) {
+    assert.ok(!ids.has(p.id), 'duplicate id ' + p.id); ids.add(p.id);
+    assert.ok(!slugs.has(p.slug), 'duplicate slug ' + p.slug); slugs.add(p.slug);
+    assert.ok(Array.isArray(p.images) && p.images.length > 0, 'no images: ' + p.id);
+    assert.ok(Array.isArray(p.variants) && p.variants.length > 0, 'no variants: ' + p.id);
+    for (const v of p.variants) { assert.ok(!skus.has(v.sku), 'duplicate sku ' + v.sku); skus.add(v.sku); }
+  }
+});
+t('checkout: order numbers are checked for collisions before insert (KNOWN #13)', () => {
+  assert.ok(src('functions/api/checkout.js').includes('SELECT 1 FROM orders WHERE id = ?'));
+});
+t('wrangler.toml: Turnstile variable named correctly (KNOWN #10)', () => {
+  assert.ok(src('wrangler.toml').includes('PUBLIC_TURNSTILE_SITE_KEY'));
+});
+
+// ---- Batch 3: settlement trust, late payment, coupons, stock status (KNOWN #2, #4, #15, #22)
+function settleDb({ payment, order, reservations = [], stock = {}, couponChanges = 1 }) {
+  const log = { updates: [], events: [], coupon: [], batches: 0 };
+  return {
+    log,
+    prepare(sql) {
+      return {
+        bind(...args) {
+          return {
+            sql, args,
+            async first() {
+              if (/FROM payments WHERE raw_event_id/.test(sql)) return null;
+              if (/FROM payments WHERE tracker_token = \? AND status = \?/.test(sql)) return args[1] === 'pending' ? payment : null;
+              if (/FROM orders WHERE id = \?/.test(sql)) return order;
+              if (/SELECT quantity_available FROM stock/.test(sql)) return { quantity_available: stock[args[0]] ?? 0 };
+              return null;
+            },
+            async all() {
+              if (/FROM reservations WHERE order_id = \?/.test(sql)) return { results: reservations };
+              return { results: [] };
+            },
+            async run() {
+              if (/UPDATE coupons/.test(sql)) { log.coupon.push(args); return { success: true, meta: { changes: couponChanges } }; }
+              if (/UPDATE orders SET/.test(sql)) log.updates.push({ status: args[0] });
+              if (/INSERT INTO order_events/.test(sql)) log.events.push(args[2]);
+              return { success: true, meta: { changes: 1 } };
+            },
+          };
+        },
+      };
+    },
+    async batch(stmts) {
+      log.batches++;
+      return stmts.map((st) => (/SELECT quantity_available FROM stock/.test(st.sql)
+        ? { results: [{ quantity_available: stock[st.args[0]] ?? 0 }] }
+        : { success: true, results: [] }));
+    },
+  };
+}
+const basePayment = { id: 'p1', order_id: 'O1', tracker_token: 'T1', amount: 5000, kind: 'full', status: 'pending' };
+const baseOrder = { id: 'O1', status: 'pending-payment', payment_type: 'full', deposit_status: 'unpaid', balance_status: 'unpaid', email: 'a@b.com', customer_name: 'Ana', coupon_code: 'WELCOME10' };
+const settle = (db) => processPayment({}, db, { eventId: 'evt-' + Math.random(), trackerToken: 'T1', orderId: 'O1', amount: 5000, kind: 'full' });
+
+t('settlement: only payment.succeeded with TRACKER_ENDED can settle (KNOWN #2)', () => {
+  assert.strictEqual(isSettlementEvent('payment.succeeded', 'TRACKER_ENDED'), true);
+  assert.strictEqual(isSettlementEvent('payment.succeeded', 'CREATED'), false);
+  assert.strictEqual(isSettlementEvent('payment.paid', 'TRACKER_ENDED'), false);
+  assert.strictEqual(isSettlementEvent('payment:created', 'TRACKER_ENDED'), false);
+  assert.strictEqual(isSettlementEvent('payment.failed', 'TRACKER_ENDED'), false);
+});
+
+t('settlement: the signed return and webhook both use Safepay confirmation (KNOWN #2)', () => {
+  assert.ok(src('functions/api/webhook.js').includes('confirmPaidWithSafepay(env, String(trackerToken))'));
+  assert.ok(src('functions/api/safepay-return.js').includes('confirmPaidWithSafepay(env, String(trackerToken))'));
+});
+
+t('settlement: a normal paid order is marked paid and its coupon is counted (KNOWN #15)', async () => {
+  const db = settleDb({ payment: basePayment, order: baseOrder, reservations: [{ sku: 'AS-W001-IVO-XS', qty: 1, status: 'confirmed' }] });
+  const r = await settle(db);
+  assert.strictEqual(r.status, 200);
+  assert.strictEqual(db.log.updates[0].status, 'paid');
+  assert.deepStrictEqual(db.log.coupon[0], ['WELCOME10']);
+});
+
+t('late payment: lapsed stock is reserved again and the order is paid (KNOWN #4)', async () => {
+  const db = settleDb({ payment: basePayment, order: baseOrder, reservations: [{ sku: 'AS-W001-IVO-XS', qty: 1, status: 'released' }], stock: { 'AS-W001-IVO-XS': 3 } });
+  const r = await settle(db);
+  assert.strictEqual(r.status, 200);
+  assert.ok(r.body.ok && !r.body.stock_short);
+  assert.strictEqual(db.log.updates[0].status, 'paid');
+  assert.ok(db.log.batches >= 2, 'stock was reserved again');
+});
+
+t('late payment: no stock left means refund flagged and order not paid (KNOWN #4)', async () => {
+  const db = settleDb({ payment: basePayment, order: baseOrder, reservations: [{ sku: 'AS-W001-IVO-XS', qty: 1, status: 'released' }], stock: { 'AS-W001-IVO-XS': 0 } });
+  const r = await settle(db);
+  assert.strictEqual(r.body.stock_short, true);
+  assert.strictEqual(db.log.updates[0].status, 'paid-stock-short');
+  assert.ok(db.log.events.includes('stock_short_after_payment'));
+  assert.ok(db.log.events.includes('refund_required'));
+  assert.strictEqual(db.log.coupon.length, 0, 'coupon not counted when the order is refunded');
+});
+
+t('late payment: a repeat payment on a stock-short order is a duplicate (KNOWN #4)', async () => {
+  const db = settleDb({ payment: basePayment, order: { ...baseOrder, status: 'paid-stock-short' }, reservations: [{ sku: 'AS-W001-IVO-XS', qty: 1, status: 'released' }], stock: { 'AS-W001-IVO-XS': 0 } });
+  const r = await settle(db);
+  assert.strictEqual(r.body.duplicate_payment, true);
+  assert.strictEqual(db.log.updates.length, 0);
+});
+
+t('coupon: when the limit is already reached the order is still paid and the event is logged (KNOWN #15)', async () => {
+  const db = settleDb({ payment: basePayment, order: baseOrder, reservations: [{ sku: 'AS-W001-IVO-XS', qty: 1, status: 'confirmed' }], couponChanges: 0 });
+  await settle(db);
+  assert.strictEqual(db.log.updates[0].status, 'paid');
+  assert.ok(db.log.events.includes('coupon_limit_reached'));
+});
+
+t('stock endpoint: shows status, never the count (KNOWN #22)', async () => {
+  assert.strictEqual(stockStatus(12), 'in_stock');
+  assert.strictEqual(stockStatus(3), 'low');
+  assert.strictEqual(stockStatus(0), 'out');
+  const db = { prepare: () => ({ bind: () => ({ all: async () => ({ results: [{ sku: 'A', quantity_available: 12 }, { sku: 'B', quantity_available: 2 }] }) }) }) };
+  const res = await stockGet({ env: { DB: db }, request: new Request('https://x.test/api/stock?skus=A,B') });
+  const body = await res.json();
+  assert.strictEqual(body.stock.A, 'in_stock');
+  assert.strictEqual(body.stock.B, 'low');
+  assert.ok(!JSON.stringify(body).includes('12'), 'no count in the response');
+});
+
+t('holds: expired holds are released on every 15-minute run, not only the daily one (KNOWN #3)', async () => {
+  const batches = [];
+  const db = {
+    prepare(sql) {
+      return {
+        bind(...args) {
+          return {
+            sql, args,
+            async all() {
+              if (/FROM reservations WHERE status = 'active' AND expires_at/.test(sql)) {
+                return { results: [{ id: 'r1', order_id: 'O1', sku: 'AS-W001-IVO-XS', qty: 1 }] };
+              }
+              return { results: [] };
+            },
+            async first() { return null; },
+            async run() { return { success: true, meta: { changes: 1 } }; },
+          };
+        },
+      };
+    },
+    async batch(stmts) { batches.push(stmts.length); return []; },
+  };
+  const res = await onRequestScheduled({ env: { DB: db }, cron: '*/15 * * * *' });
+  const body = await res.json();
+  assert.ok(body.results.some((r) => r.released_reservations === 1), 'hold released');
+  assert.strictEqual(batches.length, 1, 'stock restored in one batch');
 });
 
 // ============================================================

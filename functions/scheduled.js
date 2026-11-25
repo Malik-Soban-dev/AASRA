@@ -35,27 +35,13 @@ async function createOrderEvent(db, orderId, type, details = null) {
   }
 }
 
-export async function onRequestScheduled(context) {
-  const { env } = context;
-  const now = new Date();
-  const nowIso = now.toISOString();
-  const results = [];
+/**
+ * Release holds older than 15 minutes (KNOWN_ISSUES #3). Runs on every 15-minute
+ * cron, not only the daily one. Safe because a late payment re-checks stock
+ * (KNOWN_ISSUES #4).
+ */
+async function releaseExpiredReservations(env, nowIso, results) {
 
-  // Frequent run (every 15 minutes): only reconcile recent pending payments.
-  if (context.cron && context.cron !== DAILY_CRON) {
-    let reconciliation;
-    try {
-      reconciliation = await reconcilePendingPayments(env, env.DB, { maxAgeHours: 6 });
-    } catch (e) {
-      reconciliation = { error: e.message };
-    }
-    return new Response(
-      JSON.stringify({ ok: true, ran_at: nowIso, results: [{ reconciliation }] }),
-      { headers: { 'Content-Type': 'application/json' } }
-    );
-  }
-
-  // ---- 1. Release expired reservations (older than 15-minute hold) ----
   try {
     const expired = await env.DB.prepare(
       "SELECT id, order_id, sku, qty FROM reservations WHERE status = 'active' AND expires_at < ?"
@@ -80,6 +66,32 @@ export async function onRequestScheduled(context) {
   } catch (e) {
     results.push({ release_error: e.message });
   }
+}
+
+export async function onRequestScheduled(context) {
+  const { env } = context;
+  const now = new Date();
+  const nowIso = now.toISOString();
+  const results = [];
+
+  // Frequent run (every 15 minutes): only reconcile recent pending payments.
+  if (context.cron && context.cron !== DAILY_CRON) {
+    const released = [];
+    await releaseExpiredReservations(env, nowIso, released);
+    let reconciliation;
+    try {
+      reconciliation = await reconcilePendingPayments(env, env.DB, { maxAgeHours: 6 });
+    } catch (e) {
+      reconciliation = { error: e.message };
+    }
+    return new Response(
+      JSON.stringify({ ok: true, ran_at: nowIso, results: [...released, { reconciliation }] }),
+      { headers: { 'Content-Type': 'application/json' } }
+    );
+  }
+
+  // ---- 1. Release expired holds (every run; see releaseExpiredReservations) ----
+  await releaseExpiredReservations(env, nowIso, results);
 
   // ---- 2. Balance reminders (orders with unpaid balance, not yet cancelled) ----
   // VERIFY: N1 and N2 days — read from env or hardcode defaults here.
@@ -105,7 +117,7 @@ export async function onRequestScheduled(context) {
         const emailPromises = dueOrders.results.map((o) =>
           sendBalanceReminder(env, o, baseUrl)
         );
-        await Promise.all(emailPromises.map((p) => p.catch((e) => console.warn('[REMINDER] email failed', o.id, e.message))));
+        await Promise.all(emailPromises.map((p, i) => p.catch((e) => console.warn('[REMINDER] email failed', dueOrders.results[i].id, e.message))));
         for (const o of dueOrders.results) {
           await createOrderEvent(env.DB, o.id, 'balance_reminder_sent', { days_until_due: days });
         }

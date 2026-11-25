@@ -433,7 +433,7 @@ Read `docs/KNOWN_ISSUES.md` for the full list: 34 items, each with evidence and 
 | 7 | Contact form and bot checks | The contact form cannot succeed while the Turnstile secret is set, because it sends no token. Its customer text goes into the business email unescaped. Turnstile is skipped when its secret is unset on other forms. | #33, #7, #8 |
 | 8 | Fulfilment and refunds are manual | Shipped, delivered, cancelled and refunded emails are not wired. `refundPayment` throws. | #9 |
 | 9 | Origin and CSRF checks can switch off | An unset or `*` `ALLOWED_ORIGIN` disables the origin and CSRF checks. | #31 |
-| 10 | Coupon limits do nothing | `used_count` is never incremented, so usage limits are never enforced. | #15 |
+| 10 | Coupon limits do nothing | `used_count` was never incremented. Fixed in batch 3: counted when the order is paid. | #15 |
 | 11 | Stock counts, backups and monitoring | Seed quantities are placeholders. No backup job or alert exists. Rate limits are not confirmed. | #14, #18, #27, #28 |
 
 The rule for reuse: fix items 1 to 9 (or record the owner's decision to accept each) before live payments, and run a sandbox test matrix again afterwards. No written matrix exists yet. Build one from `docs/BACKEND.md` §3 and §5.

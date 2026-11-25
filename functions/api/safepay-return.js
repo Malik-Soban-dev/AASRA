@@ -12,7 +12,7 @@
  * says the payment is being confirmed (informational only, never used to settle).
  */
 
-import { verifyRedirectSignature } from '../lib/gateway.js';
+import { verifyRedirectSignature, confirmPaidWithSafepay } from '../lib/gateway.js';
 import { processPayment } from './webhook.js';
 
 function jsonResponse(data, status = 200) {
@@ -56,11 +56,17 @@ export async function onRequestPost(context) {
   // Settlement: same idempotent path as the webhook. Amount/kind are not part
   // of the signed return payload, so the tracker→pending-payment mapping is
   // the trust anchor here (the webhook, when configured, adds amount checks).
+  // Verify with Safepay before settling (KNOWN_ISSUES #2). The signature proves the
+  // return came from Safepay; Safepay's record proves the money arrived and the amount.
+  const verified = await confirmPaidWithSafepay(env, String(trackerToken));
+  if (verified.status === 'gateway_error') return jsonResponse({ ok: false, error: 'verification_unavailable' }, 502);
+  if (verified.status !== 'settled') return jsonResponse({ ok: true, ignored: true, reason: 'not_settled_at_gateway' }, 202);
+
   const result = await processPayment(env, context.env.DB, {
     eventId: null,
     trackerToken: String(trackerToken),
     orderId: orderId ? String(orderId) : null,
-    amount: null,
+    amount: verified.amount,
     kind: null,
   });
   return jsonResponse(result.body, result.status);

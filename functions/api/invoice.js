@@ -62,6 +62,10 @@ export async function onRequestGet(context) {
   if (!order.balance_token || token !== order.balance_token) {
     return errorResponse('invalid token', 403, 'invalid_token');
   }
+  // Only paid orders get a receipt (KNOWN_ISSUES #6).
+  if (!['paid', 'packed', 'shipped'].includes(order.status)) {
+    return errorResponse('invoice not found', 404, 'not_found');
+  }
 
   // Parse items snapshot (stored server-side at checkout).
   let items;

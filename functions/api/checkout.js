@@ -271,7 +271,14 @@ async function handleCheckoutPost(context) {
   }
 
   // 11. Create order record
-  const orderId = publicOrderNumber();
+  // Order numbers have 4 random characters, so check for an existing row and
+  // draw again (KNOWN_ISSUES #13). The primary key still guards the insert.
+  let orderId = publicOrderNumber();
+  for (let attempt = 0; attempt < 5; attempt++) {
+    const taken = await context.env.DB.prepare('SELECT 1 FROM orders WHERE id = ?').bind(orderId).first();
+    if (!taken) break;
+    orderId = publicOrderNumber();
+  }
   if (context.state) context.state.orderId = orderId;
   // Unguessable token for balance payment + invoice access (not the order id).
   const balanceToken = makeId('bal');

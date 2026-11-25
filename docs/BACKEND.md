@@ -43,7 +43,7 @@ All responses are JSON with `ok: true|false`, except the invoice (HTML), the saf
 | `POST /api/pay-order` | order ID + phone | Opens a payment session for a pending full order (or a legacy balance) | `pay-order.js` |
 | `POST /api/pay-balance` | order ID + `token` (= `balance_token`) + optional Turnstile | **Legacy deposit balance.** Kept for old orders | `pay-balance.js` |
 | `GET /api/invoice?order_id=&token=&type=` | `token` = `balance_token` | HTML invoice or receipt. `type` is `deposit`, `balance`, or `final` (default) | `invoice.js` |
-| `GET /api/stock?skus=A,B,…` | none | Quantities for up to 50 SKUs. `stock: null` if D1 is unavailable | `stock.js` |
+| `GET /api/stock?skus=A,B,…` | none | A status per SKU: `out`, `low` (1 to 3), `in_stock`. No counts. `stock: null` if D1 is unavailable | `stock.js` |
 | `POST /api/contact` | Turnstile (only if its secret is set) | Sends the message to the business mailbox and an auto-reply to the customer | `contact.js` |
 | `POST /api/newsletter` | none (WAF rate limit only) | Consent-based signup. **Currently does not store anything; see KNOWN_ISSUES** | `newsletter.js` |
 
@@ -78,7 +78,8 @@ Any unexpected exception after the order row exists sets the order to `cancelled
 2. Signature: HMAC-SHA512 hex (SHA-256 also accepted) of the raw body, keyed with `SAFEPAY_WEBHOOK_SECRET`. Constant-time compare. Missing secret → always invalid (fail closed). Failure → 401 `invalid_signature`.
 3. Parsed fields: event id (`token`), event type (`type`), tracker (`data.tracker`), amount (`data.amount`), currency, state (`data.state`), order id (`data.metadata.order_id`).
 4. Missing any of event id, tracker, order id, type, status, amount, or currency → 400 `unverified_webhook_contract`.
-5. Event type must be one of `payment.succeeded`, `payment.paid`, `payment:created`, **and** status (or state) must be one of `succeeded`, `paid`, `created`, `completed`, `tracker_ended`. Otherwise 200 `ignored: payment_not_successful`.
+5. Only event type `payment.succeeded` with state `TRACKER_ENDED` can settle (`isSettlementEvent`). Otherwise 200 `ignored: payment_not_successful`.
+5a. Safepay is then asked directly (`confirmPaidWithSafepay`, `GET /reporter/api/v1/payments/{tracker}`). Not finished there → 200 `ignored: not_settled_at_gateway`. Safepay unreachable → 502 `verification_unavailable`, so Safepay retries. The webhook amount must match Safepay's amount, or 400 `amount_mismatch`.
 6. Currency must be `PKR`.
 7. `processPayment` (shared with the signed return and reconciliation, see §5).
 
@@ -128,7 +129,7 @@ Deposit orders only. Input `{ order_id, token, turnstile_token }`. Turnstile is 
 
 - Up to 50 SKUs, each up to 64 characters. None given → 400 `missing_skus`.
 - No D1 or a read error → `{ ok: true, stock: null, reason: "stock_unavailable" }`. The storefront then shows its generic availability note.
-- Returns quantities only. No auth. Anyone can read stock levels.
+- Returns a status per SKU (`out`, `low` for 1 to 3 units, `in_stock`), never the number. No auth. The storefront does not call this endpoint yet.
 
 ### 3.9 `POST /api/contact`
 
@@ -151,7 +152,7 @@ Deposit orders only. Input `{ order_id, token, turnstile_token }`. Turnstile is 
   - `percentage`: `floor(subtotal × value / 100)`, value must be an integer 1–100.
   - `fixed`: `value`, integer ≥ 1.
   - Rejected with a reason (and ignored) if expired, usage limit reached, or below `min_order`. Discount is capped at the subtotal.
-  - Usage is not incremented anywhere in code. `used_count` stays as seeded unless updated by hand.
+  - Usage is counted when the order is **paid** (`processPayment`). `used_count` goes up only while `usage_limit` allows. If the limit is already reached when payment arrives, the order is still paid and a `coupon_limit_reached` event is logged.
 - **Shipping:** looked up by city in `data/shipping-rates.json` (case-insensitive). Unknown city → the `Other` rate. Free when the subtotal after discount is **≥ PKR 20,000** (`free_shipping_threshold_pkr`).
 - **Total:** `subtotal − discount + shipping`.
 - **Tax:** **not added to order totals.** `TAX_RATE_PCT` is `0`, and tax appears only on the invoice (see §3.7 and `KNOWN_ISSUES.md` #5).
