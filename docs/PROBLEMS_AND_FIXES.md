@@ -30,7 +30,7 @@ The problem list itself is `KNOWN_ISSUES.md`. This file is the record of what wa
 - **Still open:** `/api/pay-order` and `/api/newsletter` have no Turnstile. Decide whether they need one or only WAF rate limits. See Needs decision.
 - **Lesson:** a security check must fail closed. Decide the behaviour when the secret is missing before writing the check.
 
-### #11 Placeholder sender address — *Fixed on branch* (Low)
+### #20 Placeholder sender address — *Fixed on branch* (Low)
 - **Problem:** if `EMAIL_FROM` was unset, mail used `orders@example.com` as the sender and the recipient.
 - **Fix:** no placeholder fallback. `emailConfig` gives an empty sender, and `sendEmail` returns `email_provider_not_configured` without calling the provider. The contact handler sends to `BUSINESS_EMAIL` and returns `503 contact_not_configured` if neither is set.
 - **Check:** test that no provider call happens without a sender.
@@ -48,7 +48,7 @@ The problem list itself is `KNOWN_ISSUES.md`. This file is the record of what wa
 - **Still open:** the token never expires for full orders. See Needs decision.
 - **Lesson:** check the payment state before showing a financial document. Check the token first, so an attacker learns nothing from the response.
 
-### #12 Out-of-scope variable in reminder failure log — *Fixed on branch* (Medium)
+### #16 Out-of-scope variable in reminder failure log — *Fixed on branch* (Medium)
 - **Problem:** the balance-reminder failure handler used `o.id`, which is not in scope there. It would throw if a reminder failed.
 - **Fix:** the handler now uses `dueOrders.results[i].id`.
 - **Check:** source-level test.
@@ -78,8 +78,8 @@ These items change money, stock, tax, or order status. Each needs a choice from 
 | 3 | Expired holds released only at 09:00 UTC | Move the release to the 15-minute cron. **Do this only after #4 is decided**: releasing sooner makes a late payment more likely. | Depends on #4. |
 | 5 | Tax not in totals; invoice reads settings from `process.env` | The tax rule (rate, inclusive or exclusive, and when it applies). Totals will change once it is set. | Legal and accounting decision. Confirm with an accountant. The `process.env` read is a code fix that can follow. |
 | 9 | Shipped, delivered and refunded emails never sent | How the owner marks orders shipped (SQL, an admin page, or a Safepay step). | A process decision. Code can follow once it is chosen. |
-| 10 | Coupon `used_count` never increases | When a coupon counts as used: on order creation, or only on payment. | Decides whether a failed payment uses up a coupon. |
-| 13 | No automated D1 backup | Who runs backups, and where they are kept. | Account and cost decision. See `CLOUDFLARE.md` §7. |
+| 15 | Coupon `used_count` never increases | When a coupon counts as used: on order creation, or only on payment. | Decides whether a failed payment uses up a coupon. |
+| 27 | No automated D1 backup | Who runs backups, and where they are kept. | Account and cost decision. See `CLOUDFLARE.md` §7. |
 
 ---
 
@@ -87,7 +87,7 @@ These items change money, stock, tax, or order status. Each needs a choice from 
 
 - **Cloudflare WAF rate limits (#18):** create the rules listed in `CLOUDFLARE.md` §10 and record the date.
 - **Alerts and uptime checks (#28):** set them up in Cloudflare and record where they go.
-- **Backups (#27):** see decision 13 above.
+- **Backups (#27):** see decision 27 above.
 - **Dashboard deploy command (`CLOUDFLARE.md` §5):** check it is `true` if the Worker is also connected to Git.
 
 ---
