@@ -107,3 +107,64 @@ These items change money, stock, tax, or order status. Each needs a choice from 
 4. **Check payment state before showing a financial document.**
 5. **Decide the money policy before changing timing.** Releasing stock sooner is only safe once a late payment is handled.
 6. **Verify third-party contracts against the official SDK or sandbox**, not from memory (for example, Safepay's event names).
+
+---
+
+## Batch 2 — code items that needed no business decision (same branch)
+
+| # | Change | Check |
+|---|---|---|
+| 31 | API middleware fails closed when `ALLOWED_ORIGIN` is unset or `*`. Only the webhook and the Safepay signed return still work, because they are checked by HMAC. | 3 middleware tests |
+| 19 | Gateway callbacks are matched by exact path, not by substring. `/api/checkout?x=/api/webhook` no longer gets the exemption. | lookalike-path test |
+| 13 | Order numbers are checked against existing rows before insert, with up to five new draws. The primary key still guards the insert. | source test |
+| 11 | Catalogue test: product ids, slugs and SKUs are unique, and every product has images and variants. | catalogue test |
+| 10 | `wrangler.toml` comment names the real build variable, `PUBLIC_TURNSTILE_SITE_KEY`. | source test |
+
+Batch 2 test total: **64 passed, 0 failed** (Node 24.22.3). Build and `wrangler deploy --dry-run` pass.
+
+---
+
+## Status of all 34 issues (end of batch 2)
+
+Key: **Fixed** = code changed, tested, on branch. **Partly** = some of it fixed, rest open. **Decision** = needs an owner choice first. **Owner action** = a dashboard or data step. **Deferred** = real work, not done in this batch, with the reason. **Accepted** = documented, no change.
+
+| # | Severity | Issue | Status | Note |
+|---|---|---|---|---|
+| 1 | High | Newsletter insert never run | **Fixed** (PR #92) | Check the `newsletter` table exists in production |
+| 2 | High | Webhook accepts non-final events; signed return has no amount check | **Decision** | Which Safepay event and state mean "paid". Check the `CATP` webhook first |
+| 3 | Medium | Holds released only at 09:00 UTC | **Decision** | Depends on #4 |
+| 4 | High | Late payment after hold expiry settles with no stock check | **Decision** | Extend the hold, or re-check stock and refuse or refund |
+| 5 | High | Tax not in totals; invoice reads `process.env` | **Decision** | Tax rule from an accountant |
+| 6 | Medium | Invoices for unpaid orders | **Partly** (PR #92) | Unpaid orders hidden. Token never expires: decision |
+| 7 | Low | Contact email unescaped | **Fixed** (PR #92) | |
+| 8 | Low | Turnstile fails open | **Partly** (PR #92) | Contact and balance fixed. Pay-order and newsletter: decision |
+| 9 | Medium | Shipped, delivered, refunded emails never sent | **Decision** | How orders are marked shipped |
+| 10 | Low | Wrong variable name in comments | **Fixed** (batch 2) | |
+| 11 | Low | Catalogue has no assertions | **Fixed** (batch 2) | Uniqueness and completeness only, not image files |
+| 12 | Low | Dormant deposit code | **Deferred** | Removing the public `/deposit-policy` and `/pay-balance` pages changes the site: owner OK needed |
+| 13 | Low | Order-number collisions | **Fixed** (batch 2) | |
+| 14 | Medium | Seed stock quantities are placeholders | **Owner action** | Real stock counts from the owner |
+| 15 | Low | Coupon `used_count` never increases | **Decision** | When a coupon counts as used |
+| 16 | Medium | Reminder log uses an out-of-scope variable | **Fixed** (PR #92) | |
+| 17 | Low | CSP allows `unsafe-inline` | **Deferred** | Needs inline scripts moved out of many pages: a separate change |
+| 18 | Medium | WAF rate limits not confirmed | **Owner action** | Create the rules in `CLOUDFLARE.md` §10 |
+| 19 | Low | Exemptions by substring | **Fixed** (batch 2) | |
+| 20 | Low | Placeholder sender | **Fixed** (PR #92) | |
+| 21 | Low | Order lookup: only order ID and phone | **Deferred** | Needs an attempt-limit table (a migration) and a lockout policy: decision |
+| 22 | Info | `GET /api/stock` shows quantities | **Decision** | Whether to show exact numbers publicly |
+| 23 | Info | Public Safepay key and D1 ID in repo | **Accepted** | Identifiers, not secrets. Documented |
+| 24 | Info | Unused `failed` and `refunded` payment statuses | **Accepted** | Documented |
+| 25 | Info | Stale docs | **Partly** | README and ARCHITECTURE now label deposits and other legacy items |
+| 26 | Info | Invalid coupon fails silently | **Deferred** | Needs wording from the owner for the message |
+| 27 | Medium | No automated backup | **Owner action** | Who runs backups and where they are kept: decision |
+| 28 | Medium | No alerts or uptime checks | **Owner action** | Set up in Cloudflare |
+| 29 | Info | Test coverage gaps | **Partly** (batch 2) | Added middleware, catalogue and newsletter tests. Scheduled jobs and the stock race are still untested |
+| 30 | Low | Tracking link on example.com | **Fixed** (PR #92) | |
+| 31 | Medium | Unset origin disables origin and CSRF checks | **Fixed** (batch 2) | |
+| 32 | Low | PayFast switch, not built | **Accepted** | Documented |
+| 33 | Medium | Contact form could not send | **Fixed** (PR #92) | Needs `PUBLIC_TURNSTILE_SITE_KEY` set in GitHub and the secret in Cloudflare |
+| 34 | Info | Generated product files out of date | **Deferred** | Committing them needs your approval |
+
+**Totals:** Fixed 10 · Partly 5 · Decision 7 · Owner action 4 · Deferred 5 · Accepted 3 = 34.
+
+**Before merging PR #92:** the email changes need your explicit "yes". Merging also needs the production checks listed above (newsletter table, `PUBLIC_TURNSTILE_SITE_KEY`, `TURNSTILE_SECRET_KEY`, `ALLOWED_ORIGIN` set to the real domains).

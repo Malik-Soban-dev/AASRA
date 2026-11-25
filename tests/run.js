@@ -34,6 +34,7 @@ import {
   sendEmail,
 } from '../functions/lib/email.js';
 import { onRequestPost as newsletterPost } from '../functions/api/newsletter.js';
+import { onRequest as apiMiddleware } from '../functions/api/_middleware.js';
 import { onRequestGet as invoiceGet } from '../functions/api/invoice.js';
 
 // ---- Load sample products ----
@@ -832,6 +833,55 @@ t('invoice: unpaid orders get no receipt; token is still checked first (KNOWN #6
 
 t('scheduled: reminder failure logs the right order id (KNOWN #12)', () => {
   assert.ok(src('functions/scheduled.js').includes('dueOrders.results[i].id'));
+});
+
+// ---- Batch 2: middleware, catalogue, order numbers (KNOWN #10, #11, #13, #19, #31)
+function mwCall(method, url, env, headers = {}) {
+  const request = new Request(url, { method, headers });
+  return apiMiddleware({ request, env, next: async () => new Response('{"ok":true}', { headers: { 'Content-Type': 'application/json' } }) });
+}
+t('api middleware: unset ALLOWED_ORIGIN fails closed for browser API calls (KNOWN #31)', async () => {
+  const r = await mwCall('POST', 'https://x.test/api/checkout', {}, {});
+  assert.strictEqual(r.status, 503);
+  assert.strictEqual((await r.json()).error, 'origin_not_configured');
+});
+t('api middleware: wildcard ALLOWED_ORIGIN also fails closed (KNOWN #31)', async () => {
+  const r = await mwCall('GET', 'https://x.test/api/stock', { ALLOWED_ORIGIN: '*' });
+  assert.strictEqual(r.status, 503);
+});
+t('api middleware: webhook still reaches its handler without origin config (KNOWN #31)', async () => {
+  const r = await mwCall('POST', 'https://x.test/api/webhook', {}, {});
+  assert.strictEqual(r.status, 200);
+});
+t('api middleware: foreign origin is refused on state-changing calls', async () => {
+  const r = await mwCall('POST', 'https://x.test/api/checkout', { ALLOWED_ORIGIN: 'https://aasra.shop' }, { Origin: 'https://evil.test' });
+  assert.strictEqual(r.status, 403);
+});
+t('api middleware: a lookalike path is not a gateway callback (KNOWN #19)', async () => {
+  const r = await mwCall('POST', 'https://x.test/api/checkout?x=/api/webhook', { ALLOWED_ORIGIN: 'https://aasra.shop' }, { Origin: 'https://evil.test' });
+  assert.strictEqual(r.status, 403);
+});
+t('api middleware: reads pass when the origin is configured (KNOWN #31)', async () => {
+  const r = await mwCall('GET', 'https://x.test/api/stock', { ALLOWED_ORIGIN: 'https://aasra.shop' });
+  assert.strictEqual(r.status, 200);
+});
+t('catalogue: ids, slugs and SKUs are unique; every product has images and variants (KNOWN #11)', () => {
+  const cat = JSON.parse(readFileSync(new URL('../data/products.json', import.meta.url), 'utf8'));
+  assert.ok(cat.products.length > 0);
+  const ids = new Set(), slugs = new Set(), skus = new Set();
+  for (const p of cat.products) {
+    assert.ok(!ids.has(p.id), 'duplicate id ' + p.id); ids.add(p.id);
+    assert.ok(!slugs.has(p.slug), 'duplicate slug ' + p.slug); slugs.add(p.slug);
+    assert.ok(Array.isArray(p.images) && p.images.length > 0, 'no images: ' + p.id);
+    assert.ok(Array.isArray(p.variants) && p.variants.length > 0, 'no variants: ' + p.id);
+    for (const v of p.variants) { assert.ok(!skus.has(v.sku), 'duplicate sku ' + v.sku); skus.add(v.sku); }
+  }
+});
+t('checkout: order numbers are checked for collisions before insert (KNOWN #13)', () => {
+  assert.ok(src('functions/api/checkout.js').includes('SELECT 1 FROM orders WHERE id = ?'));
+});
+t('wrangler.toml: Turnstile variable named correctly (KNOWN #10)', () => {
+  assert.ok(src('wrangler.toml').includes('PUBLIC_TURNSTILE_SITE_KEY'));
 });
 
 // ============================================================

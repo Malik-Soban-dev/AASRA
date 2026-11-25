@@ -21,6 +21,23 @@ export async function onRequest(context) {
   const origin = request.headers.get('Origin') || '';
   const method = request.method;
 
+  // Gateway callbacks are matched by exact path (KNOWN_ISSUES #19). They are
+  // server-to-server POSTs authenticated by HMAC inside the handler, so they
+  // carry no Origin and no cookie.
+  const path = new URL(request.url).pathname.replace(/\/+$/, '');
+  const isWebhook = path === '/api/webhook';
+  const isSafepayReturn = path === '/api/safepay-return';
+  const isGatewayCallback = isWebhook || isSafepayReturn;
+
+  // Fail closed: an unset or wildcard ALLOWED_ORIGIN is a misconfiguration.
+  // Refuse every browser-facing API call until it is fixed (KNOWN_ISSUES #31).
+  if (allowAll && !isGatewayCallback) {
+    return new Response(JSON.stringify({ ok: false, error: 'origin_not_configured', code: 'origin_not_configured' }), {
+      status: 503,
+      headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' },
+    });
+  }
+
   // Echo the requesting origin when allowed; otherwise fall back to the first
   // configured origin. (Credentials + '*' is invalid per the CORS spec, so
   // never return '*' when credentials are enabled.)
@@ -49,8 +66,6 @@ export async function onRequest(context) {
   // signed return (/api/safepay-return) is exempt for the same reason: it's
   // a server-to-server POST authenticated by HMAC signature inside the
   // function, and it carries no Origin header or cookies.
-  const isWebhook = request.url.includes('/api/webhook');
-  const isSafepayReturn = request.url.includes('/api/safepay-return');
   const isStateChanging = ['POST', 'PUT', 'PATCH', 'DELETE'].includes(method);
   if (isStateChanging && !isWebhook && !isSafepayReturn && !allowAll) {
     if (!origin || !allowedOrigins.includes(origin)) {
