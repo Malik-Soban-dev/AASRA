@@ -56,6 +56,17 @@ The problem list itself is `KNOWN_ISSUES.md`. This file is the record of what wa
 
 ---
 
+### #33 Contact form could never send a message — *Fixed on branch* (Medium)
+- **Problem:** the contact page sent an empty Turnstile token and rendered no widget, so the API rejected every message.
+- **Fix:** the page renders the Turnstile widget when `PUBLIC_TURNSTILE_SITE_KEY` is set at build time, loads the script the same way checkout does, and sends the real token. It shows a message and does not submit when there is no token.
+- **Needs:** the site key in the GitHub variable `PUBLIC_TURNSTILE_SITE_KEY` and the secret `TURNSTILE_SECRET_KEY` in Cloudflare. Without the site key, the form will not send. Check both before launch.
+- **Lesson:** a form that depends on a bot check needs the widget, the token, and the server check tested together. A server-side fix alone does not make the form work.
+
+### Header label "Account and orders" — *Fixed on branch* (Low, UX)
+- **Problem:** the header icon was labelled "Account and orders" but only opens order lookup, so customers expected an account.
+- **Fix:** renamed to "Track your order" in both headers (`SiteHeader.astro`, `Header.astro`).
+- **Lesson:** label controls by what they do. Decide whether a feature exists before naming it.
+
 ## Needs decision (not changed)
 
 These items change money, stock, tax, or order status. Each needs a choice from the owner before code is written.
@@ -69,7 +80,6 @@ These items change money, stock, tax, or order status. Each needs a choice from 
 | 9 | Shipped, delivered and refunded emails never sent | How the owner marks orders shipped (SQL, an admin page, or a Safepay step). | A process decision. Code can follow once it is chosen. |
 | 10 | Coupon `used_count` never increases | When a coupon counts as used: on order creation, or only on payment. | Decides whether a failed payment uses up a coupon. |
 | 13 | No automated D1 backup | Who runs backups, and where they are kept. | Account and cost decision. See `CLOUDFLARE.md` §7. |
-| 33 | Contact page sends no Turnstile token | Add a Turnstile widget to the contact page. This is a front-end change, and it can ship on the same branch. | Not a decision, but it needs the site key set in the build. Next in the queue. |
 
 ---
 
