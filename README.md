@@ -12,6 +12,7 @@ A code-only online store (no WordPress). Static pages are built with Astro. One 
 | [`docs/PLAYBOOK.md`](docs/PLAYBOOK.md) | How to build a similar store from zero, and what we learned. Start here. |
 | [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) | Short reference: system shape, directories, data model, rules. |
 | [`docs/BACKEND.md`](docs/BACKEND.md) | Every API endpoint, money and settlement rules, order states, schema, tests. |
+| [`docs/CLOUDFLARE.md`](docs/CLOUDFLARE.md) | Everything on Cloudflare: Worker, D1, cron, Turnstile, domain, WAF, secrets, deploy, and what is only in the dashboard. |
 | [`docs/OPERATIONS.md`](docs/OPERATIONS.md) | Runbook: fulfilment, refunds, stock, coupons, deploys, secrets, incidents. |
 | [`docs/KNOWN_ISSUES.md`](docs/KNOWN_ISSUES.md) | Defects and gaps found in the code, with evidence and suggested fixes. Read before taking payments. |
 | [`docs/HISTORY.md`](docs/HISTORY.md) | Build record: every pull request, decisions and reasons, owner rules, dead ends. |

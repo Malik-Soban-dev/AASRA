@@ -98,6 +98,10 @@ The project's own rules are in `skills/`:
 - `docs/RESEARCH_APPLICATION_REPORT.md`: 2026-11-19 report on how the research was applied and the root causes of earlier failures.
 - `CHECKLIST.md` (repo root): reference-led storefront audit, checked against screenshots of a reference site. Used for layout and feel only.
 
+## Cloudflare
+
+Setup, names, secrets and dashboard-only settings are in `CLOUDFLARE.md`.
+
 ## Stack versions
 
 Node 24.22.3 (`.nvmrc`, `engines >= 24`). Astro 7 (`astro` ^7.4.12). Wrangler 4. TypeScript 5.6. Fonts: Inter Tight and Inter from Google Fonts. Cormorant Garamond is a dependency (`@fontsource`) and is referenced only by the legacy `global.css`; the logo choice is an open decision (`PLAYBOOK.md` §18).

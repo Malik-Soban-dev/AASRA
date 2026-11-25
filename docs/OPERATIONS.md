@@ -117,6 +117,8 @@ npx wrangler d1 execute AASRA_DB --remote --command "INSERT INTO coupons (code, 
 
 ## 6. Rate-limit rules to create (WAF)
 
+Dashboard steps and the other Cloudflare settings are in `CLOUDFLARE.md` §10.
+
 Rate limits are not in the code. Create them in **Cloudflare dashboard → Security → WAF → Rate limiting rules**, then record the date here. The limits below are the ones written in `wrangler.toml`:
 
 | Path | Method | Limit (per IP) |

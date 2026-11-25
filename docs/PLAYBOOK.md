@@ -7,7 +7,7 @@ The single guide to read before building a similar store. It records what was bu
 - **Names, not values.** Secret values live only in Cloudflare, GitHub Actions secrets, or local `.dev.vars` (never committed). The only real key-like value in the repo is a public Safepay key in `wrangler.toml`; it is not copied here.
 - **Verification:** file paths, script names, environment variable names, routes and numbers were checked against the repo at this snapshot. Where the code and the intent differ, the text says so and points to `KNOWN_ISSUES.md`.
 
-Companion docs: `docs/HISTORY.md` (every merged PR, decisions with reasons, owner rules, dead ends, sandbox recovery, open items), `docs/ARCHITECTURE.md` (short reference for data model and routes), `docs/BACKEND.md` (every endpoint, money and settlement rules, schema, tests), `docs/OPERATIONS.md` (runbook: fulfilment, refunds, stock, deploys, secrets, incidents), `docs/KNOWN_ISSUES.md` (defects to fix before reuse), `docs/CATALOG_INDEX.md` (generated product list), `docs/DESIGN_SYSTEM.md` (tokens, components, motion), `README.md` (setup and reference), `CHECKLIST.md` at repo root (reference audit, not a feature list), `skills/*.md` (rules for editing).
+Companion docs: `docs/HISTORY.md` (every merged PR, decisions with reasons, owner rules, dead ends, sandbox recovery, open items), `docs/ARCHITECTURE.md` (short reference for data model and routes), `docs/BACKEND.md` (every endpoint, money and settlement rules, schema, tests), `docs/CLOUDFLARE.md` (every Cloudflare setting, dashboard-only items included), `docs/OPERATIONS.md` (runbook: fulfilment, refunds, stock, deploys, secrets, incidents), `docs/KNOWN_ISSUES.md` (defects to fix before reuse), `docs/CATALOG_INDEX.md` (generated product list), `docs/DESIGN_SYSTEM.md` (tokens, components, motion), `README.md` (setup and reference), `CHECKLIST.md` at repo root (reference audit, not a feature list), `skills/*.md` (rules for editing).
 
 ---
 
@@ -320,10 +320,10 @@ Set as `[vars]` in `wrangler.toml` (non-secret), as Cloudflare secrets with `wra
 |---|---|---|
 | `PUBLIC_BASE_URL`, `ALLOWED_ORIGIN` | var | Site URL and allowed origins |
 | `TAX_RATE_PCT` | var | Tax rate (`0`, VERIFY) |
-| `BUSINESS_NAME`, `BUSINESS_EMAIL`, `BUSINESS_ADDRESS`, `BUSINESS_PHONE`, `TAX_REGISTRATION_NO` | var | Receipt details. `BUSINESS_ADDRESS` and `TAX_REGISTRATION_NO` are empty in `wrangler.toml`. The invoice reads these values through `process.env`, which may not be populated in the Worker (`KNOWN_ISSUES.md` #5). |
+| `BUSINESS_NAME`, `BUSINESS_EMAIL`, `BUSINESS_ADDRESS`, `TAX_REGISTRATION_NO` | var | Receipt details. `BUSINESS_ADDRESS` and `TAX_REGISTRATION_NO` are empty in `wrangler.toml`. The invoice reads these values through `process.env`, which may not be populated in the Worker (`KNOWN_ISSUES.md` #5). |
 | `EMAIL_PROVIDER`, `EMAIL_FROM`, `EMAIL_FROM_NAME` | var | Email settings |
 | `EMAIL_PROVIDER_API_KEY` | **secret** | Resend key |
-| `SAFEPAY_ENABLED`, `SAFEPAY_PROTOCOL_VERIFIED`, `SAFEPAY_BASE_URL`, `SAFEPAY_CHECKOUT_URL`, `SAFEPAY_ENVIRONMENT` | var | Safepay mode and hosts (sandbox now). `SAFEPAY_ENVIRONMENT` is read by `gateway.js` but is not set in `wrangler.toml`. Previews set `SAFEPAY_ENABLED` to false. |
+| `SAFEPAY_ENABLED`, `SAFEPAY_PROTOCOL_VERIFIED`, `SAFEPAY_BASE_URL`, `SAFEPAY_CHECKOUT_URL` | var | Safepay mode and hosts (sandbox now). `SAFEPAY_ENVIRONMENT` is read by `gateway.js` but is not set in `wrangler.toml`. Previews set `SAFEPAY_ENABLED` to false. |
 | `SAFEPAY_API_KEY` | var (public key) | Safepay public key, kept in `wrangler.toml` |
 | `SAFEPAY_SECRET_KEY` | **secret** | Safepay secret key |
 | `SAFEPAY_WEBHOOK_SECRET` | **secret** | Webhook signing secret (`X-SFPY-SIGNATURE`) |
