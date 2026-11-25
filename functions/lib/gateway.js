@@ -229,3 +229,20 @@ export async function fetchTrackerState(env, trackerToken) {
   const rawAmount = tracker.amount ?? root.amount ?? null;
   return { state, amount: rawAmount == null ? null : Number(rawAmount) };
 }
+
+/**
+ * Ask Safepay whether a tracker has really finished and for how much.
+ * Only { status: 'settled', amount } may settle an order (KNOWN_ISSUES #2).
+ * Statuses: settled | not_settled | amount_unverified | gateway_error.
+ */
+export async function confirmPaidWithSafepay(env, trackerToken) {
+  let remote;
+  try {
+    remote = await fetchTrackerState(env, trackerToken);
+  } catch (e) {
+    return { status: 'gateway_error', error: e.message };
+  }
+  if (remote.state !== 'TRACKER_ENDED') return { status: 'not_settled', state: remote.state };
+  if (remote.amount == null || !Number.isFinite(remote.amount)) return { status: 'amount_unverified' };
+  return { status: 'settled', amount: remote.amount };
+}

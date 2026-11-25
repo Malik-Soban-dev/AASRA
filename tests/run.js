@@ -35,6 +35,9 @@ import {
 } from '../functions/lib/email.js';
 import { onRequestPost as newsletterPost } from '../functions/api/newsletter.js';
 import { onRequest as apiMiddleware } from '../functions/api/_middleware.js';
+import { isSettlementEvent } from '../functions/api/webhook.js';
+import { stockStatus, onRequestGet as stockGet } from '../functions/api/stock.js';
+import { onRequestScheduled } from '../functions/scheduled.js';
 import { onRequestGet as invoiceGet } from '../functions/api/invoice.js';
 
 // ---- Load sample products ----
@@ -882,6 +885,143 @@ t('checkout: order numbers are checked for collisions before insert (KNOWN #13)'
 });
 t('wrangler.toml: Turnstile variable named correctly (KNOWN #10)', () => {
   assert.ok(src('wrangler.toml').includes('PUBLIC_TURNSTILE_SITE_KEY'));
+});
+
+// ---- Batch 3: settlement trust, late payment, coupons, stock status (KNOWN #2, #4, #15, #22)
+function settleDb({ payment, order, reservations = [], stock = {}, couponChanges = 1 }) {
+  const log = { updates: [], events: [], coupon: [], batches: 0 };
+  return {
+    log,
+    prepare(sql) {
+      return {
+        bind(...args) {
+          return {
+            sql, args,
+            async first() {
+              if (/FROM payments WHERE raw_event_id/.test(sql)) return null;
+              if (/FROM payments WHERE tracker_token = \? AND status = \?/.test(sql)) return args[1] === 'pending' ? payment : null;
+              if (/FROM orders WHERE id = \?/.test(sql)) return order;
+              if (/SELECT quantity_available FROM stock/.test(sql)) return { quantity_available: stock[args[0]] ?? 0 };
+              return null;
+            },
+            async all() {
+              if (/FROM reservations WHERE order_id = \?/.test(sql)) return { results: reservations };
+              return { results: [] };
+            },
+            async run() {
+              if (/UPDATE coupons/.test(sql)) { log.coupon.push(args); return { success: true, meta: { changes: couponChanges } }; }
+              if (/UPDATE orders SET/.test(sql)) log.updates.push({ status: args[0] });
+              if (/INSERT INTO order_events/.test(sql)) log.events.push(args[2]);
+              return { success: true, meta: { changes: 1 } };
+            },
+          };
+        },
+      };
+    },
+    async batch(stmts) {
+      log.batches++;
+      return stmts.map((st) => (/SELECT quantity_available FROM stock/.test(st.sql)
+        ? { results: [{ quantity_available: stock[st.args[0]] ?? 0 }] }
+        : { success: true, results: [] }));
+    },
+  };
+}
+const basePayment = { id: 'p1', order_id: 'O1', tracker_token: 'T1', amount: 5000, kind: 'full', status: 'pending' };
+const baseOrder = { id: 'O1', status: 'pending-payment', payment_type: 'full', deposit_status: 'unpaid', balance_status: 'unpaid', email: 'a@b.com', customer_name: 'Ana', coupon_code: 'WELCOME10' };
+const settle = (db) => processPayment({}, db, { eventId: 'evt-' + Math.random(), trackerToken: 'T1', orderId: 'O1', amount: 5000, kind: 'full' });
+
+t('settlement: only payment.succeeded with TRACKER_ENDED can settle (KNOWN #2)', () => {
+  assert.strictEqual(isSettlementEvent('payment.succeeded', 'TRACKER_ENDED'), true);
+  assert.strictEqual(isSettlementEvent('payment.succeeded', 'CREATED'), false);
+  assert.strictEqual(isSettlementEvent('payment.paid', 'TRACKER_ENDED'), false);
+  assert.strictEqual(isSettlementEvent('payment:created', 'TRACKER_ENDED'), false);
+  assert.strictEqual(isSettlementEvent('payment.failed', 'TRACKER_ENDED'), false);
+});
+
+t('settlement: the signed return and webhook both use Safepay confirmation (KNOWN #2)', () => {
+  assert.ok(src('functions/api/webhook.js').includes('confirmPaidWithSafepay(env, String(trackerToken))'));
+  assert.ok(src('functions/api/safepay-return.js').includes('confirmPaidWithSafepay(env, String(trackerToken))'));
+});
+
+t('settlement: a normal paid order is marked paid and its coupon is counted (KNOWN #15)', async () => {
+  const db = settleDb({ payment: basePayment, order: baseOrder, reservations: [{ sku: 'AS-W001-IVO-XS', qty: 1, status: 'confirmed' }] });
+  const r = await settle(db);
+  assert.strictEqual(r.status, 200);
+  assert.strictEqual(db.log.updates[0].status, 'paid');
+  assert.deepStrictEqual(db.log.coupon[0], ['WELCOME10']);
+});
+
+t('late payment: lapsed stock is reserved again and the order is paid (KNOWN #4)', async () => {
+  const db = settleDb({ payment: basePayment, order: baseOrder, reservations: [{ sku: 'AS-W001-IVO-XS', qty: 1, status: 'released' }], stock: { 'AS-W001-IVO-XS': 3 } });
+  const r = await settle(db);
+  assert.strictEqual(r.status, 200);
+  assert.ok(r.body.ok && !r.body.stock_short);
+  assert.strictEqual(db.log.updates[0].status, 'paid');
+  assert.ok(db.log.batches >= 2, 'stock was reserved again');
+});
+
+t('late payment: no stock left means refund flagged and order not paid (KNOWN #4)', async () => {
+  const db = settleDb({ payment: basePayment, order: baseOrder, reservations: [{ sku: 'AS-W001-IVO-XS', qty: 1, status: 'released' }], stock: { 'AS-W001-IVO-XS': 0 } });
+  const r = await settle(db);
+  assert.strictEqual(r.body.stock_short, true);
+  assert.strictEqual(db.log.updates[0].status, 'paid-stock-short');
+  assert.ok(db.log.events.includes('stock_short_after_payment'));
+  assert.ok(db.log.events.includes('refund_required'));
+  assert.strictEqual(db.log.coupon.length, 0, 'coupon not counted when the order is refunded');
+});
+
+t('late payment: a repeat payment on a stock-short order is a duplicate (KNOWN #4)', async () => {
+  const db = settleDb({ payment: basePayment, order: { ...baseOrder, status: 'paid-stock-short' }, reservations: [{ sku: 'AS-W001-IVO-XS', qty: 1, status: 'released' }], stock: { 'AS-W001-IVO-XS': 0 } });
+  const r = await settle(db);
+  assert.strictEqual(r.body.duplicate_payment, true);
+  assert.strictEqual(db.log.updates.length, 0);
+});
+
+t('coupon: when the limit is already reached the order is still paid and the event is logged (KNOWN #15)', async () => {
+  const db = settleDb({ payment: basePayment, order: baseOrder, reservations: [{ sku: 'AS-W001-IVO-XS', qty: 1, status: 'confirmed' }], couponChanges: 0 });
+  await settle(db);
+  assert.strictEqual(db.log.updates[0].status, 'paid');
+  assert.ok(db.log.events.includes('coupon_limit_reached'));
+});
+
+t('stock endpoint: shows status, never the count (KNOWN #22)', async () => {
+  assert.strictEqual(stockStatus(12), 'in_stock');
+  assert.strictEqual(stockStatus(3), 'low');
+  assert.strictEqual(stockStatus(0), 'out');
+  const db = { prepare: () => ({ bind: () => ({ all: async () => ({ results: [{ sku: 'A', quantity_available: 12 }, { sku: 'B', quantity_available: 2 }] }) }) }) };
+  const res = await stockGet({ env: { DB: db }, request: new Request('https://x.test/api/stock?skus=A,B') });
+  const body = await res.json();
+  assert.strictEqual(body.stock.A, 'in_stock');
+  assert.strictEqual(body.stock.B, 'low');
+  assert.ok(!JSON.stringify(body).includes('12'), 'no count in the response');
+});
+
+t('holds: expired holds are released on every 15-minute run, not only the daily one (KNOWN #3)', async () => {
+  const batches = [];
+  const db = {
+    prepare(sql) {
+      return {
+        bind(...args) {
+          return {
+            sql, args,
+            async all() {
+              if (/FROM reservations WHERE status = 'active' AND expires_at/.test(sql)) {
+                return { results: [{ id: 'r1', order_id: 'O1', sku: 'AS-W001-IVO-XS', qty: 1 }] };
+              }
+              return { results: [] };
+            },
+            async first() { return null; },
+            async run() { return { success: true, meta: { changes: 1 } }; },
+          };
+        },
+      };
+    },
+    async batch(stmts) { batches.push(stmts.length); return []; },
+  };
+  const res = await onRequestScheduled({ env: { DB: db }, cron: '*/15 * * * *' });
+  const body = await res.json();
+  assert.ok(body.results.some((r) => r.released_reservations === 1), 'hold released');
+  assert.strictEqual(batches.length, 1, 'stock restored in one batch');
 });
 
 // ============================================================

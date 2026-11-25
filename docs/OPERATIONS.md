@@ -56,6 +56,8 @@ Run commands in D1 with `--remote`. Without it, `wrangler d1 execute` runs again
 
 ## 3. Fulfilment: marking an order shipped
 
+Today: update the order by SQL (below). Planned: a "Mark shipped" page for the owner only, behind Cloudflare Access, which sends the shipped email. That page is not built yet.
+
 No code sets `shipped` or sends the shipped email (see `KNOWN_ISSUES.md` #9). Until that is built, do it by hand, in one transaction, so the audit log stays complete:
 
 ```bash
@@ -69,6 +71,8 @@ Check that the first statement reports one row changed. If it reports none, the 
 `shippedEmail` in `functions/lib/email.js` is written, but nothing calls it yet. Until it is wired in, send the shipping message from the business mailbox, copying its wording, with the TCS tracking link. Do not use the tracking-link helper in that file: it points to a placeholder domain (`KNOWN_ISSUES.md` #30).
 
 ## 4. Refunds
+
+Refunds are manual until a refund step is built. Orders in status `paid-stock-short` must always be refunded in full, because the customer has already been told.
 
 Refunds are manual. `refundPayment` in the code throws "not implemented".
 
@@ -245,6 +249,8 @@ Blockers (all must be closed, and recorded here):
 | Webhook returns 401 | `invalid_signature` in logs | Secret mismatch. Compare `SAFEPAY_WEBHOOK_SECRET` with the value in the Safepay dashboard. Do not log the secret |
 | Webhook returns 400 `unverified_webhook_contract` | Logs `[WEBHOOK] contract mismatch` | Safepay changed a field name or sent an event without an amount. Compare with Safepay's current payload before changing code |
 | Duplicate charge | `duplicate_payment` event | Refund at Safepay (§4). Keep the order `paid` |
+| Order is `paid-stock-short` | `stock_short_after_payment` and `refund_required` events. The customer was emailed | The hold lapsed and the items sold out. Refund the full amount at Safepay (§4), then record it in `order_events`. |
+| Paid order, coupon limit reached | `coupon_limit_reached` event | The order is honoured. Check the coupon's `used_count` against `usage_limit` in `coupons` (§5). |
 | Customer gets no email | `email_failed` event with the error | Check Resend's dashboard for the message. Check SPF, DKIM and DMARC (§11). Send the email by hand |
 | Order lookup says "not found" | Customer's order ID and phone | The phone must match the one used at checkout, after normalising (+92 and 0 prefixes are accepted). Do not reveal the order to someone who cannot match it |
 | Balance link expired | — | Legacy only. New orders have no balance link |

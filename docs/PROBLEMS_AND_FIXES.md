@@ -124,34 +124,54 @@ Batch 2 test total: **64 passed, 0 failed** (Node 24.22.3). Build and `wrangler 
 
 ---
 
-## Status of all 34 issues (end of batch 2)
+## Batch 3: accepted recommendations (same branch)
+
+You accepted every recommendation. Each one is implemented and tested on the fake database. **None of it has been run against the live Safepay sandbox yet.**
+
+| Item | What changed | Check |
+|---|---|---|
+| #2 Payment trust | Only `payment.succeeded` with `TRACKER_ENDED` can settle. Safepay is then asked directly (`confirmPaidWithSafepay`, `gateway.js`), and the amount must match. The signed return uses the same direct check. Safepay unreachable → 502, so Safepay retries. | Event-rule test; source test that both paths use the check |
+| #4 Late payment | If the hold has lapsed, the same items are reserved again. If stock is gone, the payment is still recorded, the order becomes `paid-stock-short`, the customer is emailed, and `refund_required` is logged. No receipt or shipping email. A repeat payment on such an order is a duplicate. | Three tests: covered, re-reserved, stock-short; plus the duplicate case |
+| #3 Hold release | Expired holds are released on every 15-minute run, not only the daily run. Safe now that #4 re-checks stock. | Fake-database test of the 15-minute run |
+| #15 Coupons | `used_count` goes up when the order is paid, only while `usage_limit` allows. If the limit is already reached, the order is still paid and `coupon_limit_reached` is logged. | Two tests: counted, and limit reached |
+| #22 Stock endpoint | Returns `out`, `low` (1 to 3) or `in_stock` per SKU, never a number. Nothing on the site calls it. | Status mapping and response test |
+| #9 Shipped emails | Decided: update by SQL now (`OPERATIONS.md` §3). Planned: a "Mark shipped" page behind Cloudflare Access. Not built yet. | Documentation only |
+
+**Still to check before live**
+- Confirm the `CATP` sandbox payload matches what the code expects (event name, state, reporter response shape). The names come from Safepay's SDK, not a live response.
+- Stock-short orders must be refunded in full by hand, because the email promises a refund.
+- Holds now expire in 15 minutes and are released every 15 minutes, so abandoned checkouts free stock quickly.
+
+**Tests:** 73 passed, 0 failed (Node 24.22.3). Build and `wrangler deploy --dry-run` pass.
+
+## Status of all 34 issues (end of batch 3)
 
 Key: **Fixed** = code changed, tested, on branch. **Partly** = some of it fixed, rest open. **Decision** = needs an owner choice first. **Owner action** = a dashboard or data step. **Deferred** = real work, not done in this batch, with the reason. **Accepted** = documented, no change.
 
 | # | Severity | Issue | Status | Note |
 |---|---|---|---|---|
 | 1 | High | Newsletter insert never run | **Fixed** (PR #92) | Check the `newsletter` table exists in production |
-| 2 | High | Webhook accepts non-final events; signed return has no amount check | **Decision** | Which Safepay event and state mean "paid". Check the `CATP` webhook first |
-| 3 | Medium | Holds released only at 09:00 UTC | **Decision** | Depends on #4 |
-| 4 | High | Late payment after hold expiry settles with no stock check | **Decision** | Extend the hold, or re-check stock and refuse or refund |
+| 2 | High | Settlement trust | **Fixed** (batch 3) | Only `payment.succeeded` with `TRACKER_ENDED` settles, and Safepay is checked directly. Confirm the sandbox payload on order `CATP` |
+| 3 | Medium | Holds released only at 09:00 UTC | **Fixed** (batch 3) | Holds are released on every 15-minute run. Safe because a late payment re-checks stock (#4) |
+| 4 | High | Late payment after hold expiry settles with no stock check | **Fixed** (batch 3) | Stock is re-reserved. If it is gone, the order is `paid-stock-short`, the customer is emailed, and the refund is manual |
 | 5 | High | Tax not in totals; invoice reads `process.env` | **Decision** | Tax rule from an accountant |
 | 6 | Medium | Invoices for unpaid orders | **Partly** (PR #92) | Unpaid orders hidden. Token never expires: decision |
 | 7 | Low | Contact email unescaped | **Fixed** (PR #92) | |
 | 8 | Low | Turnstile fails open | **Partly** (PR #92) | Contact and balance fixed. Pay-order and newsletter: decision |
-| 9 | Medium | Shipped, delivered, refunded emails never sent | **Decision** | How orders are marked shipped |
+| 9 | Medium | Shipped, delivered, refunded emails never sent | **Partly** (batch 3) | Decided: SQL now, Cloudflare Access page later. No code sets `shipped` yet |
 | 10 | Low | Wrong variable name in comments | **Fixed** (batch 2) | |
 | 11 | Low | Catalogue has no assertions | **Fixed** (batch 2) | Uniqueness and completeness only, not image files |
 | 12 | Low | Dormant deposit code | **Deferred** | Removing the public `/deposit-policy` and `/pay-balance` pages changes the site: owner OK needed |
 | 13 | Low | Order-number collisions | **Fixed** (batch 2) | |
 | 14 | Medium | Seed stock quantities are placeholders | **Owner action** | Real stock counts from the owner |
-| 15 | Low | Coupon `used_count` never increases | **Decision** | When a coupon counts as used |
+| 15 | Low | Coupon `used_count` never increases | **Fixed** (batch 3) | Counted when paid, while the limit allows |
 | 16 | Medium | Reminder log uses an out-of-scope variable | **Fixed** (PR #92) | |
 | 17 | Low | CSP allows `unsafe-inline` | **Deferred** | Needs inline scripts moved out of many pages: a separate change |
 | 18 | Medium | WAF rate limits not confirmed | **Owner action** | Create the rules in `CLOUDFLARE.md` §10 |
 | 19 | Low | Exemptions by substring | **Fixed** (batch 2) | |
 | 20 | Low | Placeholder sender | **Fixed** (PR #92) | |
 | 21 | Low | Order lookup: only order ID and phone | **Deferred** | Needs an attempt-limit table (a migration) and a lockout policy: decision |
-| 22 | Info | `GET /api/stock` shows quantities | **Decision** | Whether to show exact numbers publicly |
+| 22 | Info | `GET /api/stock` shows quantities | **Fixed** (batch 3) | Shows `in_stock`, `low` or `out`, not numbers |
 | 23 | Info | Public Safepay key and D1 ID in repo | **Accepted** | Identifiers, not secrets. Documented |
 | 24 | Info | Unused `failed` and `refunded` payment statuses | **Accepted** | Documented |
 | 25 | Info | Stale docs | **Partly** | README and ARCHITECTURE now label deposits and other legacy items |
@@ -165,6 +185,6 @@ Key: **Fixed** = code changed, tested, on branch. **Partly** = some of it fixed,
 | 33 | Medium | Contact form could not send | **Fixed** (PR #92) | Needs `PUBLIC_TURNSTILE_SITE_KEY` set in GitHub and the secret in Cloudflare |
 | 34 | Info | Generated product files out of date | **Deferred** | Committing them needs your approval |
 
-**Totals:** Fixed 10 · Partly 5 · Decision 7 · Owner action 4 · Deferred 5 · Accepted 3 = 34.
+**Totals (end of batch 3):** Fixed 16 · Partly 5 · Decision 1 · Owner action 4 · Deferred 5 · Accepted 3 = 34.
 
 **Before merging PR #92:** the email changes need your explicit "yes". Merging also needs the production checks listed above (newsletter table, `PUBLIC_TURNSTILE_SITE_KEY`, `TURNSTILE_SECRET_KEY`, `ALLOWED_ORIGIN` set to the real domains).

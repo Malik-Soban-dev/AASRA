@@ -17,8 +17,9 @@
  * exactly one interpretation of the pending payment amount.
  */
 
-import { verifyWebhookSignature } from '../lib/gateway.js';
-import { sendEmail, paymentPaidEmail, wrapEmail } from '../lib/email.js';
+import { verifyWebhookSignature, confirmPaidWithSafepay } from '../lib/gateway.js';
+import { reserveStock, linkReservationsToOrder } from '../lib/stock.js';
+import { sendEmail, paymentPaidEmail, wrapEmail, cancelledEmail } from '../lib/email.js';
 
 function jsonResponse(data, status = 200) {
   return new Response(JSON.stringify(data), {
@@ -97,6 +98,32 @@ function transitionOrder(order, kind) {
  *
  * @returns {{status: number, body: object}}
  */
+/**
+ * Only Safepay's "payment succeeded" event for a finished tracker may settle an
+ * order (KNOWN_ISSUES #2). Names follow Safepay's SDK: payment.succeeded and TRACKER_ENDED.
+ */
+export function isSettlementEvent(eventType, state) {
+  return String(eventType) === 'payment.succeeded' && String(state) === 'TRACKER_ENDED';
+}
+
+/**
+ * Late payment (KNOWN_ISSUES #4). If the order's stock hold has lapsed, reserve
+ * the same items again. Returns null when the order is covered, or { reason }
+ * when the stock is gone, so the order must be refunded.
+ */
+async function restoreLapsedStock(db, orderId) {
+  const rows = await db.prepare('SELECT sku, qty, status FROM reservations WHERE order_id = ?').bind(orderId).all();
+  const lapsed = (rows.results || []).filter((r) => r.status === 'released');
+  if (lapsed.length === 0) return null;
+  try {
+    const reserved = await reserveStock(db, lapsed.map((r) => ({ sku: r.sku, qty: r.qty })));
+    await linkReservationsToOrder(db, reserved.reservations.map((r) => r.id), orderId);
+    return null;
+  } catch (e) {
+    return { reason: e.message };
+  }
+}
+
 export async function processPayment(env, db, { eventId, trackerToken, orderId, amount, kind }) {
   const idempotencyId = eventId || `sf-return-${trackerToken}`;
 
@@ -136,7 +163,7 @@ export async function processPayment(env, db, { eventId, trackerToken, orderId, 
   // Money safety: a second full payment for an order that is already paid is
   // recorded as a duplicate and flagged for refund. It is not settled again and
   // the customer is not emailed twice.
-  if (payment.kind === 'full' && order.status === 'paid') {
+  if (payment.kind === 'full' && ['paid', 'paid-stock-short'].includes(order.status)) {
     const dupNow = nowIso();
     await db
       .prepare('UPDATE payments SET status = ?, raw_event_id = ?, updated_at = ? WHERE id = ?')
@@ -158,6 +185,9 @@ export async function processPayment(env, db, { eventId, trackerToken, orderId, 
 
   const now = nowIso();
 
+  // Late payment: restore lapsed stock first (KNOWN_ISSUES #4).
+  const stockShort = payment.kind === 'full' ? await restoreLapsedStock(db, payment.order_id) : null;
+
   // Update payment record (mark paid, record idempotency id)
   await db
     .prepare('UPDATE payments SET status = ?, raw_event_id = ?, updated_at = ? WHERE id = ?')
@@ -170,7 +200,7 @@ export async function processPayment(env, db, { eventId, trackerToken, orderId, 
          status = ?, deposit_status = ?, balance_status = ?, updated_at = ?
        WHERE id = ?`
     )
-    .bind(transition.newStatus, transition.depositStatus, transition.balanceStatus, now, payment.order_id).run();
+    .bind(stockShort ? 'paid-stock-short' : transition.newStatus, transition.depositStatus, transition.balanceStatus, now, payment.order_id).run();
 
   // Confirm stock reservations (active → confirmed)
   await db
@@ -178,12 +208,45 @@ export async function processPayment(env, db, { eventId, trackerToken, orderId, 
     .bind(payment.order_id).run();
 
   // Log events
-  await createOrderEvent(db, payment.order_id, transition.eventType, {
+  await createOrderEvent(db, payment.order_id, stockShort ? 'stock_short_after_payment' : transition.eventType, {
     kind: payment.kind,
     amount: payment.amount,
     tracker: trackerToken,
     new_status: transition.newStatus,
   });
+
+  // Stock could not be restored: the money is recorded, but the order must be refunded.
+  // The customer is told, and no receipt or shipping email is sent (KNOWN_ISSUES #4).
+  if (stockShort) {
+    await createOrderEvent(db, payment.order_id, 'refund_required', {
+      reason: stockShort.reason,
+      amount: payment.amount,
+      tracker: trackerToken,
+    });
+    try {
+      const tpl = cancelledEmail({
+        order,
+        reason: 'We received your payment, but the items were no longer available. A full refund will be issued.',
+        env,
+      });
+      const mail = wrapEmail(env, { subject: tpl.subject, title: 'Order cancelled', body: tpl.html, intro: tpl.intro, outro: tpl.outro });
+      await sendEmail(env, { to: order.email, subject: mail.subject, html: mail.html, text: mail.text });
+    } catch (e) {
+      console.warn('[WEBHOOK] stock-short email failed', payment.order_id, e.message);
+    }
+    return { status: 200, body: { ok: true, stock_short: true, order_id: payment.order_id } };
+  }
+
+  // Coupon used: count it now that the order is paid, and only while the limit allows (KNOWN_ISSUES #15).
+  if (payment.kind === 'full' && order.coupon_code) {
+    const couponUpdate = await db
+      .prepare('UPDATE coupons SET used_count = used_count + 1 WHERE code = ? AND (usage_limit IS NULL OR used_count < usage_limit)')
+      .bind(order.coupon_code)
+      .run();
+    if (!(couponUpdate && couponUpdate.meta && couponUpdate.meta.changes)) {
+      await createOrderEvent(db, payment.order_id, 'coupon_limit_reached', { code: order.coupon_code });
+    }
+  }
 
   // Email customer
   try {
@@ -274,18 +337,23 @@ export async function onRequestPost(context) {
     console.warn('[WEBHOOK] contract mismatch', { type: eventType, state, hasTracker: !!trackerToken, hasOrder: !!orderId, hasAmount: amount !== null, hasCurrency: !!currency });
     return jsonResponse({ ok: false, error: 'unverified_webhook_contract' }, 400);
   }
-  const okEvents = ['payment.succeeded', 'payment.paid', 'payment:created'];
-  const okStatuses = ['succeeded', 'paid', 'created', 'completed', 'tracker_ended'];
-  if (!okEvents.includes(String(eventType)) || !okStatuses.includes(String(status).toLowerCase())) {
+  if (!isSettlementEvent(eventType, state)) {
     return jsonResponse({ ok: true, ignored: true, reason: 'payment_not_successful' });
   }
   if (currency !== 'PKR') return jsonResponse({ ok: false, error: 'currency_mismatch' }, 400);
+
+  // Verify with Safepay before settling (KNOWN_ISSUES #2). The webhook is a hint;
+  // Safepay's own record decides, and the amount must match what it reports.
+  const verified = await confirmPaidWithSafepay(env, String(trackerToken));
+  if (verified.status === 'gateway_error') return jsonResponse({ ok: false, error: 'verification_unavailable' }, 502);
+  if (verified.status !== 'settled') return jsonResponse({ ok: true, ignored: true, reason: 'not_settled_at_gateway' });
+  if (!amountMatches(verified.amount, amount)) return jsonResponse({ ok: false, error: 'amount_mismatch' }, 400);
 
   const result = await processPayment(env, context.env.DB, {
     eventId,
     trackerToken: String(trackerToken),
     orderId: String(orderId),
-    amount,
+    amount: verified.amount,
     kind,
   });
   return jsonResponse(result.body, result.status);

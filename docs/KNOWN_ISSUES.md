@@ -2,7 +2,7 @@
 
 Defects and gaps found by reading the code against the docs. **None of these is fixed by the documentation change.** Each needs its own approved change, and changes to payment, order or email code need the owner's approval and a dry-run deploy (see `PLAYBOOK.md` §14).
 
-**Status:** batches 1 and 2 are on branch `arena/3fc47406-aasra`, not yet merged. Fixed, partly fixed, decided, deferred and accepted items are listed in `PROBLEMS_AND_FIXES.md`, which also holds the status of all 34 issues.
+**Status:** batches 1, 2 and 3 are on branch `arena/3fc47406-aasra`, not yet merged. The status of each item is in `PROBLEMS_AND_FIXES.md`.
 
 **Severity:**
 - **High:** affects money, tax, or customers now. Fix before live payments or before reuse.

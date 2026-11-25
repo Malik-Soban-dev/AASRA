@@ -30,6 +30,17 @@ function jsonResponse(data, status = 200) {
   });
 }
 
+/**
+ * Shoppers see a status, not a count (KNOWN_ISSUES #22).
+ * 0 = out, 1 to 3 = low, more than 3 = in_stock.
+ */
+export function stockStatus(quantity) {
+  const n = Number(quantity) || 0;
+  if (n <= 0) return 'out';
+  if (n <= 3) return 'low';
+  return 'in_stock';
+}
+
 export async function onRequestGet(context) {
   const { env } = context;
   const url = context.url || new URL(context.request.url);
@@ -53,7 +64,7 @@ export async function onRequestGet(context) {
 
     const stock = {};
     for (const row of results || []) {
-      stock[row.sku] = row.quantity_available;
+      stock[row.sku] = stockStatus(row.quantity_available);
     }
     return jsonResponse({ ok: true, stock });
   } catch (err) {
