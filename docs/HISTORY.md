@@ -333,3 +333,91 @@ The sandbox can lose `/tmp`, `node_modules` and `dist/`, and the repo can be re-
 - Build exit 0. Tests 46 of 46.
 - Browser check: a click on Knitwear on `/shop/` kept the page alive and changed the URL to `/shop/?category=knitwear`. The cart still does a full load.
 - `astro:page-load` fires on first load and after each client navigation.
+
+## 14. Conversation record: the owner's requests, in order
+
+This section follows the working conversation: what was asked, what was corrected or rejected, and how each item ended. Sections 4 and 9 hold the rules; this section shows how they came about. It is built from the session notes kept during the work, so the owner's exact early wording may be shortened. Quoted phrases are the owner's own words.
+
+### 14.1 Standing requests
+
+- **Documentation (Nov 24):** "i want every thing documented everything that we did so far because if i want to make a new site with similar things i dont need to do everything from zero again." Scope: architecture, decisions, setup, deploy, payments, catalogue, design rules, lessons from failures, and build history.
+- **Completeness (Nov 24):** "make sure you dont leave anything this project is the base for many to come." Operations, risks, and open items are included.
+- **Cloudflare (Nov 25):** "did you documented the cloudflare?" Answered by `CLOUDFLARE.md`. Its gaps are listed in that file.
+- **Branch and merge rules (Nov 24):** use the branch the system names. Never push to a `pr_merged` branch. Merge only on an explicit "merge".
+
+### 14.2 Payments (Nov 22 to Nov 23)
+
+| Owner request or correction | What was done | Status |
+|---|---|---|
+| Prepaid only; the deposit option is removed | Deposit removed from checkout; code remains (`KNOWN_ISSUES.md` #12) | Done. Dormant code remains |
+| "Manual payment marking" was offered and rejected for `AAS-20261122-SRQP` | Fix the webhook path instead | Done for the rule. SRQP still pending |
+| Keys and secrets never in chat | Keys entered only in PowerShell or the Resend or Cloudflare dashboards | Standing rule |
+| Real cards never used; test cards only from Safepay's own docs or dashboard | Test cards from third-party search results were not used | Standing rule |
+| Paid receipt must be a full receipt showing Paid with correct details | Receipt email built; the `CATP` webhook result is unconfirmed | Partly done |
+| Goal: a completed test order that reaches PAID, a receipt, and a lookup page showing PAID | Not reached. `CATP` webhook outcome unconfirmed; `SRQP` pending | Open |
+| Live switch | Not approved | Open |
+| Priority: payments work end to end before owner orders or product work | Storefront and catalogue work continued in parallel | Open |
+
+### 14.3 Storefront (Nov 22 to Nov 23)
+
+- **Products (Nov 22):** 15 new products went live in PR #41. The owner said to treat them as real until photos arrive. No "Sample" labels.
+- **Footwear (Nov 23):** "Add everywhere, matching image-185." Women's and men's categories match exactly. Reuse home sections where they fit, and build new sections rather than copy home.
+- **Hero (Nov 23):** full-screen carousel with parallax and dots only; no arrows.
+- **Category layout (Nov 23):** the owner said "the layout is so awkward," then approved the new layout with "this is the ss" (image-184). Fixed in PR #82, which supersedes PR #80. Do not change without a clear request.
+- **Product page (Nov 23):** "make the product single like this" (image-183). Two-column image grid, with the info column sticky. Header offset fixed in PR #77.
+- **Phone product page (Nov 23):** "make the image larger to fill the gap" (image-187), fixed in PR #86. Dots sit under the gallery and scroll to that photo. A colour swatch moves that colour's photo to the front and resets to the first photo. Desktop stays unchanged.
+- **Filter popup (Nov 23):** must open on screen wherever the shopper is on the list. Kept inside `.as-plp-toolbar` (PR #74).
+- **Denim (Nov 23):** full-width banner filling the viewport height, then a carousel. New In sits above it. The denim-only rail rule was removed in PR #76 and must not return.
+- **Colour dots:** swap the card photo everywhere, including home.
+- **Header:** transparent at the top, coloured on scroll, hides on scroll down, shows on scroll up.
+- **Font:** Inter Tight for headings, Inter for body.
+- **Greyscale product photos:** raised, not decided. Ask before changing.
+- **"Keep Juniors."** Owner decision.
+- **Cormorant logo:** proposed; awaiting confirmation.
+
+### 14.4 Shop, sub-categories and navigation (Nov 24)
+
+- **"The tabs are not changing."** The Shop chips did not follow the selected category. The static build rendered the active state from the build-time URL. Fixed with browser-side filtering (PR #87).
+- **Sub-categories:** the owner chose "both," meaning Shop chips and the PDP breadcrumb. Requested "make and merge." Done in PRs #88 and #89.
+- **Performance:** "category changes must not reload the whole page." Done with client-side navigation in PR #90. Checkout and non-storefront pages still load fully.
+- **Cart:** one add click gives quantity 1. Returning to a product already in the bag says so and does not offer to buy again. The owner has not yet decided whether to merge the cart quantity fix.
+
+### 14.5 Corrections and rejections
+
+- Rejected: a manual "mark as paid" for a pending order (`AAS-20261122-SRQP`).
+- Corrected: "the tabs are not changing" (Shop chips, Nov 24).
+- Corrected: "the layout is so awkward" (category layout, Nov 23). Replaced by the approved layout ("this is the ss").
+- Corrected: the phone product page image gap ("make the image larger to fill the gap", Nov 23).
+
+### 14.6 PR approvals
+
+Approval, as recorded in the notes. Each PR needs its own "merge."
+
+| Status | PRs |
+|---|---|
+| Approved | #54, #56 (flagged), #57–#61, #64, #65, #67, #72–#77, #79, #81–#90 |
+| Closed as superseded | #66 |
+| Open | #80 (superseded by #82), #91 (this documentation) |
+| Merged on GitHub, approval not recorded | #62, #63 (merged 2026-11-23; confirm with the owner) |
+| Not recorded in the notes | #68–#71, #78 |
+
+### 14.7 Waiting on the owner
+
+These need a decision or confirmation. None has been done without one.
+
+1. Confirm that PRs #62 and #63 are wanted.
+2. Confirm that the phone hard refresh for PRs #74–#77 shows the changes.
+3. Decide whether to merge the cart quantity fix.
+4. Decide on greyscale product photos.
+5. Confirm the Cormorant logo.
+6. Answer the breadcrumb gap tightening request. It is unanswered.
+7. Decide whether checkout, pay-balance, order-lookup and order-success stay full-page loads.
+8. Decide the Safepay steps for `AAS-20261122-SRQP`. Do not guess Safepay's resend option.
+9. Approve the code risks in `KNOWN_ISSUES.md` for fixing, starting with the newsletter insert (#1).
+10. Live switch: not approved. It needs the owner's explicit approval.
+
+### 14.8 Limits of this record
+
+- The record is built from the session notes, not a full transcript. Early wording and some intermediate steps may be missing.
+- Some image references (image-183, -184, -185, -187) are the owner's screenshots. They are not stored in the repo.
+- This record does not change the code. Where the code and this record disagree, the code is the source of truth.
